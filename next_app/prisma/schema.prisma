@@ -3,22 +3,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Request {
-  id               Int           @id @default(autoincrement())
-  user_prompt      String?       @map("user_prompt") // Text in Python
-  image_references Json?         @map("image_references") // JSONB
-  status           RequestStatus @default(QUEUED)
-  error_message    String?       @map("error_message")
-  created_at       DateTime      @default(now()) @map("created_at")
-  updated_at       DateTime      @default(now()) @updatedAt @map("updated_at")
-  gpt_raw_response Json?         @map("gpt_raw_response") // JSONB
-  is_success       Boolean       @default(false) @map("is_success")
+  id               Int      @id @default(autoincrement())
+  user_prompt      String?  @map("user_prompt")
+  image_references String?  @map("image_references") // Stored as JSON string
+  status           String   @default("Queued") // Enum: Queued, Processing, Completed, Failed
+  error_message    String?  @map("error_message")
+  created_at       DateTime @default(now()) @map("created_at")
+  updated_at       DateTime @default(now()) @updatedAt @map("updated_at")
+  gpt_raw_response String?  @map("gpt_raw_response") // Stored as JSON string
+  is_success       Boolean  @default(false) @map("is_success")
 
-  @@map("request") // Map to existing table name if possible, or new one
+  @@map("request")
 }
 
 model AdminUser {
@@ -33,7 +33,7 @@ model AdminUser {
 model Setting {
   id    Int     @id @default(autoincrement())
   key   String  @unique
-  value String? // SQLITE_TEXT in Python, String here
+  value String?
 
   @@map("setting")
 }
@@ -41,27 +41,13 @@ model Setting {
 model Log {
   id        Int      @id @default(autoincrement())
   timestamp DateTime @default(now())
-  level     LogLevel
+  level     String   // Enum: DEBUG, INFO, WARNING, ERROR
   message   String
   source    String?
-  context   Json?
+  context   String?  // Stored as JSON string
 
   @@index([timestamp(sort: Desc)])
   @@index([level])
   @@index([source])
   @@map("logs")
-}
-
-enum RequestStatus {
-  QUEUED     @map("Queued")
-  PROCESSING @map("Processing")
-  COMPLETED  @map("Completed")
-  FAILED     @map("Failed")
-}
-
-enum LogLevel {
-  DEBUG
-  INFO
-  WARNING
-  ERROR
 }
