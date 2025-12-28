@@ -1,9 +1,16 @@
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 
-export const maxDuration = 60; // Allow execution up to 60 seconds
+export const maxDuration = 60;
+
+// Initialize OpenAI client with custom settings
+const openai = createOpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+});
+
 
 export async function POST(req: Request) {
     try {
