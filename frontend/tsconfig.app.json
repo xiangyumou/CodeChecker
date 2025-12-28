@@ -23,13 +23,16 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "*"
+        "src/*"
+      ],
+      "@shared": [
+        "../shared/src"
       ],
       "@shared/*": [
-        "../../shared/src/*"
+        "../shared/src/*"
       ]
     }
   },

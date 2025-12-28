@@ -6,7 +6,7 @@
  * handles UI feedback (error messages) at this layer.
  */
 
-import { createApiClient, ApiError, getEnvironmentConfig } from '../../../../shared/src/index';
+import { createApiClient, ApiError, getEnvironmentConfig } from '@shared';
 import { message } from 'antd';
 
 // Get environment-specific configuration

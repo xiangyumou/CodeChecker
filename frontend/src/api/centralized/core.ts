@@ -3,7 +3,7 @@
  * Now uses shared UnifiedApiClient to eliminate code duplication
  */
 
-import { UnifiedApiClient, ApiError } from '../../../shared/src/index';
+import { UnifiedApiClient, ApiError } from '@shared';
 import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { message } from 'antd';
 
