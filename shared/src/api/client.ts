@@ -1,6 +1,15 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
-import { message } from 'antd';
 import { CommunicationConfig } from '../config/index';
+
+/**
+ * API Error interface for error callback
+ */
+export interface ApiError {
+  message: string;
+  status?: number;
+  data?: any;
+  type: 'network' | 'server' | 'client' | 'validation';
+}
 
 export interface ApiClientConfig {
   baseURL: string;
@@ -8,7 +17,7 @@ export interface ApiClientConfig {
   authToken?: string;
   clientType: 'frontend' | 'admin';
   onUnauthorized?: () => void;
-  showErrorMessages?: boolean;
+  onError?: (error: ApiError) => void;
 }
 
 export class UnifiedApiClient {
@@ -35,12 +44,12 @@ export class UnifiedApiClient {
         if (this.config.authToken) {
           config.headers.Authorization = `Bearer ${this.config.authToken}`;
         }
-        
+
         // Set Content-Type for JSON if not already set and not FormData
         if (!config.headers['Content-Type'] && !(config.data instanceof FormData)) {
           config.headers['Content-Type'] = 'application/json';
         }
-        
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -60,14 +69,19 @@ export class UnifiedApiClient {
     console.error('API Error:', error);
 
     let errorMessage = 'An unexpected error occurred.';
+    let errorType: ApiError['type'] = 'client';
+    let status: number | undefined;
+    let data: any;
 
     if (error.response) {
-      const status = error.response.status;
-      const data = error.response.data as any;
+      status = error.response.status;
+      data = error.response.data;
+      errorType = 'server';
 
       // Extract error message
       if (data?.detail) {
         if (status === 422 && Array.isArray(data.detail)) {
+          errorType = 'validation';
           errorMessage = `Validation Error: ${data.detail
             .map((err: any) => `${err.loc.join('.')} - ${err.msg}`)
             .join(', ')}`;
@@ -98,14 +112,21 @@ export class UnifiedApiClient {
           }
       }
     } else if (error.request) {
+      errorType = 'network';
       errorMessage = 'Network Error: Could not connect to the server. Please check your connection.';
     } else {
+      errorType = 'client';
       errorMessage = `Request Error: ${error.message}`;
     }
 
-    // Show error message if enabled
-    if (this.config.showErrorMessages !== false) {
-      message.error(errorMessage);
+    // Use callback instead of direct UI manipulation
+    if (this.config.onError) {
+      this.config.onError({
+        message: errorMessage,
+        status,
+        data,
+        type: errorType,
+      });
     }
   }
 
@@ -147,7 +168,7 @@ export function createApiClient(
   options: {
     authToken?: string;
     onUnauthorized?: () => void;
-    showErrorMessages?: boolean;
+    onError?: (error: ApiError) => void;
   } = {}
 ): UnifiedApiClient {
   return new UnifiedApiClient({
