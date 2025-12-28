@@ -1,4 +1,4 @@
-import axios from 'axios'; // Use raw axios for login as it might not need interceptors initially
+import { adminApiClient as apiClient, adminApiClient } from '@/api/centralized';
 import { message } from 'antd'; // For showing error messages
 
 // Define the structure for the login response (matches backend schema Token)
@@ -14,7 +14,7 @@ interface LoginPayload {
 }
 
 // Base URL for the API used by adminLogin (raw axios) - Adjust if needed
-const ADMIN_LOGIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// const ADMIN_LOGIN_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'; // Handled by centralized client
 
 /**
  * Performs admin login.
@@ -36,8 +36,10 @@ export const adminLogin = async (payload: LoginPayload): Promise<LoginResponse> 
   // formData.append('client_secret', ''); // Add client_secret if needed
 
   try {
-    const response = await axios.post<LoginResponse>(
-      `${ADMIN_LOGIN_API_BASE_URL}/login/access-token`, // Use specific base URL for raw axios call
+    // using adminApiClient to ensure consistent base URL and error handling
+    // We override content-type for form submission
+    const response = await adminApiClient.post<LoginResponse>(
+      '/login/access-token',
       formData,
       {
         headers: {
@@ -45,15 +47,22 @@ export const adminLogin = async (payload: LoginPayload): Promise<LoginResponse> 
         },
       }
     );
-    return response.data;
+    return response;
   } catch (error: unknown) {
     console.error("Admin login error:", error);
-    const detail = error instanceof Error && 'response' in error ? (error as any).response?.data?.detail || 'Login failed. Please check credentials.' : 'Login failed. Please check credentials.';
-    message.error(detail); // Show error message to user
-    throw new Error(detail);
+    // Error handling is partly done by the client interceptor, but we might want specific messages here
+    // The client interceptor throws the error, so we catch it here to re-throw with specific message if needed
+    // or to show it if the interceptor didn't (e.g. for login specific errors)
+    // adminApiClient already verified it throws errors.
+
+    // We can just re-throw or let the UI handle it.
+    // But the original code showed a message.
+    // The centralized client shows messages for errors except 401.
+    // For login, 401/400 is expected on failure.
+    // Let's rely on the centralized client or just rethrow.
+    throw error;
   }
 };
-import { adminApiClient as apiClient } from '@/api/centralized';
 import type { AdminUser } from '../../../types/index';
 
 // Define the structure for the profile update payload
@@ -77,7 +86,7 @@ export const getMyProfile = async (): Promise<AdminUser> => {
     const detail = error instanceof Error && 'response' in error ? (error as any).response?.data?.detail || 'Failed to fetch user profile. Session might be invalid.' : 'Failed to fetch user profile. Session might be invalid.';
     // Avoid showing generic error if it's just an auth issue handled elsewhere (e.g., redirect)
     if (error instanceof Error && 'response' in error && (error as any).response?.status !== 401 && (error as any).response?.status !== 403) {
-        message.error(detail);
+      message.error(detail);
     }
     throw new Error(detail); // Re-throw for potential handling by caller (e.g., logout)
   }
@@ -92,24 +101,24 @@ export const updateMyProfile = async (payload: UpdateProfilePayload): Promise<Ad
   // Filter out empty fields or unchanged username before sending
   const dataToSend: UpdateProfilePayload = {};
   if (payload.username) { // We assume the caller checks if username actually changed
-      dataToSend.username = payload.username;
+    dataToSend.username = payload.username;
   }
   // Only include password if it's non-empty. Backend handles hashing.
   // Ensure password is not just whitespace
   if (payload.password && payload.password.trim()) {
-      dataToSend.password = payload.password.trim();
+    dataToSend.password = payload.password.trim();
   }
 
   // It's better practice for the calling component to check if there are actual changes
   // before calling the API, but we add a safeguard here.
   if (Object.keys(dataToSend).length === 0) {
-      message.info("No changes detected to update profile.");
-      // Returning the profile might be confusing. Throwing an error might be too harsh.
-      // Let's return a resolved promise with a specific status or null.
-      // Or perhaps the backend handles this? The backend currently returns the user if no data.
-      // Let's rely on the backend check for now, or the frontend check.
-      // For robustness, let's prevent the API call if nothing to send.
-      return Promise.reject(new Error("No changes to submit.")); // Or return Promise.resolve(null);
+    message.info("No changes detected to update profile.");
+    // Returning the profile might be confusing. Throwing an error might be too harsh.
+    // Let's return a resolved promise with a specific status or null.
+    // Or perhaps the backend handles this? The backend currently returns the user if no data.
+    // Let's rely on the backend check for now, or the frontend check.
+    // For robustness, let's prevent the API call if nothing to send.
+    return Promise.reject(new Error("No changes to submit.")); // Or return Promise.resolve(null);
   }
 
   try {
@@ -121,14 +130,14 @@ export const updateMyProfile = async (payload: UpdateProfilePayload): Promise<Ad
     console.error("Error updating user profile:", error);
     // Handle specific 409 Conflict error for username explicitly
     if (error instanceof Error && 'response' in error && (error as any).response?.status === 409) {
-         const detail = (error as any).response?.data?.detail || 'Username already exists. Please choose another.';
-         message.error(detail);
-         throw new Error(detail); // Re-throw specific error
+      const detail = (error as any).response?.data?.detail || 'Username already exists. Please choose another.';
+      message.error(detail);
+      throw new Error(detail); // Re-throw specific error
     } else {
-        // Handle other errors (e.g., validation, server errors)
-        const detail = error instanceof Error && 'response' in error ? (error as any).response?.data?.detail || 'Failed to update profile.' : 'Failed to update profile.';
-        message.error(detail);
-        throw new Error(detail); // Re-throw generic error
+      // Handle other errors (e.g., validation, server errors)
+      const detail = error instanceof Error && 'response' in error ? (error as any).response?.data?.detail || 'Failed to update profile.' : 'Failed to update profile.';
+      message.error(detail);
+      throw new Error(detail); // Re-throw generic error
     }
   }
 };
