@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Request {
+  id               Int           @id @default(autoincrement())
+  user_prompt      String?       @map("user_prompt") // Text in Python
+  image_references Json?         @map("image_references") // JSONB
+  status           RequestStatus @default(QUEUED)
+  error_message    String?       @map("error_message")
+  created_at       DateTime      @default(now()) @map("created_at")
+  updated_at       DateTime      @default(now()) @updatedAt @map("updated_at")
+  gpt_raw_response Json?         @map("gpt_raw_response") // JSONB
+  is_success       Boolean       @default(false) @map("is_success")
+
+  @@map("request") // Map to existing table name if possible, or new one
+}
+
+model AdminUser {
+  id              Int     @id @default(autoincrement())
+  username        String  @unique
+  hashed_password String  @map("hashed_password")
+  is_active       Boolean @default(true) @map("is_active")
+
+  @@map("admin_user")
+}
+
+model Setting {
+  id    Int     @id @default(autoincrement())
+  key   String  @unique
+  value String? // SQLITE_TEXT in Python, String here
+
+  @@map("setting")
+}
+
+model Log {
+  id        Int      @id @default(autoincrement())
+  timestamp DateTime @default(now())
+  level     LogLevel
+  message   String
+  source    String?
+  context   Json?
+
+  @@index([timestamp(sort: Desc)])
+  @@index([level])
+  @@index([source])
+  @@map("logs")
+}
+
+enum RequestStatus {
+  QUEUED     @map("Queued")
+  PROCESSING @map("Processing")
+  COMPLETED  @map("Completed")
+  FAILED     @map("Failed")
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARNING
+  ERROR
+}
