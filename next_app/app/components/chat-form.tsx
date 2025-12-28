@@ -10,12 +10,17 @@ import { Send, Loader2, StopCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function ChatForm() {
-    const { messages, input, handleInputChange, handleSubmit, isLoading, stop, error } = useChat({
+    const chatHelpers = useChat({
         api: "/api/chat",
         onError: (err) => {
             toast.error(`Error: ${err.message}`);
         },
     });
+
+    const { messages, input, handleInputChange, handleSubmit, isLoading, stop, error, append, setInput } = chatHelpers;
+
+    console.log('useChat helpers:', Object.keys(chatHelpers));
+
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -25,6 +30,14 @@ export function ChatForm() {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
+
+    // Custom submit handler to avoid reliance on useChat's handleSubmit
+    const handleFormSubmit = (e?: React.FormEvent | React.MouseEvent | React.KeyboardEvent) => {
+        e?.preventDefault();
+        if (!input?.trim()) return;
+        append({ role: 'user', content: input });
+        setInput('');
+    };
 
     return (
         <Card className="w-full h-[600px] flex flex-col">
@@ -63,7 +76,7 @@ export function ChatForm() {
             </CardContent>
             <CardFooter className="p-4 pt-0">
                 <form
-                    onSubmit={handleSubmit}
+                    onSubmit={(e) => { e.preventDefault(); handleFormSubmit(e); }}
                     className="relative w-full flex items-center gap-2"
                 >
                     <Textarea
@@ -74,7 +87,7 @@ export function ChatForm() {
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
-                                handleSubmit(e as any);
+                                handleFormSubmit(e);
                             }
                         }}
                     />
@@ -89,7 +102,12 @@ export function ChatForm() {
                                 <StopCircle className="h-4 w-4" />
                             </Button>
                         ) : (
-                            <Button type="submit" size="icon" disabled={!input.trim()}>
+                            <Button
+                                type="button"
+                                size="icon"
+                                disabled={!input?.trim()}
+                                onClick={handleFormSubmit}
+                            >
                                 <Send className="h-4 w-4" />
                             </Button>
                         )}

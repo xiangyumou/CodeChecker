@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         await logger.info(`Started processing request ID ${dbRequest.id}`, 'API_CHAT');
 
         const result = await streamText({
-            model: openai('gpt-4-turbo'), // Or compatible model
+            model: openai(process.env.OPENAI_MODEL || 'gpt-4-turbo'),
             messages,
             onFinish: async ({ text, finishReason }) => {
                 const isSuccess = finishReason !== 'error';
