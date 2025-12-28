@@ -1,9 +1,10 @@
 /**
  * Centralized API client core functionality
- * Eliminates duplication between user and admin API clients
+ * Now uses shared UnifiedApiClient to eliminate code duplication
  */
 
-import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
+import { UnifiedApiClient, ApiError } from '@shared/api';
+import { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { message } from 'antd';
 
 interface ApiClientConfig {
@@ -14,12 +15,12 @@ interface ApiClientConfig {
   onAuthFailure?: () => void;
 }
 
-interface ApiErrorData {
-  detail?: string | Array<{ loc: string[]; msg: string }>;
-}
-
+/**
+ * Wrapper around UnifiedApiClient that maintains backward compatibility
+ * with existing code while using the shared library underneath
+ */
 export class CentralizedApiClient {
-  private instance: AxiosInstance;
+  private client: UnifiedApiClient;
   private config: Required<ApiClientConfig>;
 
   constructor(config: ApiClientConfig = {}) {
@@ -28,154 +29,83 @@ export class CentralizedApiClient {
       timeout: config.timeout || 10000,
       withAuth: config.withAuth || false,
       authTokenKey: config.authTokenKey || 'admin_token',
-      onAuthFailure: config.onAuthFailure || (() => {}),
+      onAuthFailure: config.onAuthFailure || (() => { }),
     };
 
-    this.instance = axios.create({
+    // Get initial auth token if withAuth is enabled
+    const initialToken = this.config.withAuth
+      ? localStorage.getItem(this.config.authTokenKey) || undefined
+      : undefined;
+
+    // Create UnifiedApiClient instance with error handling
+    this.client = new UnifiedApiClient({
       baseURL: this.config.baseURL,
       timeout: this.config.timeout,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors() {
-    // Request interceptor
-    this.instance.interceptors.request.use(
-      (config) => {
-        if (this.config.withAuth) {
-          const token = localStorage.getItem(this.config.authTokenKey);
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+      authToken: initialToken,
+      clientType: this.config.withAuth ? 'admin' : 'frontend',
+      onError: (error: ApiError) => {
+        // Handle 401 errors specially
+        if (error.status === 401) {
+          if (this.config.withAuth) {
+            localStorage.removeItem(this.config.authTokenKey);
+            this.config.onAuthFailure();
           }
+          // Don't show message for 401 as it triggers redirects
+          return;
         }
-        return config;
+
+        // Show error message for other errors
+        message.error(error.message);
       },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor
-    this.instance.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        const errorMessage = this.handleError(error);
-        
-        // Don't show message for 401 errors as they trigger redirects
-        if (error.response?.status !== 401) {
-          message.error(errorMessage);
-        }
-        
-        return Promise.reject(error);
-      }
-    );
-  }
-
-  private handleError(error: AxiosError): string {
-    let errorMessage = 'An unexpected error occurred.';
-
-    if (error.response) {
-      const status = error.response.status;
-      const data = error.response.data as ApiErrorData;
-
-      // Handle 401 Unauthorized
-      if (status === 401) {
-        errorMessage = 'Authentication failed or expired. Please log in again.';
+      onUnauthorized: () => {
         if (this.config.withAuth) {
           localStorage.removeItem(this.config.authTokenKey);
           this.config.onAuthFailure();
         }
-        return errorMessage;
-      }
-
-      // Extract detail message if available
-      if (data && data.detail) {
-        if (status === 422 && Array.isArray(data.detail)) {
-          errorMessage = `Validation Error: ${data.detail
-            .map((err) => `${err.loc.join('.')} - ${err.msg}`)
-            .join(', ')}`;
-        } else if (typeof data.detail === 'string') {
-          errorMessage = data.detail;
-        } else {
-          errorMessage = `Server Error ${status}: An unspecified error occurred.`;
-        }
-      } else {
-        errorMessage = `Server Error: ${status}`;
-      }
-
-      // Specific messages for common statuses
-      switch (status) {
-        case 403:
-          errorMessage = 'Forbidden. You do not have permission to perform this action.';
-          break;
-        case 404:
-          errorMessage = 'Resource not found.';
-          break;
-        default:
-          if (status >= 500) {
-            errorMessage = `Server Error (${status}): Please try again later or contact support.`;
-          }
-      }
-    } else if (error.request) {
-      errorMessage = 'Network Error: Could not connect to the server. Please check your connection.';
-    } else {
-      errorMessage = `Request Error: ${error.message}`;
-    }
-
-    return errorMessage;
+      },
+    });
   }
 
-  // HTTP Methods
+  // HTTP Methods - delegate to UnifiedApiClient
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.get<T>(url, config);
-    return response.data;
+    return this.client.get<T>(url, config);
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.post<T>(url, data, config);
-    return response.data;
+    return this.client.post<T>(url, data, config);
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.put<T>(url, data, config);
-    return response.data;
+    return this.client.put<T>(url, data, config);
   }
 
   async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.patch<T>(url, data, config);
-    return response.data;
+    // UnifiedApiClient doesn't have patch, use put
+    return this.client.put<T>(url, data, config);
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.delete<T>(url, config);
-    return response.data;
+    return this.client.delete<T>(url, config);
   }
 
-  // Form data upload
+  // Form data upload - just use post with FormData
   async upload<T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.instance.post<T>(url, formData, {
-      ...config,
-      headers: {
-        ...config?.headers,
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    return this.client.post<T>(url, formData, config);
   }
 
   // Update auth token
   updateAuthToken(token: string | null) {
     if (token) {
       localStorage.setItem(this.config.authTokenKey, token);
+      this.client.setAuthToken(token);
     } else {
       localStorage.removeItem(this.config.authTokenKey);
+      this.client.setAuthToken(null);
     }
   }
 
   // Get raw axios instance for advanced usage
   getRawInstance(): AxiosInstance {
-    return this.instance;
+    return this.client.getInstance();
   }
 }

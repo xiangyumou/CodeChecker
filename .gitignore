@@ -111,8 +111,9 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Only ignore Python lib directories in backend
+/backend/lib/
+/backend/lib64/
 parts/
 sdist/
 var/
