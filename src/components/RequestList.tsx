@@ -44,7 +44,27 @@ export default function RequestList() {
                 if (lastPage.length < 20) return undefined;
                 return lastPage[lastPage.length - 1].id;
             },
+            // Temporarily keep old behavior, will update in next commit
             refetchInterval: 5000,
+
+            // Cache configuration to prevent skeleton flashing
+            // Data stays fresh for 30 seconds
+            staleTime: 30 * 1000,
+
+            // Keep cached data for 10 minutes
+            gcTime: 10 * 60 * 1000,
+
+            // Don't refetch on mount if we have cached data
+            refetchOnMount: false,
+
+            // Refetch when window regains focus
+            refetchOnWindowFocus: true,
+
+            // Refetch on network reconnection
+            refetchOnReconnect: true,
+
+            // Don't poll in background
+            refetchIntervalInBackground: false,
         }
     );
 
