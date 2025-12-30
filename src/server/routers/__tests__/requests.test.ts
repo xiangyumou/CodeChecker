@@ -214,5 +214,57 @@ describe('requestsRouter', () => {
 
             vi.useRealTimers();
         });
+
+        it('should return success with zero count when no records match', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2024-01-01T12:00:00Z'));
+
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 0 });
+
+            const result = await caller.prune({ amount: 1, unit: 'hours' });
+
+            expect(result).toEqual({ success: true, count: 0 });
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledTimes(1);
+
+            vi.useRealTimers();
+        });
+
+        it('should calculate cutoff correctly for days', async () => {
+            const now = new Date('2024-01-15T12:00:00Z');
+            vi.useFakeTimers();
+            vi.setSystemTime(now);
+
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 10 });
+
+            await caller.prune({ amount: 7, unit: 'days' });
+
+            // 7 days before 2024-01-15 = 2024-01-08
+            const expectedDate = new Date('2024-01-08T12:00:00Z');
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    createdAt: {
+                        lt: expectedDate,
+                    },
+                },
+            });
+
+            vi.useRealTimers();
+        });
+
+        it('should use lt (less than) not lte (less than or equal) for cutoff', async () => {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2024-01-01T12:00:00Z'));
+
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 1 });
+
+            await caller.prune({ amount: 1, unit: 'hours' });
+
+            // Verify lt is used, not lte - boundary records should NOT be deleted
+            const callArgs = mockPrisma.request.deleteMany.mock.calls[0][0];
+            expect(callArgs.where.createdAt).toHaveProperty('lt');
+            expect(callArgs.where.createdAt).not.toHaveProperty('lte');
+
+            vi.useRealTimers();
+        });
     });
 });

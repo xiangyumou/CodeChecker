@@ -52,16 +52,19 @@ describe('ShikiCodeRenderer', () => {
         });
     });
 
-    it('handles highlighter error gracefully', async () => {
+    it('handles highlighter error gracefully and still renders', async () => {
         vi.mocked(mockHighlighter.codeToHtml).mockImplementationOnce(() => {
             throw new Error('shiki error');
         });
 
-        render(<ShikiCodeRenderer code="test" />);
+        const { container } = render(<ShikiCodeRenderer code="test code" />);
 
         await waitFor(() => {
             // Should stop loading even on error
-            expect(document.querySelector('.animate-pulse')).not.toBeInTheDocument();
+            expect(container.querySelector('.animate-pulse')).not.toBeInTheDocument();
         });
+
+        // Component should still render something (not crash)
+        expect(container).not.toBeEmptyDOMElement();
     });
 });

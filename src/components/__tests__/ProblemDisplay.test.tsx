@@ -29,9 +29,10 @@ describe('ProblemDisplay', () => {
         notes: 'Some notes'
     }
 
-    it('renders full problem data correctly', () => {
+    it('renders full problem data correctly with expected content', () => {
         render(<ProblemDisplay data={mockData} />)
 
+        // Verify title and limits are displayed
         expect(screen.getByText('Test Problem')).toBeInTheDocument()
         expect(screen.getByText('1s')).toBeInTheDocument()
         expect(screen.getByText('256MB')).toBeInTheDocument()
@@ -43,9 +44,15 @@ describe('ProblemDisplay', () => {
         expect(screen.getByText('samples')).toBeInTheDocument()
         expect(screen.getByText('notes')).toBeInTheDocument()
 
-        // Check content passed to markdown mocks
+        // Verify markdown components receive correct content
         const markdowns = screen.getAllByTestId('markdown')
-        expect(markdowns.length).toBeGreaterThan(0)
+        // Expect at least 3 markdown sections (description, input, output formats)
+        expect(markdowns.length).toBeGreaterThanOrEqual(3)
+
+        // Verify actual content is passed to markdown
+        expect(markdowns.some(m => m.textContent === 'Problem description')).toBe(true)
+        expect(markdowns.some(m => m.textContent === 'Input format')).toBe(true)
+        expect(markdowns.some(m => m.textContent === 'Output format')).toBe(true)
     })
 
     it('renders simple string content', () => {

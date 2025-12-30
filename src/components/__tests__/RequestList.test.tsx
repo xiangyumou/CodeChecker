@@ -48,10 +48,13 @@ describe('RequestList', () => {
         mockPush.mockReset()
     })
 
-    it('renders loading state', () => {
+    it('renders loading state with skeleton placeholders', () => {
         mockUseQuery.mockReturnValue({ isPending: true, data: undefined, isLoading: true })
         const { container } = render(<RequestList />)
-        expect(container.getElementsByClassName('animate-pulse').length).toBeGreaterThan(0)
+        const skeletons = container.getElementsByClassName('animate-pulse')
+        // Verify reasonable number of skeleton placeholders exist
+        expect(skeletons.length).toBeGreaterThanOrEqual(5)
+        expect(skeletons.length).toBeLessThanOrEqual(20)
     })
 
     it('renders empty state', () => {
@@ -89,7 +92,7 @@ describe('RequestList', () => {
         expect(mockPush).toHaveBeenCalledWith('/request/123')
     })
 
-    it('renders processing state with correct animation', () => {
+    it('renders processing state with spinning indicator and status text', () => {
         const mockData = [
             { id: 3, status: 'PROCESSING', userPrompt: 'Processing prompt', createdAt: new Date().toISOString() },
         ]
@@ -97,9 +100,12 @@ describe('RequestList', () => {
 
         const { container } = render(<RequestList />)
 
+        // Verify status text is displayed
         expect(screen.getByText('processing')).toBeInTheDocument()
+
+        // Verify spinner exists (at least 1 for the processing item)
         const spinElements = container.getElementsByClassName('animate-spin')
-        expect(spinElements.length).toBeGreaterThan(0)
+        expect(spinElements.length).toBeGreaterThanOrEqual(1)
     })
 
     it('calls invalidate on refresh', () => {
