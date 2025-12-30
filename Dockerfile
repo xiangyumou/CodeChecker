@@ -51,6 +51,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Ensure prisma schema and migrations are available if needed
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -61,4 +64,5 @@ ENV HOSTNAME "0.0.0.0"
 
 # Server.js is created by next build from the standalone output
 # We wrap the start command to ensure prisma migrations run if needed
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]

@@ -9,7 +9,7 @@ import pino from 'pino';
 const logLevel = process.env.LOG_LEVEL || 'info';
 
 // Check if pretty printing is enabled (development mode)
-const isPretty = process.env.LOG_PRETTY === 'true' || process.env.NODE_ENV === 'development';
+const isPretty = process.env.NODE_ENV === 'development';
 
 // Create the base logger instance
 const logger = pino({

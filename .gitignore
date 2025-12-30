@@ -37,7 +37,7 @@ yarn-error.log*
 /src/generated/prisma
 /prisma/*.db
 /prisma/*.db-journal
-/prisma/data/
+/prisma/data/*.db
 
 
 # IDEs
