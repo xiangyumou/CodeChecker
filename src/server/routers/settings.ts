@@ -18,7 +18,7 @@ export const settingsRouter = router({
     }),
 
     // Get setting by key
-    getByKey: publicProcedure
+    getByKey: adminProcedure
         .input(settingKeySchema)
         .query(async ({ ctx, input }) => {
             const setting = await ctx.prisma.setting.findUnique({

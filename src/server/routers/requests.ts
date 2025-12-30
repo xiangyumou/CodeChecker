@@ -1,6 +1,6 @@
 import { subHours, subDays, subMonths } from 'date-fns';
 import { z } from 'zod';
-import { router, publicProcedure } from '../trpc';
+import { router, publicProcedure, adminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { qstash, getWebhookUrl, getConcurrencyLimit } from '@/lib/qstash/client';
 
@@ -20,7 +20,7 @@ const requestIdSchema = z.number().int().positive();
 
 export const requestsRouter = router({
     // Get all requests with optional filtering
-    list: publicProcedure
+    list: adminProcedure
         .input(
             z
                 .object({
@@ -51,7 +51,7 @@ export const requestsRouter = router({
         }),
 
     // Get request by ID
-    getById: publicProcedure
+    getById: adminProcedure
         .input(requestIdSchema)
         .query(async ({ ctx, input }) => {
             const request = await ctx.prisma.request.findUnique({
@@ -108,7 +108,7 @@ export const requestsRouter = router({
         }),
 
     // Delete request
-    delete: publicProcedure
+    delete: adminProcedure
         .input(requestIdSchema)
         .mutation(async ({ ctx, input }) => {
             const request = await ctx.prisma.request.findUnique({
@@ -130,7 +130,7 @@ export const requestsRouter = router({
         }),
 
     // Regenerate request (creates a new request)
-    regenerate: publicProcedure
+    regenerate: adminProcedure
         .input(requestIdSchema)
         .mutation(async ({ ctx, input }) => {
             const originalRequest = await ctx.prisma.request.findUnique({
@@ -169,7 +169,7 @@ export const requestsRouter = router({
         }),
 
     // Retry request (resets existing request)
-    retry: publicProcedure
+    retry: adminProcedure
         .input(requestIdSchema)
         .mutation(async ({ ctx, input }) => {
             const request = await ctx.prisma.request.findUnique({
@@ -218,7 +218,7 @@ export const requestsRouter = router({
         }),
 
     // Prune old requests
-    prune: publicProcedure
+    prune: adminProcedure
         .input(
             z.object({
                 amount: z.number().int().min(1),

@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from 'next-themes';
+import PageHeader from '@/components/PageHeader';
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -62,25 +63,15 @@ export default async function SharePage({ params }: Props) {
 
     return (
         <NextIntlClientProvider messages={messages}>
-            {/* 
-                We need to wrap this in a ThemeProvider to ensure dark mode works.
-                However, ThemeProvider (next-themes) is a client component wrapper.
-                Usually it's in layout.tsx. 
-                Since this is a new route group or root page, it inherits from root layout?
-                Yes, src/app/layout.tsx typically wraps children.
-                Let's check if src/app/share/[id]/layout.tsx is needed or if root layout is sufficient.
-                Root layout likely has the sidebar and logic we might NOT want.
-                The requirement said "open is a ... report", implying a standalone page?
-                "Align with main page" suggests same theme, but maybe not the sidebar/interactive dashboard.
-                If I put this in `src/app/share/[id]/page.tsx`, it will use `src/app/layout.tsx`.
-                Let's double check `src/app/layout.tsx`.
-            */}
-            <div className="min-h-screen bg-surface p-4 md:p-8 flex justify-center">
-                <div className="w-full max-w-5xl h-[calc(100vh-4rem)]">
-                    <RequestDetailView
-                        request={request}
-                        isPublicView={true}
-                    />
+            <div className="min-h-screen bg-surface">
+                <PageHeader showHomeLink={true} />
+                <div className="p-4 md:p-8 flex justify-center">
+                    <div className="w-full max-w-5xl h-[calc(100vh-8rem)]">
+                        <RequestDetailView
+                            request={request}
+                            isPublicView={true}
+                        />
+                    </div>
                 </div>
             </div>
         </NextIntlClientProvider>

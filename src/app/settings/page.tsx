@@ -27,6 +27,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import PageHeader from '@/components/PageHeader';
 
 const loginSchema = z.object({
     token: z.string().min(1, 'Token is required'),
@@ -153,43 +154,47 @@ function SettingsView({ token, onLogout }: { token: string, onLogout: () => void
     }
 
     return (
-        <div className="container max-w-4xl py-10 mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold">System Settings</h1>
-                    <p className="text-muted-foreground">Configure global application settings and prompts.</p>
+        <div className="min-h-screen bg-background">
+            <PageHeader>
+                <Button variant="ghost" onClick={onLogout}>Log Out</Button>
+            </PageHeader>
+            <div className="container max-w-4xl py-10 mx-auto">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold">System Settings</h1>
+                        <p className="text-muted-foreground">Configure global application settings and prompts.</p>
+                    </div>
                 </div>
-                <Button variant="outline" onClick={onLogout}>Log Out</Button>
+
+                <Tabs defaultValue="general" className="space-y-4">
+                    <TabsList>
+                        <TabsTrigger value="general" className="flex gap-2">
+                            <Settings className="w-4 h-4" />
+                            General
+                        </TabsTrigger>
+                        <TabsTrigger value="prompts" className="flex gap-2">
+                            <FileText className="w-4 h-4" />
+                            Prompts
+                        </TabsTrigger>
+                        <TabsTrigger value="data" className="flex gap-2">
+                            <Database className="w-4 h-4" />
+                            Data Management
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="general">
+                        <GeneralSettingsTab settings={settings || {}} />
+                    </TabsContent>
+
+                    <TabsContent value="prompts">
+                        <PromptsTab />
+                    </TabsContent>
+
+                    <TabsContent value="data">
+                        <DataManagementView />
+                    </TabsContent>
+                </Tabs>
             </div>
-
-            <Tabs defaultValue="general" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="general" className="flex gap-2">
-                        <Settings className="w-4 h-4" />
-                        General
-                    </TabsTrigger>
-                    <TabsTrigger value="prompts" className="flex gap-2">
-                        <FileText className="w-4 h-4" />
-                        Prompts
-                    </TabsTrigger>
-                    <TabsTrigger value="data" className="flex gap-2">
-                        <Database className="w-4 h-4" />
-                        Data Management
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="general">
-                    <GeneralSettingsTab settings={settings || {}} />
-                </TabsContent>
-
-                <TabsContent value="prompts">
-                    <PromptsTab />
-                </TabsContent>
-
-                <TabsContent value="data">
-                    <DataManagementView />
-                </TabsContent>
-            </Tabs>
         </div>
     );
 }
