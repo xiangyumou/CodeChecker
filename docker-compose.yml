@@ -1,0 +1,17 @@
+services:
+  code-checker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-checker
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./data/dev.db
+    volumes:
+      - ./prisma/data:/app/prisma/data
+    restart: always
+
+volumes:
+  prisma_data:
