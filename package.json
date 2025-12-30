@@ -10,7 +10,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma generate"
+    "db:update-provider": "node scripts/update-prisma-provider.js",
+    "postinstall": "npm run db:update-provider && prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
