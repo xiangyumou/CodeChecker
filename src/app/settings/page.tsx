@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Lock, Save, Trash, RotateCcw, FileText, Settings, Database } from 'lucide-react';
+import { Loader2, Lock, Save, Trash, RotateCcw, FileText, Settings, Database, AlertTriangle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -538,6 +538,14 @@ function DataManagementView() {
         onError: (err) => toast.error(`Failed to prune: ${err.message}`),
     });
 
+    const clearAllMutation = trpc.requests.clearAll.useMutation({
+        onSuccess: (data) => {
+            toast.success(`Cleared ${data.count} requests from database`);
+            utils.requests.list.invalidate();
+        },
+        onError: (err) => toast.error(`Failed to clear database: ${err.message}`),
+    });
+
     return (
         <Card>
             <CardHeader>
@@ -609,6 +617,7 @@ function DataManagementView() {
                                 value={olderThanUnit}
                                 onChange={(e) => setOlderThanUnit(e.target.value)}
                             >
+                                <option value="minutes">Minutes ago</option>
                                 <option value="hours">Hours ago</option>
                                 <option value="days">Days ago</option>
                                 <option value="months">Months ago</option>
@@ -635,14 +644,57 @@ function DataManagementView() {
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => {
                                         const val = parseInt(olderThanValue);
-                                        // Valid units are 'hours' | 'days' | 'months' based on the select options
-                                        const unit = olderThanUnit as 'hours' | 'days' | 'months';
+                                        // Valid units are 'minutes' | 'hours' | 'days' | 'months' based on the select options
+                                        const unit = olderThanUnit as 'minutes' | 'hours' | 'days' | 'months';
                                         pruneMutation.mutate({ amount: val, unit });
                                     }}>Prune</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
                     </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-destructive" />
+                        Clear All Data
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                        Permanently delete all analysis requests from the database. This action cannot be undone.
+                    </p>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="destructive"
+                                disabled={clearAllMutation.isPending}
+                            >
+                                {clearAllMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash className="w-4 h-4 mr-2" />}
+                                Clear Database
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                                    Clear All Data?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete ALL analysis requests from the database. This action cannot be undone. Are you absolutely sure?
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => clearAllMutation.mutate()}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    Yes, Clear All Data
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </CardContent>
         </Card>

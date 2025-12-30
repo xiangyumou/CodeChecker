@@ -266,5 +266,47 @@ describe('requestsRouter', () => {
 
             vi.useRealTimers();
         });
+
+        it('should calculate cutoff correctly for minutes', async () => {
+            const now = new Date('2024-01-01T12:00:00Z');
+            vi.useFakeTimers();
+            vi.setSystemTime(now);
+
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 3 });
+
+            await caller.prune({ amount: 30, unit: 'minutes' });
+
+            // 30 minutes before 12:00 = 11:30
+            const expectedDate = new Date('2024-01-01T11:30:00Z');
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    createdAt: {
+                        lt: expectedDate,
+                    },
+                },
+            });
+
+            vi.useRealTimers();
+        });
+    });
+
+    describe('clearAll', () => {
+        it('should delete all requests and return count', async () => {
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 42 });
+
+            const result = await caller.clearAll();
+
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({});
+            expect(result).toEqual({ success: true, count: 42 });
+        });
+
+        it('should return success with zero count when database is empty', async () => {
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 0 });
+
+            const result = await caller.clearAll();
+
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({});
+            expect(result).toEqual({ success: true, count: 0 });
+        });
     });
 });
