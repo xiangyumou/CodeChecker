@@ -52,8 +52,8 @@
   --surface2: #f7f7f8;
 
   --text: #343541;
-  --muted: #8e8ea0;
-  /* Text muted color */
+  --muted: var(--surface2);
+  /* Text muted color variable moved to muted-foreground */
 
   --border: #e5e5e5;
   --ring: #10a37f;
@@ -81,7 +81,7 @@
 
   --muted-background: var(--surface2);
   /* Shadcn 'muted' is often bg */
-  --muted-foreground: var(--muted);
+  --muted-foreground: #8e8ea0;
 
   --accent: var(--surface2);
   --accent-foreground: var(--text);
@@ -116,7 +116,7 @@
   --surface2: #202123;
 
   --text: #ececf1;
-  --muted: #8e8ea0;
+  --muted: var(--surface2);
 
   --border: #565869;
 
@@ -140,7 +140,7 @@
   --secondary-foreground: var(--text);
 
   --muted-background: var(--surface2);
-  --muted-foreground: var(--muted);
+  --muted-foreground: #8e8ea0;
 
   --accent: var(--surface2);
   --accent-foreground: var(--text);

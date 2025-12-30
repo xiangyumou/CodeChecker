@@ -46,7 +46,7 @@
     "itemTitle": "请求 #{id}",
     "refreshTooltip": "刷新列表",
     "noHistory": "暂无分析历史",
-    "queued": "队列中",
+    "queued": "等待中",
     "noPromptContent": "无输入内容",
     "submitToSeeHere": "在该处提交请求以进行查看。"
   },
@@ -55,7 +55,7 @@
     "input": "输入",
     "output": "输出",
     "error": "错误",
-    "queued": "队列中",
+    "queued": "等待中",
     "processing": "处理中",
     "completed": "已完成",
     "failed": "失败",
