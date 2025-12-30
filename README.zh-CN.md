@@ -1,8 +1,11 @@
 # 🚀 CodeChecker: 竞赛编程的 AI 代码调试助手
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+[![Live Demo](https://img.shields.io/badge/Demo-code.xiangyu.pro-blue?style=for-the-badge)](https://code.xiangyu.pro)
 
 [English](./README.md) | 简体中文
+
+> 🎮 **[在线体验 Demo →](https://code.xiangyu.pro)**
 
 **CodeChecker** 是一款专为 **ICPC**、**LeetCode** 和算法竞赛选手设计的智能编程助手。只需粘贴代码或上传题目截图，即可获得关于正确性、边界情况、复杂度分析和优化建议的即时反馈。
 

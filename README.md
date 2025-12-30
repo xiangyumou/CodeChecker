@@ -1,8 +1,11 @@
 # 🚀 CodeChecker: AI Code Debugger for Competitive Programming
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+[![Live Demo](https://img.shields.io/badge/Demo-code.xiangyu.pro-blue?style=for-the-badge)](https://code.xiangyu.pro)
 
 English | [简体中文](./README.zh-CN.md)
+
+> 🎮 **[Try the Live Demo →](https://code.xiangyu.pro)**
 
 **CodeChecker** is an intelligent coding assistant designed specifically for **ICPC**, **LeetCode**, and algorithmic problem solvers. Simply paste your code or upload a screenshot of the problem—get instant feedback on correctness, edge cases, complexity analysis, and optimization suggestions.
 
