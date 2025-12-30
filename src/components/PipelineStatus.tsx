@@ -43,7 +43,7 @@ export default function PipelineStatus({ stages, className }: PipelineStatusProp
             case 'failed':
                 return 'bg-destructive/10 text-destructive border-destructive/20';
             default:
-                return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+                return 'bg-muted text-muted-foreground border-border';
         }
     };
 

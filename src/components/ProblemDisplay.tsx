@@ -123,13 +123,13 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-3">
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t('inputSample')}</span>
-                        <div className="rounded-lg border bg-muted/50 p-4 font-mono text-sm overflow-x-auto min-h-[80px]">
+                        <div className="rounded-lg border bg-muted/50 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
                             <pre className="whitespace-pre-wrap leading-relaxed">{problem.input_sample === 'N/A' ? t('none') : problem.input_sample}</pre>
                         </div>
                     </div>
                     <div className="space-y-3">
                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t('outputSample')}</span>
-                        <div className="rounded-lg border bg-muted/50 p-4 font-mono text-sm overflow-x-auto min-h-[80px]">
+                        <div className="rounded-lg border bg-muted/50 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
                             <pre className="whitespace-pre-wrap leading-relaxed">{problem.output_sample === 'N/A' ? t('none') : problem.output_sample}</pre>
                         </div>
                     </div>

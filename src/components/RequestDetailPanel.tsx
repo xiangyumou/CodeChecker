@@ -331,7 +331,7 @@ export default function RequestDetailPanel({
                                 {t('problemDetails')}
                             </TabsTrigger>
                         ) : (
-                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted cursor-not-allowed">
+                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
                                 <Info className="w-3.5 h-3.5 mr-1.5" />
                                 {t('problemDetails')}
                             </div>
@@ -342,7 +342,7 @@ export default function RequestDetailPanel({
                                 {t('sourceCode')}
                             </TabsTrigger>
                         ) : (
-                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted cursor-not-allowed">
+                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
                                 <Code2 className="w-3.5 h-3.5 mr-1.5" />
                                 {t('sourceCode')}
                             </div>
@@ -360,11 +360,11 @@ export default function RequestDetailPanel({
                             </>
                         ) : (
                             <>
-                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted cursor-not-allowed">
+                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
                                     <FileDiff className="w-3.5 h-3.5 mr-1.5" />
                                     {t('codeDiff')}
                                 </div>
-                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted cursor-not-allowed">
+                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
                                     <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
                                     {t('analysisDetails')}
                                 </div>
@@ -380,7 +380,7 @@ export default function RequestDetailPanel({
                     <TabsContent value="input" className="animate-in fade-in duration-300 space-y-6 mt-0">
                         {request.imageReferences && request.imageReferences.length > 0 && (
                             <div className="space-y-2">
-                                <span className="text-sm font-bold text-muted flex items-center gap-2">
+                                <span className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                                     <ImageIcon className="w-4 h-4" />
                                     {t('submittedImages', { count: request.imageReferences.length })}
                                 </span>
@@ -498,7 +498,7 @@ export default function RequestDetailPanel({
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-1 gap-4">
                                                         <div className="space-y-2">
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted">{t('originalSnippet')}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('originalSnippet')}</span>
                                                             <div className="rounded-lg overflow-hidden border border-border">
                                                                 {mounted ? (
                                                                     <ShikiCodeRenderer
@@ -515,7 +515,7 @@ export default function RequestDetailPanel({
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted">{t('modifiedSnippet')}</span>
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('modifiedSnippet')}</span>
                                                             <div className="rounded-lg overflow-hidden border border-border">
                                                                 {mounted ? (
                                                                     <ShikiCodeRenderer
