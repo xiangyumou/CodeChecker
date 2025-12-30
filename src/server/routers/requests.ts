@@ -215,4 +215,23 @@ export const requestsRouter = router({
 
             return updatedRequest;
         }),
+
+    // Prune old requests
+    prune: publicProcedure
+        .input(
+            z.object({
+                olderThan: z.date(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const result = await ctx.prisma.request.deleteMany({
+                where: {
+                    createdAt: {
+                        lt: input.olderThan,
+                    },
+                },
+            });
+
+            return { success: true, count: result.count };
+        }),
 });

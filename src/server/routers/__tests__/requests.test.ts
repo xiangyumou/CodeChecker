@@ -19,6 +19,7 @@ const mockPrisma = {
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
+        deleteMany: vi.fn(),
     },
 };
 
@@ -166,10 +167,27 @@ describe('requestsRouter', () => {
             });
             expect(result).toEqual(mockUpdated);
         });
-
         it('should throw NOT_FOUND if request does not exist', async () => {
             mockPrisma.request.findUnique.mockResolvedValue(null);
             await expect(caller.retry(999)).rejects.toThrow(TRPCError);
+        });
+    });
+
+    describe('prune', () => {
+        it('should prune requests older than date', async () => {
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 5 });
+            const olderThan = new Date();
+
+            const result = await caller.prune({ olderThan });
+
+            expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    createdAt: {
+                        lt: olderThan,
+                    },
+                },
+            });
+            expect(result).toEqual({ success: true, count: 5 });
         });
     });
 });

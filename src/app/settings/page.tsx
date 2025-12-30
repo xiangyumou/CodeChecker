@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Loader2, Lock, Save } from 'lucide-react';
+import { Loader2, Lock, Save, Trash, Calendar } from 'lucide-react';
 
 const loginSchema = z.object({
     token: z.string().min(1, 'Token is required'),
@@ -305,6 +305,149 @@ function SettingsView({ token, onLogout }: { token: string, onLogout: () => void
                     </form>
                 </CardContent>
             </Card>
+
+            <div className="my-8" />
+
+            <DataManagementView />
         </div>
+    );
+}
+
+function DataManagementView() {
+    const utils = trpc.useUtils();
+    const [deleteId, setDeleteId] = useState('');
+    const [olderThanValue, setOlderThanValue] = useState('1');
+    const [olderThanUnit, setOlderThanUnit] = useState('hours'); // hours, days, months
+
+    const deleteMutation = trpc.requests.delete.useMutation({
+        onSuccess: () => {
+            toast.success("Request deleted successfully");
+            setDeleteId('');
+            utils.requests.list.invalidate();
+        },
+        onError: (err) => {
+            toast.error(`Failed to delete request: ${err.message}`);
+        }
+    });
+
+    const pruneMutation = trpc.requests.prune.useMutation({
+        onSuccess: (data) => {
+            toast.success(`Pruned ${data.count} requests`);
+            utils.requests.list.invalidate();
+        },
+        onError: (err) => {
+            toast.error(`Failed to prune requests: ${err.message}`);
+        }
+    });
+
+    const handleDelete = (e: React.FormEvent) => {
+        e.preventDefault();
+        const id = parseInt(deleteId);
+        if (isNaN(id)) {
+            toast.error("Please enter a valid numeric ID");
+            return;
+        }
+        if (confirm(`Are you sure you want to delete request #${id}?`)) {
+            deleteMutation.mutate(id);
+        }
+    };
+
+    const handlePrune = () => {
+        const val = parseInt(olderThanValue);
+        if (isNaN(val) || val <= 0) {
+            toast.error("Please enter a valid positive number");
+            return;
+        }
+
+        const date = new Date();
+        if (olderThanUnit === 'hours') {
+            date.setHours(date.getHours() - val);
+        } else if (olderThanUnit === 'days') {
+            date.setDate(date.getDate() - val);
+        } else if (olderThanUnit === 'months') {
+            date.setMonth(date.getMonth() - val);
+        }
+
+        if (confirm(`Are you sure you want to delete all requests older than ${val} ${olderThanUnit}? This cannot be undone.`)) {
+            pruneMutation.mutate({ olderThan: date });
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Trash className="w-5 h-5" />
+                    Data Management
+                </CardTitle>
+                <CardDescription>
+                    Manage stored analysis requests and clean up old data.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Delete Single Request</h3>
+                    <div className="flex items-end gap-4">
+                        <div className="space-y-2 flex-1">
+                            <Label htmlFor="delete-id">Request ID</Label>
+                            <Input
+                                id="delete-id"
+                                placeholder="e.g. 123"
+                                value={deleteId}
+                                onChange={(e) => setDeleteId(e.target.value)}
+                            />
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDelete}
+                            disabled={!deleteId || deleteMutation.isPending}
+                        >
+                            {deleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash className="w-4 h-4 mr-2" />}
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Prune Old Requests</h3>
+                    <div className="flex items-end gap-4">
+                        <div className="space-y-2 w-32">
+                            <Label>Value</Label>
+                            <Input
+                                type="number"
+                                min="1"
+                                value={olderThanValue}
+                                onChange={(e) => setOlderThanValue(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                            <Label>Unit</Label>
+                            <select
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                value={olderThanUnit}
+                                onChange={(e) => setOlderThanUnit(e.target.value)}
+                            >
+                                <option value="hours">Hours ago</option>
+                                <option value="days">Days ago</option>
+                                <option value="months">Months ago</option>
+                            </select>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={handlePrune}
+                            disabled={pruneMutation.isPending}
+                        >
+                            {pruneMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash className="w-4 h-4 mr-2" />}
+                            Prune
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        This will permanently delete create requests created before the specified time. Processing tasks that are pruned will stop retrying.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
     );
 }

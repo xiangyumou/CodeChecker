@@ -29,10 +29,11 @@ async function handler(req: NextRequest) {
         });
 
         if (!request) {
-            logger.error({ requestId }, 'Request not found');
+            logger.warn({ requestId }, 'Request not found (likely deleted), returning 200 to stop retry');
+            // Return 200 to acknowledge "completion" so QStash doesn't retry
             return NextResponse.json(
-                { error: `Request ${requestId} not found` },
-                { status: 404 }
+                { success: true, message: `Request ${requestId} not found (deleted)` },
+                { status: 200 }
             );
         }
 
