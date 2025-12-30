@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { requestsRouter } from '../requests';
 import { TRPCError } from '@trpc/server';
 
-const { mockTaskQueue } = vi.hoisted(() => {
+const { mockQStash } = vi.hoisted(() => {
     return {
-        mockTaskQueue: {
-            add: vi.fn(),
+        mockQStash: {
+            publishJSON: vi.fn(),
         }
     };
 });
@@ -21,8 +21,9 @@ const mockPrisma = {
     },
 };
 
-vi.mock('@/lib/queue/task-queue', () => ({
-    taskQueue: mockTaskQueue,
+vi.mock('@/lib/qstash/client', () => ({
+    qstash: mockQStash,
+    getWebhookUrl: (path: string) => `http://localhost:3000${path}`,
 }));
 
 describe('requestsRouter', () => {
@@ -86,12 +87,12 @@ describe('requestsRouter', () => {
     });
 
     describe('create', () => {
-        it('should create request and add to queue', async () => {
+        it('should create request and publish to QStash', async () => {
             const input = { userPrompt: 'Test Prompt', imageReferences: ['ref'] };
             const mockCreated = { id: 123, ...input, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
-            mockTaskQueue.add.mockResolvedValue(undefined);
+            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-123' });
 
             const result = await caller.create(input);
 
@@ -103,7 +104,10 @@ describe('requestsRouter', () => {
                 }),
             });
 
-            expect(mockTaskQueue.add).toHaveBeenCalledWith(123);
+            expect(mockQStash.publishJSON).toHaveBeenCalledWith({
+                url: 'http://localhost:3000/api/analyze-request',
+                body: { requestId: 123 },
+            });
             expect(result).toEqual(mockCreated);
         });
     });
@@ -121,7 +125,7 @@ describe('requestsRouter', () => {
     });
 
     describe('retry', () => {
-        it('should reset request fields and add to queue', async () => {
+        it('should reset request fields and publish to QStash', async () => {
             const mockRequest = { id: 1, status: 'FAILED' };
             const mockUpdated = {
                 id: 1,
@@ -132,7 +136,7 @@ describe('requestsRouter', () => {
 
             mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
             mockPrisma.request.update.mockResolvedValue(mockUpdated);
-            mockTaskQueue.add.mockResolvedValue(undefined);
+            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-456' });
 
             const result = await caller.retry(1);
 
@@ -144,7 +148,10 @@ describe('requestsRouter', () => {
                     stage1Status: 'pending',
                 }),
             });
-            expect(mockTaskQueue.add).toHaveBeenCalledWith(1);
+            expect(mockQStash.publishJSON).toHaveBeenCalledWith({
+                url: 'http://localhost:3000/api/analyze-request',
+                body: { requestId: 1 },
+            });
             expect(result).toEqual(mockUpdated);
         });
 
