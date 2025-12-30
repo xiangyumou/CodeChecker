@@ -484,7 +484,7 @@ export default function RequestDetailPanel() {
                                                         </div>
                                                     </div>
                                                     <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
-                                                        <div className="prose dark:prose-invert max-w-none text-muted leading-relaxed whitespace-pre-wrap text-sm">
+                                                        <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
                                                             <ReactMarkdown
                                                                 remarkPlugins={[remarkGfm, remarkMath]}
                                                                 rehypePlugins={[rehypeKatex]}
