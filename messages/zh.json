@@ -131,10 +131,10 @@
       "processingTitle": "分析流程"
     },
     "selectRequestToView": "选择一个请求查看详情",
-    "share": "分享",
-    "linkCopied": "链接已复制",
-    "linkCopiedDescription": "分享链接已成功复制到剪贴板。",
     "retry": "重试",
+    "retryStarted": "重试已启动",
+    "retryStartedDescription": "请求已重新加入分析队列。",
+    "retryFailed": "重试失败",
     "requestNotFound": "请求未找到",
     "backToCreate": "返回",
     "closeDetails": "关闭详情",

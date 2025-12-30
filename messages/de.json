@@ -127,10 +127,10 @@
       "processingTitle": "Analyse-Pipeline"
     },
     "selectRequestToView": "Wählen Sie eine Anfrage aus, um Details anzuzeigen",
-    "share": "Teilen",
-    "linkCopied": "Link kopiert",
-    "linkCopiedDescription": "Der teilbare Link wurde in Ihre Zwischenablage kopiert.",
     "retry": "Wiederholen",
+    "retryStarted": "Wiederholung gestartet",
+    "retryStartedDescription": "Die Anfrage wurde zur erneuten Analyse in die Warteschlange gestellt.",
+    "retryFailed": "Wiederholung fehlgeschlagen",
     "requestNotFound": "Anfrage nicht gefunden",
     "backToCreate": "Zurück",
     "closeDetails": "Details schließen",

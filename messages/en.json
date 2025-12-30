@@ -131,10 +131,10 @@
       "processingTitle": "Analysis Pipeline"
     },
     "selectRequestToView": "Select a request to view details",
-    "share": "Share",
-    "linkCopied": "Link Copied",
-    "linkCopiedDescription": "The shareable link has been copied to your clipboard.",
     "retry": "Retry",
+    "retryStarted": "Retry Started",
+    "retryStartedDescription": "The request has been re-queued for analysis.",
+    "retryFailed": "Retry Failed",
     "requestNotFound": "Request not found",
     "backToCreate": "Back",
     "closeDetails": "Close details",

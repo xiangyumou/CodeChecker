@@ -199,34 +199,7 @@ describe('RequestDetailPanel', () => {
         expect(screen.getByText('requestNotFound')).toBeInTheDocument();
     });
 
-    it('handles share functionality correctly', async () => {
-        const user = userEvent.setup();
-        mockStore.selectedRequestId = 1;
-        const mockData = {
-            id: 1,
-            status: 'COMPLETED',
-            userPrompt: 'Test Prompt',
-            gptRawResponse: {}
-        };
-        mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });
 
-        // Mock clipboard
-        const mockWriteText = vi.fn().mockResolvedValue(undefined);
-        Object.defineProperty(navigator, 'clipboard', {
-            value: { writeText: mockWriteText },
-            configurable: true
-        });
-
-        render(<RequestDetailPanel />);
-
-        // The share button is identified by the Share2 icon path or title
-        // In our component, we have title={t('share')}
-        const shareBtn = screen.getByTitle('share');
-        await user.click(shareBtn);
-
-        expect(mockWriteText).toHaveBeenCalledWith(expect.stringContaining('/share/1'));
-        expect(toast.success).toHaveBeenCalledWith('linkCopied', expect.any(Object));
-    });
 
     it('renders Loading state correctly with skeleton UI', () => {
         mockStore.selectedRequestId = 1;

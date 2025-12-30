@@ -30,8 +30,7 @@ import {
     X,
     User,
     Image as ImageIcon,
-    RefreshCw,
-    Share2
+    RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -43,19 +42,16 @@ import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
 import { ZoomableImage } from './ui/ZoomableImage';
 
-// Props interface for dual-mode support
+// Props interface
 export interface RequestDetailPanelProps {
-    // Share page mode: directly pass request data
+    // Directly pass request data (optional)
     request?: any;
     isLoading?: boolean;
-    isPublicView?: boolean;
-    // Dashboard mode: use UIStore (default mode when no props passed)
 }
 
 export default function RequestDetailPanel({
     request: propRequest,
     isLoading: propIsLoading = false,
-    isPublicView = false,
 }: RequestDetailPanelProps = {}) {
     const t = useTranslations('requestDetails');
     const { selectedRequestId, createNewRequest } = useUIStore();
@@ -158,9 +154,22 @@ export default function RequestDetailPanel({
 
 
     const retryMutation = trpc.requests.retry.useMutation({
-        onSuccess: () => {
-            utils.requests.getById.invalidate(requestId!);
-            utils.requests.list.invalidate();
+        onSuccess: async () => {
+            // Show user feedback immediately
+            toast.success(t('retryStarted'), {
+                description: t('retryStartedDescription'),
+            });
+            // Use refetch() instead of invalidate() for immediate UI update
+            // invalidate() only marks cache as stale; refetch() forces immediate data fetch
+            await Promise.all([
+                utils.requests.getById.refetch(requestId!),
+                utils.requests.list.refetch(),
+            ]);
+        },
+        onError: (error) => {
+            toast.error(t('retryFailed'), {
+                description: error.message,
+            });
         },
     });
 
@@ -170,14 +179,7 @@ export default function RequestDetailPanel({
         }
     };
 
-    const handleShare = () => {
-        if (!requestId) return;
-        const url = `${window.location.origin}/share/${requestId}`;
-        navigator.clipboard.writeText(url);
-        toast.success(t('linkCopied'), {
-            description: t('linkCopiedDescription'),
-        });
-    };
+
 
     if (!requestId) {
         return (
@@ -258,15 +260,7 @@ export default function RequestDetailPanel({
                         </h2>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleShare}
-                            title={t('share')}
-                        >
-                            <Share2 className="h-5 w-5" />
-                        </Button>
-                        {!isPublicView && (request.status === 'FAILED' || request.status === 'COMPLETED') && (
+                        {(request.status === 'FAILED' || request.status === 'COMPLETED') && (
                             <Button
                                 variant="outline"
                                 size="sm"
