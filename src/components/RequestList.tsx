@@ -44,8 +44,31 @@ export default function RequestList() {
                 if (lastPage.length < 20) return undefined;
                 return lastPage[lastPage.length - 1].id;
             },
-            // Temporarily keep old behavior, will update in next commit
-            refetchInterval: 5000,
+
+            // Smart polling: dual-speed strategy
+            // - 5s when there are active tasks (QUEUED/PROCESSING)
+            // - 30s when all tasks are completed (to detect new requests from other users)
+            // - Stop when page is hidden (save resources)
+            refetchInterval: (data: any) => {
+                // Stop polling when page is not visible
+                if (typeof document !== 'undefined' && document.hidden) {
+                    return false;
+                }
+
+                // Check if there are any active tasks
+                if (!data || !data.pages) {
+                    return 30000; // Default to low frequency if no data yet
+                }
+
+                const allRequests = data.pages.flat();
+                const hasActiveTasks = allRequests.some(
+                    (r: any) => r.status === 'QUEUED' || r.status === 'PROCESSING'
+                );
+
+                // High frequency (5s) when tracking active tasks
+                // Low frequency (30s) when idle (can still detect new requests)
+                return hasActiveTasks ? 5000 : 30000;
+            },
 
             // Cache configuration to prevent skeleton flashing
             // Data stays fresh for 30 seconds
