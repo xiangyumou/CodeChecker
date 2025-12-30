@@ -32,6 +32,8 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN apk add --no-cache openssl
+
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S -u 1001 -G nodejs nextjs
 
