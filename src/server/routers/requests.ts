@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
-import { taskQueue } from '@/lib/queue/task-queue';
+import { qstash, getWebhookUrl } from '@/lib/qstash/client';
 
 // Zod schemas for validation
 const createRequestSchema = z.object({
@@ -92,8 +92,11 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add to task queue
-            await taskQueue.add(request.id);
+            // Send task to QStash
+            await qstash.publishJSON({
+                url: getWebhookUrl('/api/analyze-request'),
+                body: { requestId: request.id },
+            });
 
             return request;
         }),
@@ -145,8 +148,11 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add to task queue
-            await taskQueue.add(newRequest.id);
+            // Send task to QStash
+            await qstash.publishJSON({
+                url: getWebhookUrl('/api/analyze-request'),
+                body: { requestId: newRequest.id },
+            });
 
             return newRequest;
         }),
@@ -186,8 +192,11 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add to task queue
-            await taskQueue.add(updatedRequest.id);
+            // Send task to QStash
+            await qstash.publishJSON({
+                url: getWebhookUrl('/api/analyze-request'),
+                body: { requestId: updatedRequest.id },
+            });
 
             return updatedRequest;
         }),
