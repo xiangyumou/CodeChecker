@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { trpc } from '@/utils/trpc';
 import { useTranslations } from 'next-intl';
 import { Send, Trash2, Upload, FileText, Image as ImageIcon, X, Loader2 } from 'lucide-react';
@@ -28,6 +29,7 @@ const getBase64 = (file: File): Promise<string> =>
 
 export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormProps) {
     const t = useTranslations('submissionForm');
+    const router = useRouter();
     const utils = trpc.useUtils();
     const [userPrompt, setUserPrompt] = useState('');
     const [files, setFiles] = useState<{ id: string, file: File, preview: string }[]>([]);
@@ -46,6 +48,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
             setFiles([]);
             utils.requests.list.invalidate();
             onSubmissionSuccess?.();
+            router.push(`/request/${data.id}`);
             setIsSubmitting(false);
         },
         onError: (error) => {

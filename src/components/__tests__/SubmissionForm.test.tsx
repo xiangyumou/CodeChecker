@@ -5,8 +5,16 @@ import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 // Mock dependencies
+import { useRouter } from 'next/navigation'
 const mockMutateAsync = vi.fn()
 const mockInvalidate = vi.fn()
+const mockPush = vi.fn()
+
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: mockPush,
+    }),
+}))
 const mockVisionSupport = vi.fn().mockReturnValue('true') // Default: vision enabled
 
 vi.mock('@/utils/trpc', () => ({
@@ -107,6 +115,7 @@ describe('SubmissionForm', () => {
         })
 
         expect(mockInvalidate).toHaveBeenCalled()
+        expect(mockPush).toHaveBeenCalledWith('/request/123')
     })
 
     it('handles image upload via input', async () => {
