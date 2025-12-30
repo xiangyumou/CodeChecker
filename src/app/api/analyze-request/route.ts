@@ -37,6 +37,18 @@ async function handler(req: NextRequest) {
             );
         }
 
+        // Idempotency check: Skip if already completed or failed
+        if (request.status === 'COMPLETED' || request.status === 'FAILED') {
+            logger.info(
+                { requestId, status: request.status },
+                'Task already processed, returning 200 to acknowledge'
+            );
+            return NextResponse.json(
+                { success: true, message: `Request ${requestId} already ${request.status}` },
+                { status: 200 }
+            );
+        }
+
         // Update status to PROCESSING
         await prisma.request.update({
             where: { id: requestId },
