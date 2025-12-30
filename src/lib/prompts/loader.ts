@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { prisma } from '@/lib/db';
 
 const promptCache: Record<string, string> = {};
 
@@ -13,24 +14,46 @@ function getPromptPath(name: string): string {
 }
 
 /**
- * Loads a prompt from the filesystem and caches it in memory.
+ * Loads a prompt directly from the filesystem, bypassing any database overrides.
  * @param name The name of the prompt file (without .md extension)
- * @returns The content of the prompt
  */
-export async function getPrompt(name: string): Promise<string> {
-    if (promptCache[name]) {
-        return promptCache[name];
-    }
-
+export async function getPromptFromFile(name: string): Promise<string> {
     const promptPath = getPromptPath(name);
     try {
         const content = await fs.readFile(promptPath, 'utf-8');
-        promptCache[name] = content;
         return content;
     } catch (error) {
         console.error(`Error reading prompt "${name}":`, error);
         throw new Error(`Prompt file "${name}.md" not found in src/lib/prompts/`);
     }
+}
+
+/**
+ * Loads a prompt, checking the database for overrides first, then falling back to the filesystem.
+ * Caching is applied to file reads, but DB reads are fresh (or should we cache DB too? For now, let's not cache DB to allow instant updates).
+ * Actually, the previous implementation cached file reads.
+ */
+export async function getPrompt(name: string): Promise<string> {
+    // Check database first
+    try {
+        const setting = await prisma.setting.findUnique({
+            where: { key: name },
+        });
+        if (setting?.value) {
+            return setting.value;
+        }
+    } catch (error) {
+        console.warn(`Failed to check settings for prompt "${name}", falling back to file. Error: ${error}`);
+    }
+
+    // Fallback to file (cached)
+    if (promptCache[name]) {
+        return promptCache[name];
+    }
+
+    const content = await getPromptFromFile(name);
+    promptCache[name] = content;
+    return content;
 }
 
 /**

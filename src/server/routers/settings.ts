@@ -60,4 +60,19 @@ export const settingsRouter = router({
             );
             return results;
         }),
+
+    // Delete setting (reset to default)
+    delete: adminProcedure
+        .input(settingKeySchema)
+        .mutation(async ({ ctx, input }) => {
+            try {
+                await ctx.prisma.setting.delete({
+                    where: { key: input },
+                });
+                return { success: true };
+            } catch (error) {
+                // Ignore if not found
+                return { success: false };
+            }
+        }),
 });
