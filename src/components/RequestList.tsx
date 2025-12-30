@@ -99,6 +99,22 @@ export default function RequestList() {
         }
     }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    // Page Visibility API: Refresh immediately when user returns to the page
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                // Page is now visible, trigger immediate refresh
+                utils.requests.list.invalidate();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [utils]);
+
     const statusConfig = {
         QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock, iconClass: '' },
         PROCESSING: { color: 'bg-blue-500/10 text-blue-500', icon: Loader2, iconClass: 'animate-spin' },
