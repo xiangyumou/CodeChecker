@@ -10,8 +10,9 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
             queries: {
-                staleTime: 5 * 1000, // 5 seconds
-                refetchInterval: 3000, // Poll every 3 seconds for real-time updates
+                staleTime: 30 * 1000, // 30 seconds - data considered fresh
+                gcTime: 10 * 60 * 1000, // 10 minutes - cache retention
+                // Note: refetchInterval removed - each query controls its own polling
             },
         },
     }));
