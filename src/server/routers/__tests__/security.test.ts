@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { appRouter } from '@/server/routers'; // Assuming this imports the merged router
 import { createTRPCContext } from '@/server/trpc';
 import { TRPCError } from '@trpc/server';
@@ -26,21 +27,25 @@ describe('Security Audit Tests', () => {
     });
 
     test('requests.prune should throw UNAUTHORIZED without token', async () => {
-        await expect(caller.requests.prune({ olderThan: new Date() })).rejects.toThrow('UNAUTHORIZED');
+        await expect(caller.requests.prune({ amount: 1, unit: 'hours' })).rejects.toThrow('UNAUTHORIZED');
     });
 
     test('settings.getByKey should throw UNAUTHORIZED without token', async () => {
         await expect(caller.settings.getByKey('OPENAI_API_KEY')).rejects.toThrow('UNAUTHORIZED');
     });
 
-    test('requests.create should STILL be public', async () => {
-        // This should NOT throw UNAUTHORIZED (might fail validation or DB, but not auth)
-        // We'll pass invalid input to fail fast, but verify it's NOT an Auth error.
+    test('requests.create should be public (validation error, not auth error)', async () => {
+        // When calling create without proper auth, it should NOT throw UNAUTHORIZED
+        // Instead, it may throw validation error for missing required fields,
+        // which proves the endpoint is publicly accessible
 
         try {
-            await caller.requests.create({} as any);
+            await caller.requests.create({ userPrompt: '' }); // Empty prompt to trigger validation
         } catch (e: any) {
-            expect(e.message).not.toBe('UNAUTHORIZED');
+            // Should NOT be an UNAUTHORIZED error - that would mean it's protected
+            expect(e.code).not.toBe('UNAUTHORIZED');
+            // It should be a validation error or proceed to processing
+            // The key point is: we reached the handler, not the auth guard
         }
     });
 

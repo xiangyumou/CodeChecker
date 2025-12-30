@@ -38,7 +38,7 @@ describe('ShikiCodeRenderer', () => {
         expect(mockHighlighter.codeToHtml).toHaveBeenCalled();
     });
 
-    it('handles theme changes', async () => {
+    it('handles theme changes by re-highlighting with new theme', async () => {
         const { rerender } = render(<ShikiCodeRenderer code="test" />);
         await waitFor(() => expect(screen.getByText('test')).toBeInTheDocument());
 
@@ -52,19 +52,25 @@ describe('ShikiCodeRenderer', () => {
         });
     });
 
-    it('handles highlighter error gracefully and still renders', async () => {
+    it('handles highlighter error gracefully by stopping loading and rendering empty', async () => {
         vi.mocked(mockHighlighter.codeToHtml).mockImplementationOnce(() => {
             throw new Error('shiki error');
         });
 
-        const { container } = render(<ShikiCodeRenderer code="test code" />);
+        const { container } = render(<ShikiCodeRenderer code="test code" className="test-class" />);
+
+        // First verify we start with skeleton (loading state)
+        expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
 
         await waitFor(() => {
-            // Should stop loading even on error
+            // After error, skeleton should be gone (loading stopped)
             expect(container.querySelector('.animate-pulse')).not.toBeInTheDocument();
         });
 
-        // Component should still render something (not crash)
-        expect(container).not.toBeEmptyDOMElement();
+        // Component should render (not crash) with a div - but html will be empty
+        const renderedDiv = container.querySelector('.test-class');
+        expect(renderedDiv).toBeInTheDocument();
+        // On error, the html state is empty, so the div's innerHTML should be empty
+        expect(renderedDiv!.innerHTML).toBe('');
     });
 });

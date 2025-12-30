@@ -201,14 +201,19 @@ describe('RequestDetailPanel', () => {
 
 
 
-    it('renders Loading state correctly with skeleton UI', () => {
+    it('renders Loading state with skeleton UI and no actual content', () => {
         mockStore.selectedRequestId = 1;
         mockUseQuery.mockReturnValue({ isLoading: true, data: undefined });
 
         const { container } = render(<RequestDetailPanel />);
+
         // Should have skeleton elements (indicated by animate-pulse class)
         const skeletons = container.querySelectorAll('.animate-pulse');
-        expect(skeletons.length).toBeGreaterThan(0);
+        expect(skeletons.length).toBeGreaterThanOrEqual(1);
+
+        // Should NOT show any actual content tabs while loading
+        expect(screen.queryByText('problemDetails')).not.toBeInTheDocument();
+        expect(screen.queryByText('analysisDetails')).not.toBeInTheDocument();
     });
 
     it('renders modification analysis correctly', async () => {

@@ -26,36 +26,41 @@ describe('PipelineStatus', () => {
         { id: '3', status: 'pending' as const },
     ];
 
-    it('renders all stages with correct labels', () => {
+    it('renders exactly 3 stages with correct labels for a 3-stage pipeline', () => {
         render(<PipelineStatus stages={mockStages} />);
 
-        // Verify exact stage count (3 stages = 3 labels)
-        const stage1Labels = screen.getAllByText('stage1');
-        const stage2Labels = screen.getAllByText('stage2');
-        const stage3Labels = screen.getAllByText('stage3');
-
-        expect(stage1Labels.length).toBeGreaterThanOrEqual(1);
-        expect(stage2Labels.length).toBeGreaterThanOrEqual(1);
-        expect(stage3Labels.length).toBeGreaterThanOrEqual(1);
+        // Each stage label appears twice: once in desktop view, once in mobile view
+        // So 3 stages * 2 views = 6 stage labels total
+        expect(screen.getAllByText('stage1')).toHaveLength(2);
+        expect(screen.getAllByText('stage2')).toHaveLength(2);
+        expect(screen.getAllByText('stage3')).toHaveLength(2);
     });
 
-    it('renders correct icon type for each status', () => {
+    it('renders correct icon for each status type', () => {
         render(<PipelineStatus stages={mockStages} />);
 
-        // Each status has its own icon type present (may appear multiple times per stage)
-        expect(screen.getAllByTestId('icon-check').length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByTestId('icon-loader').length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByTestId('icon-clock').length).toBeGreaterThanOrEqual(1);
+        // With 3 stages across 2 views (desktop + mobile), we get 6 stage indicators total
+        // Stage 1 (completed) -> check icon x2
+        // Stage 2 (processing) -> loader icon x2
+        // Stage 3 (pending) -> clock icon x2
+        expect(screen.getAllByTestId('icon-check')).toHaveLength(2);
+        expect(screen.getAllByTestId('icon-loader')).toHaveLength(2);
+        expect(screen.getAllByTestId('icon-clock')).toHaveLength(2);
     });
 
-    it('renders failed status with destructive styling and alert icon', () => {
+    it('renders failed status with alert icon and destructive styling', () => {
         const failedStages = [{ id: '1', status: 'failed' as const }];
         const { container } = render(<PipelineStatus stages={failedStages} />);
 
-        // Verify alert icon for failed status (may appear multiple times)
-        expect(screen.getAllByTestId('icon-alert').length).toBeGreaterThanOrEqual(1);
+        // Should show alert icon (2 times for desktop + mobile views)
+        expect(screen.getAllByTestId('icon-alert')).toHaveLength(2);
 
-        // Verify destructive class is applied
+        // Should NOT show other icons
+        expect(screen.queryByTestId('icon-check')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('icon-loader')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('icon-clock')).not.toBeInTheDocument();
+
+        // Verify destructive class is applied to the status indicator
         expect(container.querySelector('.text-destructive')).toBeInTheDocument();
     });
 });

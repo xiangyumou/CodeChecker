@@ -166,4 +166,49 @@ describe('settingsRouter', () => {
             expect(mockPrisma.setting.upsert).not.toHaveBeenCalled();
         });
     });
+
+    describe('Edge Cases and Boundary Tests', () => {
+        it('handles empty string value correctly', async () => {
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'test-key', value: '' } as any);
+
+            const caller = createCaller(SETTINGS_TOKEN);
+            const result = await caller.upsert({ key: 'test-key', value: '' });
+
+            expect(result.value).toBe('');
+            expect(mockPrisma.setting.upsert).toHaveBeenCalledWith({
+                where: { key: 'test-key' },
+                update: { value: '' },
+                create: { key: 'test-key', value: '' },
+            });
+        });
+
+        it('handles values with special characters', async () => {
+            const specialValue = '{"json": true, "chars": "<>&\\""}';
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'json-key', value: specialValue } as any);
+
+            const caller = createCaller(SETTINGS_TOKEN);
+            const result = await caller.upsert({ key: 'json-key', value: specialValue });
+
+            expect(result.value).toBe(specialValue);
+        });
+
+        it('handles whitespace-only value', async () => {
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'ws-key', value: '   ' } as any);
+
+            const caller = createCaller(SETTINGS_TOKEN);
+            const result = await caller.upsert({ key: 'ws-key', value: '   ' });
+
+            // Should preserve whitespace
+            expect(result.value).toBe('   ');
+        });
+
+        it('getByKey returns null for non-existent key', async () => {
+            mockPrisma.setting.findUnique.mockResolvedValue(null);
+
+            const caller = createCaller(SETTINGS_TOKEN);
+            const result = await caller.getByKey('non-existent-key');
+
+            expect(result).toBeNull();
+        });
+    });
 });

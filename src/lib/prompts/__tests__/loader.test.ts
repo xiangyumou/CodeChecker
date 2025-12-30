@@ -57,4 +57,52 @@ describe('Prompt Loader', () => {
 
         expect(content).toBe('File Prompt Content');
     });
+
+    it('should always query DB (DB values are not cached for real-time updates)', async () => {
+        // The implementation intentionally does NOT cache DB values to allow instant updates
+        (prisma.setting.findUnique as any).mockResolvedValue({ key: 'db-prompt', value: 'DB Content' });
+
+        // First call
+        const firstCall = await getPrompt('db-prompt');
+        expect(firstCall).toBe('DB Content');
+        expect(prisma.setting.findUnique).toHaveBeenCalledTimes(1);
+
+        // Second call - should query DB again (not cached)
+        const secondCall = await getPrompt('db-prompt');
+        expect(secondCall).toBe('DB Content');
+        expect(prisma.setting.findUnique).toHaveBeenCalledTimes(2);
+    });
+
+    it('should cache file fallback values after first read', async () => {
+        // When DB returns null, we fall back to file and cache it
+        (prisma.setting.findUnique as any).mockResolvedValue(null);
+        (fs.readFile as any).mockResolvedValue('Cached File Content');
+
+        // First call - hits DB then file
+        const firstCall = await getPrompt('file-prompt');
+        expect(firstCall).toBe('Cached File Content');
+        expect(fs.readFile).toHaveBeenCalledTimes(1);
+
+        // Second call - DB still queried (not cached), but file cached
+        const secondCall = await getPrompt('file-prompt');
+        expect(secondCall).toBe('Cached File Content');
+        // File should NOT be read again due to cache
+        expect(fs.readFile).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear file cache when clearPromptCache is called', async () => {
+        (prisma.setting.findUnique as any).mockResolvedValue(null);
+        (fs.readFile as any).mockResolvedValue('Content');
+
+        // First call - caches file content
+        await getPrompt('test-prompt');
+        expect(fs.readFile).toHaveBeenCalledTimes(1);
+
+        // Clear cache
+        clearPromptCache();
+
+        // Second call after cache clear - should read file again
+        await getPrompt('test-prompt');
+        expect(fs.readFile).toHaveBeenCalledTimes(2);
+    });
 });
