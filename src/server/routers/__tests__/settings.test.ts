@@ -120,6 +120,11 @@ describe('settingsRouter', () => {
             });
             expect(result.key).toBe('NEW_KEY');
         });
+
+        it('throws validation error if key is empty', async () => {
+            const caller = createCaller(SETTINGS_TOKEN);
+            await expect(caller.upsert({ key: '', value: 'val' })).rejects.toThrow();
+        });
     });
 
     describe('batchUpdate', () => {

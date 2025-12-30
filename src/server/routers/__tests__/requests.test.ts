@@ -57,29 +57,8 @@ describe('requestsRouter', () => {
         mockGetConcurrencyLimit.mockResolvedValue(3);
     });
 
-    describe('list', () => {
-        it('should return a list of requests', async () => {
-            const mockData = [{ id: 1, status: 'COMPLETED' }];
-            mockPrisma.request.findMany.mockResolvedValue(mockData);
+    // List tests moved to be with other validation tests
 
-            const result = await caller.list({});
-
-            expect(mockPrisma.request.findMany).toHaveBeenCalledWith(expect.objectContaining({
-                take: 20,
-                skip: 0,
-                orderBy: { createdAt: 'desc' },
-            }));
-            expect(result).toEqual(mockData);
-        });
-
-        it('should filter by status', async () => {
-            mockPrisma.request.findMany.mockResolvedValue([]);
-            await caller.list({ status: 'FAILED' });
-            expect(mockPrisma.request.findMany).toHaveBeenCalledWith(expect.objectContaining({
-                where: { status: 'FAILED' },
-            }));
-        });
-    });
 
     describe('getById', () => {
         it('should return request by id', async () => {
@@ -133,6 +112,56 @@ describe('requestsRouter', () => {
                 },
             });
             expect(result).toEqual(mockCreated);
+        });
+
+        it('should throw validation error if both userPrompt and imageReferences are missing', async () => {
+            await expect(caller.create({} as any)).rejects.toThrow();
+        });
+
+        it('should throw validation error if imageReferences is empty and userPrompt is missing', async () => {
+            await expect(caller.create({ imageReferences: [] })).rejects.toThrow();
+        });
+
+        it('should allow imageReferences only', async () => {
+            const input = { imageReferences: ['ref'] };
+            const mockCreated = { id: 124, ...input, userPrompt: undefined, status: 'QUEUED' };
+
+            mockPrisma.request.create.mockResolvedValue(mockCreated);
+            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-124' });
+
+            await expect(caller.create(input)).resolves.not.toThrow();
+        });
+    });
+
+    describe('list', () => {
+        it('should return a list of requests', async () => {
+            const mockData = [{ id: 1, status: 'COMPLETED' }];
+            mockPrisma.request.findMany.mockResolvedValue(mockData);
+
+            const result = await caller.list({});
+
+            expect(mockPrisma.request.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                take: 20, // Default take
+                skip: 0,
+                orderBy: { createdAt: 'desc' },
+            }));
+            expect(result).toEqual(mockData);
+        });
+
+        it('should throw validation error if take is less than 1', async () => {
+            await expect(caller.list({ take: 0 })).rejects.toThrow();
+        });
+
+        it('should throw validation error if take is greater than 100', async () => {
+            await expect(caller.list({ take: 101 })).rejects.toThrow();
+        });
+
+        it('should filter by status', async () => {
+            mockPrisma.request.findMany.mockResolvedValue([]);
+            await caller.list({ status: 'FAILED' });
+            expect(mockPrisma.request.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                where: { status: 'FAILED' },
+            }));
         });
     });
 

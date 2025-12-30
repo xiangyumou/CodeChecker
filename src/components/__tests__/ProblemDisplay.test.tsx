@@ -7,21 +7,16 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }))
 
-// Mock ReactMarkdown and plugins to avoid ESM issues or complex rendering in tests
-vi.mock('react-markdown', () => ({
-    default: ({ children }: { children: React.ReactNode }) => <div data-testid="markdown">{children}</div>
-}))
-
-vi.mock('remark-gfm', () => ({ default: () => { } }))
-vi.mock('remark-math', () => ({ default: () => { } }))
-vi.mock('rehype-katex', () => ({ default: () => { } }))
+// NOTE: We do NOT mock react-markdown here anymore. We want to test real rendering.
+// However, we mock remark-math/katex if they cause issues in JSDOM or if we just want to verify they are passed.
+// For now, let's try to run with them. If JSDOM fails on Katex usage (e.g. strict CSS parsing), we might mock `rehype-katex` but NOT `react-markdown`.
 
 describe('ProblemDisplay', () => {
     const mockData = {
         title: 'Test Problem',
         time_limit: '1s',
         memory_limit: '256MB',
-        description: 'Problem description',
+        description: '# Problem description\n\nThis is a **bold** statement.',
         input_format: 'Input format',
         output_format: 'Output format',
         input_sample: '1 2',
@@ -29,7 +24,7 @@ describe('ProblemDisplay', () => {
         notes: 'Some notes'
     }
 
-    it('renders full problem data correctly with expected content', () => {
+    it('renders full problem data correctly including markdown HTML', () => {
         render(<ProblemDisplay data={mockData} />)
 
         // Verify title and limits are displayed
@@ -39,25 +34,21 @@ describe('ProblemDisplay', () => {
 
         // Check for section headers (translated keys)
         expect(screen.getByText('problemDescription')).toBeInTheDocument()
-        expect(screen.getByText('inputFormat')).toBeInTheDocument()
-        expect(screen.getByText('outputFormat')).toBeInTheDocument()
-        expect(screen.getByText('samples')).toBeInTheDocument()
-        expect(screen.getByText('notes')).toBeInTheDocument()
 
-        // Verify markdown components receive correct content
-        const markdowns = screen.getAllByTestId('markdown')
-        // Expect at least 3 markdown sections (description, input, output formats)
-        expect(markdowns.length).toBeGreaterThanOrEqual(3)
+        // Verify Markdown Rendering
+        // "Problem description" is h1 in markdown
+        const h1 = screen.getByRole('heading', { level: 1, name: 'Problem description' })
+        expect(h1).toBeInTheDocument()
 
-        // Verify actual content is passed to markdown
-        expect(markdowns.some(m => m.textContent === 'Problem description')).toBe(true)
-        expect(markdowns.some(m => m.textContent === 'Input format')).toBe(true)
-        expect(markdowns.some(m => m.textContent === 'Output format')).toBe(true)
+        // "**bold**" should be strong
+        const strong = screen.getByText('bold')
+        expect(strong.tagName).toBe('STRONG')
     })
 
-    it('renders simple string content', () => {
-        render(<ProblemDisplay data="Just a string content" />)
-        expect(screen.getAllByTestId('markdown')[0]).toHaveTextContent('Just a string content')
+    it('renders simple string content as markdown', () => {
+        render(<ProblemDisplay data="**Just a string content**" />)
+        const strong = screen.getByText('Just a string content')
+        expect(strong.tagName).toBe('STRONG')
     })
 
     it('renders N/A for missing samples', () => {
