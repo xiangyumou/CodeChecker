@@ -51,7 +51,7 @@ vi.mock('react-markdown', () => ({
 
 // Mock diff2html
 vi.mock('diff2html', () => ({
-    html: () => '<div>Mock Diff HTML</div>',
+    html: vi.fn(() => '<div>Mock Diff HTML</div>'),
 }));
 
 // Mock ShikiCodeRenderer
@@ -242,6 +242,53 @@ describe('RequestDetailPanel', () => {
 
         expect(await screen.findByText('originalSnippet')).toBeInTheDocument();
         expect(screen.getByText('did something')).toBeInTheDocument();
+
+        // Verify diff2html was NOT called here (this is analysis tab)
+        // But we should verify it IS called in the diff tab if we had verified that tab.
+        // Let's create a specific test for diff2html argument verification or add it here if applicable.
+        // The implementation computes diffHtml in useMemo when request.gptRawResponse exists.
+        // The mockData in this test does NOT have .modified_code, so useMemo returns null.
+    });
+
+    it('generates diff with correct arguments', async () => {
+        const user = userEvent.setup();
+        mockStore.selectedRequestId = 1;
+
+        const mockData = {
+            id: 1,
+            status: 'COMPLETED',
+            userPrompt: 'Test Prompt',
+            gptRawResponse: {
+                original_code: 'const a = 1;',
+                modified_code: 'const a = 2;',
+            }
+        };
+        mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });
+
+        // Import the mocked module to access the spy
+        const { html } = await import('diff2html');
+
+        render(<RequestDetailPanel />);
+
+        // Click diff tab
+        const diffTab = screen.getByText('codeDiff');
+        await user.click(diffTab);
+
+        // Expect the mock to be rendered
+        expect(await screen.findByText('Mock Diff HTML')).toBeInTheDocument();
+
+        // Assert specifically that it was called with the correct internal strings
+        expect(vi.mocked(html)).toHaveBeenCalledWith(
+            expect.stringContaining('const a = 1;'),
+            expect.objectContaining({
+                outputFormat: 'side-by-side',
+                matching: 'lines'
+            })
+        );
+        expect(vi.mocked(html)).toHaveBeenCalledWith(
+            expect.stringContaining('const a = 2;'),
+            expect.anything()
+        );
     });
 
     it('renders fallback message when no user prompt is provided', () => {

@@ -42,10 +42,18 @@ describe('Security Audit Tests', () => {
         try {
             await caller.requests.create({ userPrompt: '' }); // Empty prompt to trigger validation
         } catch (e: any) {
-            // Should NOT be an UNAUTHORIZED error - that would mean it's protected
+            // Should NOT be an UNAUTHORIZED error
             expect(e.code).not.toBe('UNAUTHORIZED');
-            // It should be a validation error or proceed to processing
-            // The key point is: we reached the handler, not the auth guard
+            // It MUST be a BAD_REQUEST (Validation Error in TRPC)
+            expect(e.code).toBe('BAD_REQUEST');
+            // Zod error details should be present
+            const zodError = JSON.parse(e.message);
+            expect(zodError).toMatchObject([
+                {
+                    message: "Either userPrompt or imageReferences must be provided",
+                    path: ["userPrompt"]
+                }
+            ]);
         }
     });
 
