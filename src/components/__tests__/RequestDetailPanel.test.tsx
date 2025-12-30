@@ -228,13 +228,14 @@ describe('RequestDetailPanel', () => {
         expect(toast.success).toHaveBeenCalledWith('linkCopied', expect.any(Object));
     });
 
-    it('renders Loading state correctly', () => {
+    it('renders Loading state correctly with skeleton UI', () => {
         mockStore.selectedRequestId = 1;
         mockUseQuery.mockReturnValue({ isLoading: true, data: undefined });
 
-        render(<RequestDetailPanel />);
-        // Header "drawerTitleWithId" should be visible (as a key in mock)
-        expect(screen.getByText('drawerTitleWithId')).toBeInTheDocument();
+        const { container } = render(<RequestDetailPanel />);
+        // Should have skeleton elements (indicated by animate-pulse class)
+        const skeletons = container.querySelectorAll('.animate-pulse');
+        expect(skeletons.length).toBeGreaterThan(0);
     });
 
     it('renders modification analysis correctly', async () => {
