@@ -100,60 +100,59 @@ async function handler(req: NextRequest) {
             contentParts.push({ type: 'text', text: 'No problem description provided.' });
         }
 
-        // Step 1: Extract Problem
-        logger.info({ requestId, stage: 1 }, 'Starting Step 1: Problem Extraction');
+        // Step 1 & 2: Extract Problem and Format Code (Parallel)
+        logger.info({ requestId }, 'Starting Step 1 & 2 in parallel');
+
+        // Update both stages to processing
         await prisma.request.update({
             where: { id: requestId },
-            data: { stage1Status: 'processing' },
+            data: {
+                stage1Status: 'processing',
+                stage2Status: 'processing',
+            },
         });
 
-        const step1Response = await openai.chat.completions.create({
-            model,
-            messages: [
-                { role: 'system', content: step1Prompt },
-                { role: 'user', content: contentParts },
-            ],
-            response_format: { type: 'json_object' },
-        });
+        // Execute Step 1 and Step 2 in parallel
+        const [step1Response, step2Response] = await Promise.all([
+            // Step 1: Extract Problem
+            openai.chat.completions.create({
+                model,
+                messages: [
+                    { role: 'system', content: step1Prompt },
+                    { role: 'user', content: contentParts },
+                ],
+                response_format: { type: 'json_object' },
+            }),
+            // Step 2: Format Code
+            openai.chat.completions.create({
+                model,
+                messages: [
+                    { role: 'system', content: step2Prompt },
+                    { role: 'user', content: contentParts },
+                ],
+                response_format: { type: 'json_object' },
+            }),
+        ]);
 
         const problemData = JSON.parse(step1Response.choices[0]?.message?.content || '{}');
+        const codeData = JSON.parse(step2Response.choices[0]?.message?.content || '{}');
+        const formattedCode = codeData.code || '';
 
+        // Update both stages as completed
         await prisma.request.update({
             where: { id: requestId },
             data: {
                 problemDetails: JSON.stringify(problemData),
                 stage1Status: 'completed',
                 stage1CompletedAt: new Date(),
-            },
-        });
-
-        // Step 2: Format Code
-        logger.info({ requestId, stage: 2 }, 'Starting Step 2: Code Formatting');
-        await prisma.request.update({
-            where: { id: requestId },
-            data: { stage2Status: 'processing' },
-        });
-
-        const step2Response = await openai.chat.completions.create({
-            model,
-            messages: [
-                { role: 'system', content: step2Prompt },
-                { role: 'user', content: contentParts },
-            ],
-            response_format: { type: 'json_object' },
-        });
-
-        const codeData = JSON.parse(step2Response.choices[0]?.message?.content || '{}');
-        const formattedCode = codeData.code || '';
-
-        await prisma.request.update({
-            where: { id: requestId },
-            data: {
                 formattedCode,
                 stage2Status: 'completed',
                 stage2CompletedAt: new Date(),
             },
         });
+
+        logger.info({ requestId }, 'Step 1 & 2 completed in parallel');
+
 
         // Step 3: Deep Analysis
         logger.info({ requestId, stage: 3 }, 'Starting Step 3: Deep Analysis');
