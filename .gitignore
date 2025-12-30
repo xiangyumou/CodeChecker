@@ -39,10 +39,6 @@ yarn-error.log*
 /prisma/*.db-journal
 /prisma/data/
 
-# docker
-.dockerignore
-Dockerfile
-docker-compose.yml
 
 # IDEs
 .vscode/

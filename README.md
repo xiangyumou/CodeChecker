@@ -1,142 +1,207 @@
-# 🚀 Code Checker: Intelligent Code Analysis & Optimization
+# 🚀 CodeChecker: AI Code Debugger for Competitive Programming
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.1.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
-[![TRPC](https://img.shields.io/badge/tRPC-11.0-2596be?style=for-the-badge&logo=trpc)](https://trpc.io/)
 [![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
 
-**Code Checker** is a modern, AI-powered web application designed to help developers analyze, format, and optimize their code effortlessly. With a multi-stage analysis pipeline and a premium user interface, it transforms raw code into clean, production-ready gems.
+English | [简体中文](./README.zh-CN.md)
+
+**CodeChecker** is an intelligent coding assistant designed specifically for **ICPC**, **LeetCode**, and algorithmic problem solvers. Simply paste your code or upload a screenshot of the problem—get instant feedback on correctness, edge cases, complexity analysis, and optimization suggestions.
+
+---
+
+## 💡 Why CodeChecker?
+
+### The Problem
+You're solving an algorithmic challenge. Your code passes sample cases, but:
+- ❌ Fails hidden test cases with cryptic errors
+- ❌ Times out on large inputs (TLE)
+- ❌ Misses corner cases you didn't think of
+- ❌ Works, but could be more elegant
+
+### The Solution
+CodeChecker acts as your **personal code reviewer** powered by AI:
+- ✅ **Understands the problem** from screenshots or text descriptions
+- ✅ **Validates your logic** against the actual requirements
+- ✅ **Spots edge cases** you might have missed
+- ✅ **Analyzes time/space complexity** and suggests improvements
+- ✅ **Shows you exactly what to fix** with side-by-side code diffs
 
 ---
 
 ## ✨ Key Features
 
-- 🛠️ **Multi-Stage Analysis Pipeline**: Seamlessly transitions through code extraction, formatting, and AI-driven analysis.
-- 💻 **Monaco Editor Integration**: High-performance code editing experience right in your browser.
-- 🎨 **Premium UI/UX**: Built with Framer Motion for smooth animations and a sleek, modern aesthetic (Glassmorphism, Dark Mode).
-- 🌐 **Internationalization (i18n)**: Comprehensive support for multiple languages including English, Chinese, and German.
-- ⚡ **Real-time Progress Tracking**: Visualize the analysis process with a dynamic pipeline status component.
-- 🔍 **Image-to-Code Support**: Upload images of code snippets and let AI handle the transcription and analysis.
-- 🌓 **Dynamic Theme Switching**: Smooth transitions between Light and Dark modes.
+### 🔍 **Multi-Stage Analysis Pipeline**
+1. **Problem Extraction**: Upload a screenshot of the problem statement (from LeetCode, Codeforces, etc.) and the AI extracts constraints, examples, and requirements.
+2. **Code Validation**: Checks if your solution actually solves the problem—not just if it compiles.
+3. **Deep Review**: Provides detailed feedback on:
+   - Logical correctness
+   - Time & space complexity
+   - Edge case handling
+   - Code readability and best practices
 
----
+### 📸 **Screenshot Support**
+Don't want to type the problem? Just screenshot it! CodeChecker can:
+- Extract problem descriptions from images
+- Parse code from screenshots (OCR)
+- Handle messy input formats
 
-## 🛠️ Tech Stack
+### ⚡ **Real-Time Progress Tracking**
+Watch the analysis unfold in real-time with a beautiful 3-stage pipeline visualizer:
+- 🔵 Stage 1: Extracting problem details...
+- 🔵 Stage 2: Formatting your code...
+- 🔵 Stage 3: Running deep analysis...
 
-- **Frontend**: [Next.js 15+](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
-- **State Management**: [Zustand](https://docs.pmnd.rs/zustand/)
-- **API Layer**: [tRPC](https://trpc.io/) (End-to-end typesafe APIs)
-- **Database**: [Prisma](https://www.prisma.io/) with SQLite/PostgreSQL support
-- **AI Integration**: [OpenAI SDK](https://github.com/openai/openai-node)
-- **Code Rendering**: [Shiki](https://shiki.style/) for beautiful, high-performance syntax highlighting
-- **Form Handling**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+### 📊 **Visual Diff View**
+See exactly what changed between your original code and the optimized version with:
+- Side-by-side comparison
+- Syntax-highlighted diffs
+- Line-by-line explanations
+
+### 🌐 **Multilingual Support**
+Interface available in:
+- 🇺🇸 English
+- 🇨🇳 中文 (Chinese)
+- 🇩🇪 Deutsch (German)
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Option 1: Docker (Recommended)
 
-- Node.js 20+ 
-- npm / yarn / pnpm
-
-### Installation
-
-1. **Clone the repository**
+1. **Clone and run**
    ```bash
    git clone https://github.com/your-username/code-checker.git
    cd code-checker
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup**
-   Copy `.env.example` to `.env` and fill in your details:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Initialize Database**
-   ```bash
-   npx prisma db push
-   ```
-
-5. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
----
-
-## 🐳 Docker Deployment
-
-The simplest way to deploy Code Checker is using Docker Compose.
-
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/code-checker.git
-   cd code-checker
-   ```
-
-2. **Run with Docker Compose**
-   ```bash
    docker-compose up -d
    ```
 
-3. **Access the application**
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+2. **Open in browser**
+   Visit [http://localhost:3000](http://localhost:3000)
 
-> [!NOTE]
-> On the first run, the application will guide you through the initial setup (admin account and API configuration). Persistent data is stored in the `./prisma/data` volume by default.
+3. **Initial setup**
+   On first launch, you'll configure:
+   - Admin credentials
+   - OpenAI API key (or compatible endpoint like Gemini)
+
+### Option 2: Local Development
+
+1. **Prerequisites**
+   - Node.js 20+
+   - npm/yarn/pnpm
+
+2. **Install & Setup**
+   ```bash
+   git clone https://github.com/your-username/code-checker.git
+   cd code-checker
+   npm install
+   cp .env.example .env  # Edit with your API keys
+   npx prisma db push
+   npm run dev
+   ```
+
+3. **Access**
+   Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
+## 📖 How to Use
+
+### Basic Workflow
+
+1. **Submit your problem**
+   - Option A: Paste the problem description + your code
+   - Option B: Upload screenshots of both
+
+2. **Wait for analysis** (~30-60 seconds)
+   - Watch the pipeline process your request in real-time
+
+3. **Review results**
+   - **Problem Tab**: See the structured problem breakdown
+   - **Code Tab**: Your cleaned/formatted code
+   - **Diff Tab**: Side-by-side comparison of original vs. optimized
+   - **Analysis Tab**: Detailed explanations of each change
+
+4. **Iterate**
+   - Copy suggestions
+   - Retry with updated code
+   - Repeat until perfect!
+
+### Example Use Cases
+
+**Scenario 1: Debug a TLE (Time Limit Exceeded)**
+```
+Your Code: Brute force O(n²) solution
+→ CodeChecker identifies the bottleneck
+→ Suggests O(n log n) approach with explanation
+→ Shows exact implementation in diff view
+```
+
+**Scenario 2: Catch Edge Cases**
+```
+Your Code: Works for positive integers
+→ CodeChecker tests against problem constraints
+→ Finds failure on: negative numbers, zero, large values
+→ Provides fixed version handling all cases
+```
+
+**Scenario 3: Learn Better Patterns**
+```
+Your Code: Messy nested loops
+→ CodeChecker recognizes sliding window pattern
+→ Refactors to clean, idiomatic solution
+→ Explains why it's better (readability + performance)
+```
+
 ---
 
-## 📂 Project Structure
+## 🛠️ Configuration
 
-```text
-src/
-├── app/            # Next.js App Router (Pages & Layouts)
-├── components/     # Reusable UI components (Dashboard, Pipeline, etc.)
-├── i18n/           # Internationalization configuration
-├── lib/            # Shared libraries (Prisma client, TRPC, etc.)
-├── server/         # TRPC routers and server-side logic
-├── store/          # Zustand state management
-└── utils/          # Helper functions and constants
+### Supported AI Models
+- **OpenAI**: GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo
+- **Google Gemini**: Gemini 1.5 Pro, Flash (via OpenAI-compatible endpoint)
+- Any OpenAI API-compatible service
+
+### Environment Variables
+```bash
+OPENAI_API_KEY=your_key_here
+OPENAI_BASE_URL=https://api.openai.com/v1  # Or your provider's endpoint
+OPENAI_MODEL=gpt-4o  # Model name
+MODEL_SUPPORTS_VISION=true  # Enable screenshot support
+MAX_CONCURRENT_ANALYSIS_TASKS=3  # Parallel processing limit
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Love competitive programming? Help make CodeChecker better!
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing-improvement`)
+3. Commit your changes (`git commit -m 'Add edge case detector'`)
+4. Push and open a Pull Request
+
+**Ideas for contributions:**
+- Support for more programming languages
+- Integration with LeetCode/Codeforces APIs
+- Test case generation
+- Contest mode (analyze multiple problems at once)
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT License - feel free to use for personal or commercial projects!
 
 ---
 
-## 🌟 Acknowledgments
+## 🙏 Acknowledgments
 
-- Built with ❤️ using [Shadcn UI](https://ui.shadcn.com/)
-- Icons by [Lucide React](https://lucide.dev/)
-- Animations by [Framer Motion](https://www.framer.com/motion/)
+- Powered by OpenAI GPT models
+- Built with Next.js, Prisma, and tRPC
+- UI components from Shadcn UI
+- Syntax highlighting by Shiki
+
+---
+
+**Happy Coding! 🎯** If CodeChecker helped you ace a contest or pass that tricky test case, star the repo! ⭐
