@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import * as Diff from 'diff';
 import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
@@ -69,19 +69,52 @@ export default function RequestDetailPanel({
     const currentTheme = theme === 'system' ? systemTheme : theme;
     const isDark = currentTheme === 'dark';
 
+    const utils = trpc.useUtils();
+
     // Dashboard mode: query from tRPC using UIStore
     // Share mode: skip query, use propRequest
-    const { data: queryRequest, isLoading: queryIsLoading } = trpc.requests.getById.useQuery(
+    const { data: queryRequest, isLoading: queryIsLoading, error: queryError } = trpc.requests.getById.useQuery(
         selectedRequestId!,
         {
             enabled: !!selectedRequestId && !propRequest,
+            retry: false, // Don't retry on failure (prevents infinite loop on 404)
+            // Smart polling: only poll for active requests
+            refetchInterval: (query) => {
+                // Stop polling on error (e.g., 404 not found)
+                if (query.state.error) return false;
+
+                const data = query.state.data as any;
+                // Initial load - poll at moderate speed
+                if (!data) return 5000;
+
+                // Only poll for active statuses
+                if (data.status === 'QUEUED' || data.status === 'PROCESSING') {
+                    return 5000; // 5 seconds for active tasks
+                }
+
+                // COMPLETED or FAILED - stop polling
+                return false;
+            },
+            refetchIntervalInBackground: false,
         }
     );
+
+    // Track previous status to detect changes and sync sidebar
+    const prevStatusRef = useRef<string | undefined>(undefined);
 
     // Unify data source and loading state
     const request = (propRequest || queryRequest) as any;
     const isLoading = propRequest ? propIsLoading : queryIsLoading;
     const requestId = propRequest ? propRequest.id : selectedRequestId;
+
+    // Sync sidebar when status changes (must be after request is defined)
+    useEffect(() => {
+        if (!propRequest && request?.status && prevStatusRef.current !== undefined && prevStatusRef.current !== request.status) {
+            // Status changed - invalidate sidebar list to refresh
+            utils.requests.list.invalidate();
+        }
+        prevStatusRef.current = request?.status;
+    }, [request?.status, utils, propRequest]);
 
     const statusConfig = {
         QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
@@ -123,7 +156,7 @@ export default function RequestDetailPanel({
 
     const StatusIcon = config.icon;
 
-    const utils = trpc.useUtils();
+
     const retryMutation = trpc.requests.retry.useMutation({
         onSuccess: () => {
             utils.requests.getById.invalidate(requestId!);
@@ -165,13 +198,10 @@ export default function RequestDetailPanel({
                             <Button variant="ghost" size="icon" onClick={createNewRequest} className="mr-1 md:hidden">
                                 <ArrowLeft className="h-5 w-5" />
                             </Button>
-                            <h2 className="text-2xl font-extrabold tracking-tight text-text">
-                                {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
-                            </h2>
+                            {/* Skeleton for title during loading */}
+                            <Skeleton className="h-8 w-48" />
                         </div>
-                        <Button variant="ghost" size="icon" onClick={createNewRequest} title={t('closeDetails')}>
-                            <X className="h-5 w-5" />
-                        </Button>
+                        <Skeleton className="h-9 w-9 rounded-md" />
                     </div>
                 </div>
                 <ScrollArea className="flex-1 h-0 px-6 py-6">
@@ -197,13 +227,17 @@ export default function RequestDetailPanel({
         );
     }
 
-    // Empty/Error State
-    if (!request) {
+    // Empty/Error State - static page, no polling (prevents infinite loop on deleted requests)
+    if (!request || queryError) {
         return (
             <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden">
-                <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
                     <AlertCircle className="w-12 h-12 text-muted" />
                     <p className="text-lg font-medium text-text">{t('requestNotFound')}</p>
+                    <Button variant="outline" onClick={createNewRequest} className="mt-4">
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        {t('backToCreate') || 'Back'}
+                    </Button>
                 </div>
             </div>
         );
