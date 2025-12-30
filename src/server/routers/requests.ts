@@ -1,0 +1,194 @@
+import { z } from 'zod';
+import { router, publicProcedure } from '../trpc';
+import { TRPCError } from '@trpc/server';
+import { taskQueue } from '@/lib/queue/task-queue';
+
+// Zod schemas for validation
+const createRequestSchema = z.object({
+    userPrompt: z.string().optional(),
+    imageReferences: z.array(z.string()).optional(),
+}).refine(
+    (data) => data.userPrompt || (data.imageReferences && data.imageReferences.length > 0),
+    {
+        message: 'Either userPrompt or imageReferences must be provided',
+        path: ['userPrompt'],
+    }
+);
+
+const requestIdSchema = z.number().int().positive();
+
+export const requestsRouter = router({
+    // Get all requests with optional filtering
+    list: publicProcedure
+        .input(
+            z
+                .object({
+                    status: z.enum(['QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED']).optional(),
+                    cursor: z.number().int().min(1).optional(),
+                    take: z.number().int().min(1).max(100).default(20),
+                })
+        )
+        .query(async ({ ctx, input }) => {
+            const { status, cursor, take = 20 } = input;
+
+            return ctx.prisma.request.findMany({
+                where: status ? { status } : undefined,
+                take,
+                skip: cursor ? 1 : 0,
+                cursor: cursor ? { id: cursor } : undefined,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    status: true,
+                    userPrompt: true,
+                    isSuccess: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    errorMessage: true,
+                },
+            });
+        }),
+
+    // Get request by ID
+    getById: publicProcedure
+        .input(requestIdSchema)
+        .query(async ({ ctx, input }) => {
+            const request = await ctx.prisma.request.findUnique({
+                where: { id: input },
+            });
+
+            if (!request) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Request with ID ${input} not found`,
+                });
+            }
+
+            // Parse JSON fields
+            return {
+                ...request,
+                imageReferences: request.imageReferences
+                    ? JSON.parse(request.imageReferences)
+                    : null,
+                gptRawResponse: request.gptRawResponse
+                    ? JSON.parse(request.gptRawResponse)
+                    : null,
+                // Stage tracking fields are already included from the database query
+            };
+        }),
+
+    // Create new request
+    create: publicProcedure
+        .input(createRequestSchema)
+        .mutation(async ({ ctx, input }) => {
+            const request = await ctx.prisma.request.create({
+                data: {
+                    userPrompt: input.userPrompt,
+                    imageReferences: input.imageReferences
+                        ? JSON.stringify(input.imageReferences)
+                        : null,
+                    status: 'QUEUED',
+                    isSuccess: false,
+                },
+            });
+
+            // Add to task queue
+            await taskQueue.add(request.id);
+
+            return request;
+        }),
+
+    // Delete request
+    delete: publicProcedure
+        .input(requestIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            const request = await ctx.prisma.request.findUnique({
+                where: { id: input },
+            });
+
+            if (!request) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Request with ID ${input} not found`,
+                });
+            }
+
+            await ctx.prisma.request.delete({
+                where: { id: input },
+            });
+
+            return { success: true, id: input };
+        }),
+
+    // Regenerate request (creates a new request)
+    regenerate: publicProcedure
+        .input(requestIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            const originalRequest = await ctx.prisma.request.findUnique({
+                where: { id: input },
+            });
+
+            if (!originalRequest) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Request with ID ${input} not found`,
+                });
+            }
+
+            // Create new request with same prompt
+            const newRequest = await ctx.prisma.request.create({
+                data: {
+                    userPrompt: originalRequest.userPrompt,
+                    imageReferences: originalRequest.imageReferences,
+                    status: 'QUEUED',
+                    isSuccess: false,
+                },
+            });
+
+            // Add to task queue
+            await taskQueue.add(newRequest.id);
+
+            return newRequest;
+        }),
+
+    // Retry request (resets existing request)
+    retry: publicProcedure
+        .input(requestIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            const request = await ctx.prisma.request.findUnique({
+                where: { id: input },
+            });
+
+            if (!request) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: `Request with ID ${input} not found`,
+                });
+            }
+
+            // Reset fields
+            const updatedRequest = await ctx.prisma.request.update({
+                where: { id: input },
+                data: {
+                    status: 'QUEUED',
+                    isSuccess: false,
+                    errorMessage: null,
+                    gptRawResponse: null,
+                    formattedCode: null,
+                    problemDetails: null,
+                    analysisResult: null,
+                    stage1Status: 'pending',
+                    stage2Status: 'pending',
+                    stage3Status: 'pending',
+                    stage1CompletedAt: null,
+                    stage2CompletedAt: null,
+                    stage3CompletedAt: null,
+                },
+            });
+
+            // Add to task queue
+            await taskQueue.add(updatedRequest.id);
+
+            return updatedRequest;
+        }),
+});
