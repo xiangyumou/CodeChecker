@@ -64,7 +64,7 @@ export default function RequestDetailView({
     }, []);
 
     const currentTheme = theme === 'system' ? systemTheme : theme;
-    // const isDark = currentTheme === 'dark'; // Unused currently but kept for reference
+
 
     const statusConfig = {
         QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
@@ -104,7 +104,6 @@ export default function RequestDetailView({
         ? statusConfig[request.status as keyof typeof statusConfig]
         : statusConfig.QUEUED;
 
-    // const StatusIcon = config.icon; // Unused 
 
     // Loading State
     if (isLoading) {
