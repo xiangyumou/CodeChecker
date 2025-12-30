@@ -1,3 +1,4 @@
+import { subHours, subDays, subMonths } from 'date-fns';
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
@@ -220,14 +221,31 @@ export const requestsRouter = router({
     prune: publicProcedure
         .input(
             z.object({
-                olderThan: z.date(),
+                amount: z.number().int().min(1),
+                unit: z.enum(['hours', 'days', 'months']),
             })
         )
         .mutation(async ({ ctx, input }) => {
+            const { amount, unit } = input;
+            const now = new Date();
+            let olderThan: Date;
+
+            switch (unit) {
+                case 'hours':
+                    olderThan = subHours(now, amount);
+                    break;
+                case 'days':
+                    olderThan = subDays(now, amount);
+                    break;
+                case 'months':
+                    olderThan = subMonths(now, amount);
+                    break;
+            }
+
             const result = await ctx.prisma.request.deleteMany({
                 where: {
                     createdAt: {
-                        lt: input.olderThan,
+                        lt: olderThan,
                     },
                 },
             });

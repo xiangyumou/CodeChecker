@@ -174,20 +174,30 @@ describe('requestsRouter', () => {
     });
 
     describe('prune', () => {
-        it('should prune requests older than date', async () => {
-            mockPrisma.request.deleteMany.mockResolvedValue({ count: 5 });
-            const olderThan = new Date();
+        it('should prune requests older than specified duration', async () => {
+            // Mock date to control time
+            const now = new Date('2024-01-01T12:00:00Z');
+            vi.useFakeTimers();
+            vi.setSystemTime(now);
 
-            const result = await caller.prune({ olderThan });
+            mockPrisma.request.deleteMany.mockResolvedValue({ count: 5 });
+
+            // Call with 1 hour
+            const result = await caller.prune({ amount: 1, unit: 'hours' });
+
+            // Expected cut-off date: 2024-01-01T11:00:00Z
+            const expectedDate = new Date('2024-01-01T11:00:00Z');
 
             expect(mockPrisma.request.deleteMany).toHaveBeenCalledWith({
                 where: {
                     createdAt: {
-                        lt: olderThan,
+                        lt: expectedDate,
                     },
                 },
             });
             expect(result).toEqual({ success: true, count: 5 });
+
+            vi.useRealTimers();
         });
     });
 });

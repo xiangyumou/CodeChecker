@@ -630,11 +630,9 @@ function DataManagementView() {
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => {
                                         const val = parseInt(olderThanValue);
-                                        const date = new Date();
-                                        if (olderThanUnit === 'hours') date.setHours(date.getHours() - val);
-                                        else if (olderThanUnit === 'days') date.setDate(date.getDate() - val);
-                                        else if (olderThanUnit === 'months') date.setMonth(date.getMonth() - val);
-                                        pruneMutation.mutate({ olderThan: date });
+                                        // Valid units are 'hours' | 'days' | 'months' based on the select options
+                                        const unit = olderThanUnit as 'hours' | 'days' | 'months';
+                                        pruneMutation.mutate({ amount: val, unit });
                                     }}>Prune</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
