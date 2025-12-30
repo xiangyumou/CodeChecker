@@ -1,19 +1,16 @@
 import { settingsRouter } from '../settings';
-import { prisma } from '@/lib/db';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 
-vi.mock('@/lib/db', () => ({
-    prisma: {
-        setting: {
-            findMany: vi.fn(),
-            findUnique: vi.fn(),
-            upsert: vi.fn(),
-        },
+// Mock Prisma
+const mockPrisma = {
+    setting: {
+        findMany: vi.fn(),
+        findUnique: vi.fn(),
+        upsert: vi.fn(),
     },
-}));
+};
 
 describe('settingsRouter', () => {
-    const mockPrisma = vi.mocked(prisma);
     const SETTINGS_TOKEN = 'test-token';
     const originalEnv = process.env.SETTINGS_TOKEN;
 
