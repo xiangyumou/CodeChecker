@@ -43,10 +43,22 @@ import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
 import { ZoomableImage } from './ui/ZoomableImage';
 
-export default function RequestDetailPanel() {
+// Props interface for dual-mode support
+export interface RequestDetailPanelProps {
+    // Share page mode: directly pass request data
+    request?: any;
+    isLoading?: boolean;
+    isPublicView?: boolean;
+    // Dashboard mode: use UIStore (default mode when no props passed)
+}
+
+export default function RequestDetailPanel({
+    request: propRequest,
+    isLoading: propIsLoading = false,
+    isPublicView = false,
+}: RequestDetailPanelProps = {}) {
     const t = useTranslations('requestDetails');
     const { selectedRequestId, createNewRequest } = useUIStore();
-    const requestId = selectedRequestId;
     const { theme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -57,16 +69,19 @@ export default function RequestDetailPanel() {
     const currentTheme = theme === 'system' ? systemTheme : theme;
     const isDark = currentTheme === 'dark';
 
-    const { data: requestQuery, isLoading } = trpc.requests.getById.useQuery(
-        requestId!,
+    // Dashboard mode: query from tRPC using UIStore
+    // Share mode: skip query, use propRequest
+    const { data: queryRequest, isLoading: queryIsLoading } = trpc.requests.getById.useQuery(
+        selectedRequestId!,
         {
-            enabled: !!requestId,
+            enabled: !!selectedRequestId && !propRequest,
         }
     );
 
-    // Cast request to any/extended type to avoid stale type errors
-    // The fields EXIST in the DB (checked schema.prisma), but TRPC types seem stale in this environment.
-    const request = requestQuery as any;
+    // Unify data source and loading state
+    const request = (propRequest || queryRequest) as any;
+    const isLoading = propRequest ? propIsLoading : queryIsLoading;
+    const requestId = propRequest ? propRequest.id : selectedRequestId;
 
     const statusConfig = {
         QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
@@ -217,7 +232,7 @@ export default function RequestDetailPanel() {
                         >
                             <Share2 className="h-5 w-5" />
                         </Button>
-                        {(request.status === 'FAILED' || request.status === 'COMPLETED') && (
+                        {!isPublicView && (request.status === 'FAILED' || request.status === 'COMPLETED') && (
                             <Button
                                 variant="outline"
                                 size="sm"

@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import RequestDetailView from '@/components/RequestDetailView';
+import RequestDetailPanel from '@/components/RequestDetailPanel';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
@@ -67,7 +67,7 @@ export default async function SharePage({ params }: Props) {
                 <PageHeader showHomeLink={true} />
                 <div className="p-4 md:p-8 flex justify-center">
                     <div className="w-full max-w-5xl h-[calc(100vh-8rem)]">
-                        <RequestDetailView
+                        <RequestDetailPanel
                             request={request}
                             isPublicView={true}
                         />
