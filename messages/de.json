@@ -42,7 +42,7 @@
     "itemTitle": "Anfrage #{id}",
     "refreshTooltip": "Liste aktualisieren",
     "noHistory": "Noch keine Analysehistorie vorhanden",
-    "queued": "In der Warteschlange",
+    "queued": "Wartend",
     "noPromptContent": "Kein Prompt-Inhalt",
     "submitToSeeHere": "Senden Sie eine Anfrage, um sie hier zu sehen."
   },
@@ -51,7 +51,7 @@
     "input": "Eingabe",
     "output": "Ausgabe",
     "error": "Fehler",
-    "queued": "In der Warteschlange",
+    "queued": "Wartend",
     "processing": "In Bearbeitung",
     "completed": "Abgeschlossen",
     "failed": "Fehlgeschlagen",

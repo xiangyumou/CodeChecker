@@ -46,7 +46,7 @@
     "itemTitle": "Request #{id}",
     "refreshTooltip": "Refresh List",
     "noHistory": "No analysis history yet",
-    "queued": "Queued",
+    "queued": "Waiting",
     "noPromptContent": "No prompt content",
     "submitToSeeHere": "Submit a request to see it here."
   },
@@ -55,7 +55,7 @@
     "input": "Input",
     "output": "Output",
     "error": "Error",
-    "queued": "Queued",
+    "queued": "Waiting",
     "processing": "Processing",
     "completed": "Completed",
     "failed": "Failed",
