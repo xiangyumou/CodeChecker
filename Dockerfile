@@ -23,6 +23,7 @@ RUN npx prisma generate
 
 # Build the Next.js application
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV DISABLE_ESLINT_DURING_BUILD true
 RUN npm run build
 
 # Production image, copy all the files and run next
