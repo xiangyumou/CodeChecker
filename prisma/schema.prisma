@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Request {
+  id              Int      @id @default(autoincrement())
+  status          String   @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
+  userPrompt      String?
+  imageReferences String?  // JSON array stored as string
+  
+  // Multi-stage pipeline fields
+  problemDetails    String?  // JSON string: title, description, time_limit, etc.
+  formattedCode     String?  // String: Cleaned and formatted source code
+  analysisResult    String?  // JSON string: modifications and analysis
+  
+  // Pipeline stage tracking
+  stage1Status      String?  @default("pending") // pending, processing, completed, failed
+  stage2Status      String?  @default("pending")
+  stage3Status      String?  @default("pending")
+  stage1CompletedAt DateTime?
+  stage2CompletedAt DateTime?
+  stage3CompletedAt DateTime?
+  
+  gptRawResponse    String?  // JSON stored as string (Legacy)
+  errorMessage    String?
+  isSuccess       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("requests")
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
