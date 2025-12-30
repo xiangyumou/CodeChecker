@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
-import { qstash, getWebhookUrl } from '@/lib/qstash/client';
+import { qstash, getWebhookUrl, getConcurrencyLimit } from '@/lib/qstash/client';
 
 // Zod schemas for validation
 const createRequestSchema = z.object({
@@ -92,10 +92,15 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash
+            // Send task to QStash with Flow-Control
+            const concurrency = await getConcurrencyLimit();
             await qstash.publishJSON({
                 url: getWebhookUrl('/api/analyze-request'),
                 body: { requestId: request.id },
+                flowControl: {
+                    key: 'code-analysis',
+                    parallelism: concurrency,
+                },
             });
 
             return request;
@@ -148,10 +153,15 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash
+            // Send task to QStash with Flow-Control
+            const concurrency = await getConcurrencyLimit();
             await qstash.publishJSON({
                 url: getWebhookUrl('/api/analyze-request'),
                 body: { requestId: newRequest.id },
+                flowControl: {
+                    key: 'code-analysis',
+                    parallelism: concurrency,
+                },
             });
 
             return newRequest;
@@ -192,10 +202,15 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash
+            // Send task to QStash with Flow-Control
+            const concurrency = await getConcurrencyLimit();
             await qstash.publishJSON({
                 url: getWebhookUrl('/api/analyze-request'),
                 body: { requestId: updatedRequest.id },
+                flowControl: {
+                    key: 'code-analysis',
+                    parallelism: concurrency,
+                },
             });
 
             return updatedRequest;

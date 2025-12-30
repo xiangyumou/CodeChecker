@@ -2,11 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { requestsRouter } from '../requests';
 import { TRPCError } from '@trpc/server';
 
-const { mockQStash } = vi.hoisted(() => {
+const { mockQStash, mockGetConcurrencyLimit } = vi.hoisted(() => {
     return {
         mockQStash: {
             publishJSON: vi.fn(),
-        }
+        },
+        mockGetConcurrencyLimit: vi.fn(),
     };
 });
 
@@ -24,6 +25,7 @@ const mockPrisma = {
 vi.mock('@/lib/qstash/client', () => ({
     qstash: mockQStash,
     getWebhookUrl: (path: string) => `http://localhost:3000${path}`,
+    getConcurrencyLimit: mockGetConcurrencyLimit,
 }));
 
 describe('requestsRouter', () => {
@@ -35,6 +37,8 @@ describe('requestsRouter', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        // Default concurrency limit for tests
+        mockGetConcurrencyLimit.mockResolvedValue(3);
     });
 
     describe('list', () => {
@@ -107,6 +111,10 @@ describe('requestsRouter', () => {
             expect(mockQStash.publishJSON).toHaveBeenCalledWith({
                 url: 'http://localhost:3000/api/analyze-request',
                 body: { requestId: 123 },
+                flowControl: {
+                    key: 'code-analysis',
+                    parallelism: 3,
+                },
             });
             expect(result).toEqual(mockCreated);
         });
@@ -151,6 +159,10 @@ describe('requestsRouter', () => {
             expect(mockQStash.publishJSON).toHaveBeenCalledWith({
                 url: 'http://localhost:3000/api/analyze-request',
                 body: { requestId: 1 },
+                flowControl: {
+                    key: 'code-analysis',
+                    parallelism: 3,
+                },
             });
             expect(result).toEqual(mockUpdated);
         });
