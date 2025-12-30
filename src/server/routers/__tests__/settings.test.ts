@@ -63,7 +63,7 @@ describe('settingsRouter', () => {
         it('returns setting value for valid key', async () => {
             mockPrisma.setting.findUnique.mockResolvedValue({ key: 'test', value: 'value' } as any);
 
-            const caller = createCaller(); // public
+            const caller = createCaller(SETTINGS_TOKEN); // admin
             const result = await caller.getByKey('test');
 
             expect(result).toBe('value');
@@ -74,7 +74,7 @@ describe('settingsRouter', () => {
 
         it('returns null if setting not found', async () => {
             mockPrisma.setting.findUnique.mockResolvedValue(null);
-            const caller = createCaller();
+            const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.getByKey('missing');
             expect(result).toBeNull();
         });

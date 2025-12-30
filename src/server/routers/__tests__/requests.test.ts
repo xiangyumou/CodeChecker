@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 import { requestsRouter } from '../requests';
 import { TRPCError } from '@trpc/server';
 
@@ -31,9 +31,24 @@ vi.mock('@/lib/qstash/client', () => ({
 
 describe('requestsRouter', () => {
     // Create caller with mocked context
+    const SETTINGS_TOKEN = 'test-admin-token';
+    const originalEnv = process.env.SETTINGS_TOKEN;
+
+    beforeAll(() => {
+        process.env.SETTINGS_TOKEN = SETTINGS_TOKEN;
+    });
+
+    afterAll(() => {
+        process.env.SETTINGS_TOKEN = originalEnv;
+    });
+
+    // Create caller with admin token
+    const headers = new Headers();
+    headers.set('x-admin-token', SETTINGS_TOKEN);
+
     const caller = requestsRouter.createCaller({
         prisma: mockPrisma as any,
-        headers: new Headers(),
+        headers,
     });
 
     beforeEach(() => {
