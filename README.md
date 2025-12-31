@@ -100,9 +100,64 @@ Edit `.env` file:
 ## 🔧 Development
 
 ### Running Tests
+
+#### Unit Tests
 ```bash
-make test
+npm test              # Run all unit tests (142 tests)
+npm run test:watch    # Run in watch mode
+npm run test:coverage # Generate coverage report
 ```
+
+#### E2E Tests (Playwright)
+
+| Command | Description | Requires OpenAI |
+|---------|-------------|-----------------|
+| `npm run test:e2e:smoke` | Smoke tests (UI, navigation, form) | ❌ No |
+| `npm run test:e2e:full` | Full analysis flow tests | ✅ Yes |
+| `npm run test:e2e` | All E2E tests | ⚠️ Partial |
+| `npm run test:e2e:ui` | Interactive Playwright UI | ⚠️ Partial |
+
+**Prerequisites for E2E tests:**
+```bash
+# Install Playwright browsers
+npx playwright install
+
+# Start the application first
+npm run dev
+
+# In another terminal, run E2E tests
+npm run test:e2e:smoke
+```
+
+#### OpenAI Configuration for Full E2E Tests
+
+Full E2E tests require OpenAI API configuration in `.env`:
+```env
+OPENAI_API_KEY=your-api-key
+OPENAI_BASE_URL=https://api.openai.com/v1  # Optional for OpenAI-compatible APIs
+OPENAI_MODEL=gpt-4o                        # Default model
+```
+
+> **Note:** If `OPENAI_API_KEY` is not set, Full E2E tests will automatically skip.
+
+#### Docker-based Testing
+```bash
+make test    # Run unit tests in Docker
+```
+
+### CI/CD Testing
+
+GitHub Actions automatically runs:
+1. **Unit Tests** - All 142 unit tests
+2. **E2E Smoke Tests** - Basic UI and form functionality
+3. **E2E Full Tests** (Optional) - Complete analysis flow (requires `OPENAI_API_KEY` secret)
+
+Configure GitHub Secrets for Full E2E tests:
+- `OPENAI_API_KEY` - Required
+- `OPENAI_BASE_URL` - Optional
+- `OPENAI_MODEL` - Optional (defaults to `gpt-4o`)
+
+---
 
 ### Database Management
 ```bash
