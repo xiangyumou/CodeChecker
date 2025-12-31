@@ -82,8 +82,9 @@ test.describe('Error Handling E2E @full', () => {
     test('E2E-06: Shows 404 for non-existent request', async ({ page }) => {
         await page.goto('/request/99999999');
 
-        // Should show not found message
-        const notFound = page.locator('text=/not found|404|不存在/i').first();
+        // Should show not found message (matches all translation variants)
+        // EN: "Request not found", ZH: "请求未找到", DE: "Anfrage nicht gefunden"
+        const notFound = page.locator('text=/not found|未找到|nicht gefunden|404/i').first();
         await expect(notFound).toBeVisible({ timeout: 5000 });
     });
 
