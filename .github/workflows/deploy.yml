@@ -125,13 +125,13 @@ jobs:
           retention-days: 7
 
   # CI 阶段：E2E Full 测试 (需要 OpenAI API 配置)
-  # 注意：如果 OPENAI_API_KEY secret 未配置，测试会自动跳过
+  # 只有当 OPENAI_API_KEY secret 配置时才运行，且必须通过才能 build
   e2e-full:
     name: E2E Full Tests (Optional)
     runs-on: ubuntu-latest
     needs: test
-    # 此 job 总是运行，但如果 OPENAI_API_KEY 未配置，测试会自动跳过
-    continue-on-error: true  # 即使失败也不阻塞后续 job
+    # 只有当 OPENAI_API_KEY 存在时才运行此 job
+    if: ${{ secrets.OPENAI_API_KEY != '' }}
     
     services:
       redis:
@@ -226,7 +226,13 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs: [test, e2e-smoke]  # 只有所有测试通过才会执行
+    needs: [test, e2e-smoke, e2e-full]  # 依赖所有测试 job
+    # 条件：test 和 e2e-smoke 必须成功，e2e-full 必须成功或被跳过（未配置 OPENAI_API_KEY 时）
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      needs.e2e-smoke.result == 'success' &&
+      (needs.e2e-full.result == 'success' || needs.e2e-full.result == 'skipped')
     permissions:
       contents: read
       packages: write
