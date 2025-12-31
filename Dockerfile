@@ -49,6 +49,10 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy the full server directory to include instrumentation and all its chunks
+# Standalone mode doesn't include all chunks required by instrumentation
+COPY --from=builder --chown=nextjs:nodejs /app/.next/server ./.next/server
+
 # Ensure prisma schema and migrations are available if needed
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
