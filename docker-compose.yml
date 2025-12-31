@@ -21,13 +21,13 @@ services:
     mem_limit: 200m
     mem_reservation: 100m
     environment:
-      POSTGRES_USER: codechecker
+      POSTGRES_USER: ${DB_USER:-codechecker}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-dev123}
-      POSTGRES_DB: codechecker
+      POSTGRES_DB: ${DB_NAME:-codechecker}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "codechecker" ]
+      test: [ "CMD", "pg_isready", "-U", "${DB_USER:-codechecker}" ]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -43,10 +43,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - DB_PROVIDER=postgresql
-      - DATABASE_URL=postgresql://codechecker:${DB_PASSWORD:-dev123}@postgres:5432/codechecker
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - DB_PROVIDER=${DB_PROVIDER:-postgresql}
+      # DATABASE_URL is automatically constructed from DB_* variables in .env
     restart: unless-stopped
     depends_on:
       redis:
