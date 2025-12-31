@@ -58,4 +58,9 @@ Icon
 .fseventsd
 
 # docs
-UI.mdtest-results/
+UI.md
+
+# playwright
+test-results/
+playwright-report/
+playwright/.cache/
