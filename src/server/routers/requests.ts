@@ -20,7 +20,7 @@ const requestIdSchema = z.number().int().positive();
 
 export const requestsRouter = router({
     // Get all requests with optional filtering
-    list: adminProcedure
+    list: publicProcedure
         .input(
             z
                 .object({
@@ -51,7 +51,7 @@ export const requestsRouter = router({
         }),
 
     // Get request by ID
-    getById: adminProcedure
+    getById: publicProcedure
         .input(requestIdSchema)
         .query(async ({ ctx, input }) => {
             const request = await ctx.prisma.request.findUnique({
