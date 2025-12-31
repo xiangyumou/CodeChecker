@@ -57,7 +57,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         },
     });
 
-    const processFiles = async (newFiles: FileList | File[]) => {
+    const processFiles = useCallback(async (newFiles: FileList | File[]) => {
         const validFiles: { id: string, file: File, preview: string }[] = [];
         const fileArray = newFiles instanceof FileList ? Array.from(newFiles) : newFiles;
 
@@ -82,7 +82,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
             setFiles(prev => [...prev, ...validFiles].slice(0, 5));
             toast.success(t('addedImages', { count: validFiles.length }));
         }
-    };
+    }, [t]);
 
     const handleFileChange = (newFiles: FileList | null) => {
         if (!newFiles) return;

@@ -2,6 +2,18 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi, beforeAll } from 'vitest'
 
+// Add DOCTYPE to prevent KaTeX quirks mode warning
+beforeAll(() => {
+    if (typeof document !== 'undefined' && !document.doctype) {
+        const doctype = document.implementation.createDocumentType(
+            'html',
+            '',
+            ''
+        );
+        document.insertBefore(doctype, document.documentElement);
+    }
+});
+
 // Runs a cleanup after each test case
 afterEach(() => {
     cleanup()
