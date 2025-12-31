@@ -1,210 +1,170 @@
-# 🚀 CodeChecker: AI Code Debugger for Competitive Programming
+# CodeChecker
 
-[![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
-[![Live Demo](https://img.shields.io/badge/Demo-code.xiangyu.pro-blue?style=for-the-badge)](https://code.xiangyu.pro)
+AI-powered code analysis and optimization tool with staged GPT evaluation.
 
-English | [简体中文](./README.zh-CN.md)
-
-> 🎮 **[Try the Live Demo →](https://code.xiangyu.pro)**
-
-**CodeChecker** is an intelligent coding assistant designed specifically for **ICPC**, **LeetCode**, and algorithmic problem solvers. Simply paste your code or upload a screenshot of the problem—get instant feedback on correctness, edge cases, complexity analysis, and optimization suggestions.
+[![Docker](https://img.shields.io/badge/Docker-Required-blue)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## 💡 Why CodeChecker?
+## 🚀 Quick Start (Docker Required)
 
-### The Problem
-You're solving an algorithmic challenge. Your code passes sample cases, but:
-- ❌ Fails hidden test cases with cryptic errors
-- ❌ Times out on large inputs (TLE)
-- ❌ Misses corner cases you didn't think of
-- ❌ Works, but could be more elegant
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/install/) V2
 
-### The Solution
-CodeChecker acts as your **personal code reviewer** powered by AI:
-- ✅ **Understands the problem** from screenshots or text descriptions
-- ✅ **Validates your logic** against the actual requirements
-- ✅ **Spots edge cases** you might have missed
-- ✅ **Analyzes time/space complexity** and suggests improvements
-- ✅ **Shows you exactly what to fix** with side-by-side code diffs
-
----
-
-## ✨ Key Features
-
-### 🔍 **Multi-Stage Analysis Pipeline**
-1. **Problem Extraction**: Upload a screenshot of the problem statement (from LeetCode, Codeforces, etc.) and the AI extracts constraints, examples, and requirements.
-2. **Code Validation**: Checks if your solution actually solves the problem—not just if it compiles.
-3. **Deep Review**: Provides detailed feedback on:
-   - Logical correctness
-   - Time & space complexity
-   - Edge case handling
-   - Code readability and best practices
-
-### 📸 **Screenshot Support**
-Don't want to type the problem? Just screenshot it! CodeChecker can:
-- Extract problem descriptions from images
-- Parse code from screenshots (OCR)
-- Handle messy input formats
-
-### ⚡ **Real-Time Progress Tracking**
-Watch the analysis unfold in real-time with a beautiful 3-stage pipeline visualizer:
-- 🔵 Stage 1: Extracting problem details...
-- 🔵 Stage 2: Formatting your code...
-- 🔵 Stage 3: Running deep analysis...
-
-### 📊 **Visual Diff View**
-See exactly what changed between your original code and the optimized version with:
-- Side-by-side comparison
-- Syntax-highlighted diffs
-- Line-by-line explanations
-
-### 🌐 **Multilingual Support**
-Interface available in:
-- 🇺🇸 English
-- 🇨🇳 中文 (Chinese)
-- 🇩🇪 Deutsch (German)
-
----
-
-## 🚀 Getting Started
-
-### Option 1: Docker (Recommended)
-
-1. **Clone and run**
-   ```bash
-   git clone https://github.com/your-username/code-checker.git
-   cd code-checker
-   docker-compose up -d
-   ```
-
-2. **Open in browser**
-   Visit [http://localhost:3000](http://localhost:3000)
-
-3. **Initial setup**
-   On first launch, you'll configure:
-   - Admin credentials
-   - OpenAI API key (or compatible endpoint like Gemini)
-
-### Option 2: Local Development
-
-1. **Prerequisites**
-   - Node.js 20+
-   - npm/yarn/pnpm
-
-2. **Install & Setup**
-   ```bash
-   git clone https://github.com/your-username/code-checker.git
-   cd code-checker
-   npm install
-   cp .env.example .env  # Edit with your API keys
-   npx prisma db push
-   npm run dev
-   ```
-
-3. **Access**
-   Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## 📖 How to Use
-
-### Basic Workflow
-
-1. **Submit your problem**
-   - Option A: Paste the problem description + your code
-   - Option B: Upload screenshots of both
-
-2. **Wait for analysis** (~30-60 seconds)
-   - Watch the pipeline process your request in real-time
-
-3. **Review results**
-   - **Problem Tab**: See the structured problem breakdown
-   - **Code Tab**: Your cleaned/formatted code
-   - **Diff Tab**: Side-by-side comparison of original vs. optimized
-   - **Analysis Tab**: Detailed explanations of each change
-
-4. **Iterate**
-   - Copy suggestions
-   - Retry with updated code
-   - Repeat until perfect!
-
-### Example Use Cases
-
-**Scenario 1: Debug a TLE (Time Limit Exceeded)**
-```
-Your Code: Brute force O(n²) solution
-→ CodeChecker identifies the bottleneck
-→ Suggests O(n log n) approach with explanation
-→ Shows exact implementation in diff view
-```
-
-**Scenario 2: Catch Edge Cases**
-```
-Your Code: Works for positive integers
-→ CodeChecker tests against problem constraints
-→ Finds failure on: negative numbers, zero, large values
-→ Provides fixed version handling all cases
-```
-
-**Scenario 3: Learn Better Patterns**
-```
-Your Code: Messy nested loops
-→ CodeChecker recognizes sliding window pattern
-→ Refactors to clean, idiomatic solution
-→ Explains why it's better (readability + performance)
-```
-
----
-
-## 🛠️ Configuration
-
-### Supported AI Models
-- **OpenAI**: GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo
-- **Google Gemini**: Gemini 1.5 Pro, Flash (via OpenAI-compatible endpoint)
-- Any OpenAI API-compatible service
-
-### Environment Variables
+### 1. Clone and Configure
 ```bash
-OPENAI_API_KEY=your_key_here
-OPENAI_BASE_URL=https://api.openai.com/v1  # Or your provider's endpoint
-OPENAI_MODEL=gpt-4o  # Model name
-MODEL_SUPPORTS_VISION=true  # Enable screenshot support
-MAX_CONCURRENT_ANALYSIS_TASKS=3  # Parallel processing limit
+git clone https://github.com/xiangyumou/CodeChecker.git
+cd CodeChecker
+
+# Copy environment template
+cp .env.example .env
+
+# Edit configuration (required)
+nano .env  # or use your preferred editor
+```
+
+### 2. Deploy
+```bash
+# Simple one-command deployment
+./deploy.sh
+
+# Or using Make
+make start
+```
+
+### 3. Access
+Open http://localhost:3000
+
+---
+
+## 📋 Common Commands
+
+```bash
+make help          # Show all available commands
+make logs          # View application logs
+make restart       # Restart services
+make stop          # Stop all services
+make clean         # Remove all data (⚠️ destructive)
 ```
 
 ---
 
-## 🤝 Contributing
+## ⚙️ Configuration
 
-Love competitive programming? Help make CodeChecker better!
+Edit `.env` file:
 
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/amazing-improvement`)
-3. Commit your changes (`git commit -m 'Add edge case detector'`)
-4. Push and open a Pull Request
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API key | ✅ |
+| `OPENAI_BASE_URL` | Custom OpenAI endpoint | Optional |
+| `DB_PASSWORD` | PostgreSQL password | ✅ |
+| `SETTINGS_TOKEN` | Admin panel token | ✅ |
+| `MAX_CONCURRENT_ANALYSIS_TASKS` | Worker concurrency | Optional (default: 3) |
 
-**Ideas for contributions:**
-- Support for more programming languages
-- Integration with LeetCode/Codeforces APIs
-- Test case generation
-- Contest mode (analyze multiple problems at once)
+---
+
+## 🏗️ Architecture
+
+```
+┌────────────┐     ┌──────────┐     ┌────────────┐
+│   Next.js  │────▶│  BullMQ  │────▶│   Worker   │
+│  (Web UI)  │     │  (Redis) │     │  (GPT API) │
+└────────────┘     └──────────┘     └────────────┘
+       │                                    │
+       └──────────┬────────────────────────┘
+                  │
+            ┌──────────┐
+            │PostgreSQL│
+            └──────────┘
+```
+
+**Services:**
+- `code-checker`: Next.js application (Port 3000)
+- `postgres`: PostgreSQL 16 database
+- `redis`: Redis 7 for task queue
+
+**Resource Usage (1GB VPS):**
+- PostgreSQL: ~200MB
+- Redis: ~30MB
+- Application: ~500MB
+- **Total: ~730MB** ✅
+
+---
+
+## 🔧 Development
+
+### Running Tests
+```bash
+make test
+```
+
+### Database Management
+```bash
+make db-migrate    # Run migrations
+make db-studio     # Open Prisma Studio
+```
+
+### Viewing Logs
+```bash
+make logs          # App only
+make logs-all      # All services
+```
+
+---
+
+## 📦 Production Deployment
+
+### Option 1: VPS with Docker (Recommended)
+1. Follow Quick Start on your VPS
+2. Configure domain and SSL (nginx/Caddy)
+3. Set environment variables for production
+
+### Option 2: CI/CD with GitHub Actions
+See [CI/CD Setup Guide](docs/cicd-setup.md) for automated deployments.
+
+---
+
+## 🐛 Troubleshooting
+
+**Services won't start:**
+```bash
+# Check Docker status
+docker ps
+
+# View detailed logs
+docker compose logs
+
+# Clean restart
+make clean && make start
+```
+
+**Out of memory (VPS):**
+- Ensure swap is configured
+- Check `docker-compose.yml` memory limits
+- Consider upgrading VPS plan
+
+**Database connection errors:**
+- Verify PostgreSQL is healthy: `docker compose ps`
+- Check `DATABASE_URL` in `.env`
 
 ---
 
 ## 📄 License
 
-MIT License - feel free to use for personal or commercial projects!
+MIT License - see [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
+## 🤝 Contributing
 
-- Powered by OpenAI GPT models
-- Built with Next.js, Prisma, and tRPC
-- UI components from Shadcn UI
-- Syntax highlighting by Shiki
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Test with Docker
+4. Submit a pull request
 
 ---
 
-**Happy Coding! 🎯** If CodeChecker helped you ace a contest or pass that tricky test case, star the repo! ⭐
+**Note:** This project officially supports **Docker deployment only**. Development without Docker is not officially supported.
