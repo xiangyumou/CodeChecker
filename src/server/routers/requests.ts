@@ -2,7 +2,7 @@ import { subMinutes, subHours, subDays, subMonths } from 'date-fns';
 import { z } from 'zod';
 import { router, publicProcedure, adminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
-import { qstash, getWebhookUrl, getConcurrencyLimit } from '@/lib/qstash/client';
+import { analysisQueue } from '@/lib/queue/analysis-queue';
 
 // Zod schemas for validation
 const createRequestSchema = z.object({
@@ -93,16 +93,14 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash with Flow-Control
-            const concurrency = await getConcurrencyLimit();
-            await qstash.publishJSON({
-                url: getWebhookUrl('/api/analyze-request'),
-                body: { requestId: request.id },
-                flowControl: {
-                    key: 'code-analysis',
-                    parallelism: concurrency,
-                },
-            });
+            // Add task to BullMQ queue
+            await analysisQueue.add(
+                'analyze',
+                { requestId: request.id },
+                {
+                    jobId: `analyze-${request.id}`, // 使用 requestId 作为唯一 ID，防止重复
+                }
+            );
 
             return request;
         }),
@@ -154,16 +152,14 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash with Flow-Control
-            const concurrency = await getConcurrencyLimit();
-            await qstash.publishJSON({
-                url: getWebhookUrl('/api/analyze-request'),
-                body: { requestId: newRequest.id },
-                flowControl: {
-                    key: 'code-analysis',
-                    parallelism: concurrency,
-                },
-            });
+            // Add task to BullMQ queue
+            await analysisQueue.add(
+                'analyze',
+                { requestId: newRequest.id },
+                {
+                    jobId: `analyze-${newRequest.id}`,
+                }
+            );
 
             return newRequest;
         }),
@@ -203,16 +199,14 @@ export const requestsRouter = router({
                 },
             });
 
-            // Send task to QStash with Flow-Control
-            const concurrency = await getConcurrencyLimit();
-            await qstash.publishJSON({
-                url: getWebhookUrl('/api/analyze-request'),
-                body: { requestId: updatedRequest.id },
-                flowControl: {
-                    key: 'code-analysis',
-                    parallelism: concurrency,
-                },
-            });
+            // Add task to BullMQ queue
+            await analysisQueue.add(
+                'analyze',
+                { requestId: updatedRequest.id },
+                {
+                    jobId: `analyze-${updatedRequest.id}`,
+                }
+            );
 
             return updatedRequest;
         }),

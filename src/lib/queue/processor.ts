@@ -1,27 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Receiver } from '@upstash/qstash';
+/**
+ * 分析任务处理器
+ * 从 /api/analyze-request/route.ts 提取的核心逻辑
+ * 被 BullMQ Worker 调用
+ */
+
 import { prisma } from '@/lib/db';
 import { getPrompt } from '@/lib/prompts/loader';
 import logger from '@/lib/logger';
 import OpenAI from 'openai';
 
-/**
- * QStash webhook handler for processing code analysis requests
- * This endpoint is called by QStash to process analysis tasks asynchronously
- */
-async function handler(req: NextRequest) {
+export async function processAnalysisTask(requestId: number): Promise<void> {
     try {
-        const body = await req.json();
-        const { requestId } = body;
-
-        if (!requestId || typeof requestId !== 'number') {
-            return NextResponse.json(
-                { error: 'Invalid requestId' },
-                { status: 400 }
-            );
-        }
-
-        logger.info({ requestId }, 'QStash task received: code/analyze');
+        logger.info({ requestId }, 'Starting task processing');
 
         // Load request and configuration
         const request = await prisma.request.findUnique({
@@ -29,24 +19,17 @@ async function handler(req: NextRequest) {
         });
 
         if (!request) {
-            logger.warn({ requestId }, 'Request not found (likely deleted), returning 200 to stop retry');
-            // Return 200 to acknowledge "completion" so QStash doesn't retry
-            return NextResponse.json(
-                { success: true, message: `Request ${requestId} not found (deleted)` },
-                { status: 200 }
-            );
+            logger.warn({ requestId }, 'Request not found (likely deleted)');
+            return;
         }
 
         // Idempotency check: Skip if already completed or failed
         if (request.status === 'COMPLETED' || request.status === 'FAILED') {
             logger.info(
                 { requestId, status: request.status },
-                'Task already processed, returning 200 to acknowledge'
+                'Task already processed'
             );
-            return NextResponse.json(
-                { success: true, message: `Request ${requestId} already ${request.status}` },
-                { status: 200 }
-            );
+            return;
         }
 
         // Update status to PROCESSING
@@ -166,9 +149,8 @@ async function handler(req: NextRequest) {
 
         logger.info({ requestId }, 'Step 1 & 2 completed in parallel');
 
-
         // Step 3: Deep Analysis
-        logger.info({ requestId, stage: 3 }, 'Starting Step 3: Deep Analysis');
+        logger.info({ requestId }, 'Starting Step 3: Deep Analysis');
         await prisma.request.update({
             where: { id: requestId },
             data: { stage3Status: 'processing' },
@@ -215,71 +197,23 @@ async function handler(req: NextRequest) {
             },
         });
 
-        logger.info({ requestId }, 'Request completed successfully via QStash');
-
-        return NextResponse.json({
-            success: true,
-            requestId,
-            message: 'Analysis completed',
-        });
+        logger.info({ requestId }, 'Task completed successfully');
 
     } catch (error: any) {
-        logger.error({ err: error }, 'QStash task failed');
+        logger.error({ err: error, requestId }, 'Task processing failed');
 
-        // Try to update request status if we have requestId
-        const body = await req.json().catch(() => ({}));
-        if (body.requestId) {
-            await prisma.request.update({
-                where: { id: body.requestId },
-                data: {
-                    status: 'FAILED',
-                    errorMessage: error.message,
-                    isSuccess: false,
-                },
-            }).catch(() => {
-                // Ignore errors updating status
-            });
-        }
-
-        return NextResponse.json(
-            {
-                success: false,
-                error: error.message,
+        await prisma.request.update({
+            where: { id: requestId },
+            data: {
+                status: 'FAILED',
+                errorMessage: error.message,
+                isSuccess: false,
             },
-            { status: 500 }
-        );
-    }
-}
-
-export async function POST(req: NextRequest) {
-    // Verify QStash signature
-    const receiver = new Receiver({
-        currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
-        nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY!,
-    });
-
-    const signature = req.headers.get('upstash-signature');
-    const body = await req.text();
-
-    try {
-        await receiver.verify({
-            signature: signature!,
-            body,
+        }).catch((updateError) => {
+            logger.error({ err: updateError, requestId }, 'Failed to update request status');
         });
-    } catch (error) {
-        logger.error({ err: error }, 'QStash signature verification failed');
-        return NextResponse.json(
-            { error: 'Invalid signature' },
-            { status: 401 }
-        );
+
+        // Re-throw to trigger BullMQ retry
+        throw error;
     }
-
-    // Parse body and call handler
-    const parsedBody = JSON.parse(body);
-    const mockReq = {
-        ...req,
-        json: async () => parsedBody,
-    } as NextRequest;
-
-    return handler(mockReq);
 }

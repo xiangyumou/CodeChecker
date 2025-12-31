@@ -1,4 +1,19 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    mem_limit: 100m
+    mem_reservation: 50m
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   code-checker:
     build:
       context: .
@@ -10,9 +25,16 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     volumes:
+      # SQLite 数据持久化（如果用 PostgreSQL 可以移除）
       - ./prisma/data:/app/prisma/data
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
 
 volumes:
+  redis_data:
   prisma_data:

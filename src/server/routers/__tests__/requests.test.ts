@@ -2,12 +2,11 @@ import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vites
 import { requestsRouter } from '../requests';
 import { TRPCError } from '@trpc/server';
 
-const { mockQStash, mockGetConcurrencyLimit } = vi.hoisted(() => {
+const { mockAnalysisQueue } = vi.hoisted(() => {
     return {
-        mockQStash: {
-            publishJSON: vi.fn(),
+        mockAnalysisQueue: {
+            add: vi.fn(),
         },
-        mockGetConcurrencyLimit: vi.fn(),
     };
 });
 
@@ -23,10 +22,8 @@ const mockPrisma = {
     },
 };
 
-vi.mock('@/lib/qstash/client', () => ({
-    qstash: mockQStash,
-    getWebhookUrl: (path: string) => `http://localhost:3000${path}`,
-    getConcurrencyLimit: mockGetConcurrencyLimit,
+vi.mock('@/lib/queue/analysis-queue', () => ({
+    analysisQueue: mockAnalysisQueue,
 }));
 
 describe('requestsRouter', () => {
@@ -53,8 +50,6 @@ describe('requestsRouter', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        // Default concurrency limit for tests
-        mockGetConcurrencyLimit.mockResolvedValue(3);
     });
 
     // List tests moved to be with other validation tests
@@ -86,12 +81,12 @@ describe('requestsRouter', () => {
     });
 
     describe('create', () => {
-        it('should create request and publish to QStash', async () => {
+        it('should create request and add to BullMQ queue', async () => {
             const input = { userPrompt: 'Test Prompt', imageReferences: ['ref'] };
             const mockCreated = { id: 123, ...input, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
-            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-123' });
+            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-123', data: { requestId: 123 } });
 
             const result = await caller.create(input);
 
@@ -103,14 +98,13 @@ describe('requestsRouter', () => {
                 }),
             });
 
-            expect(mockQStash.publishJSON).toHaveBeenCalledWith({
-                url: 'http://localhost:3000/api/analyze-request',
-                body: { requestId: 123 },
-                flowControl: {
-                    key: 'code-analysis',
-                    parallelism: 3,
-                },
-            });
+            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
+                'analyze',
+                { requestId: 123 },
+                {
+                    jobId: 'analyze-123',
+                }
+            );
             expect(result).toEqual(mockCreated);
         });
 
@@ -127,7 +121,7 @@ describe('requestsRouter', () => {
             const mockCreated = { id: 124, ...input, userPrompt: undefined, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
-            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-124' });
+            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-124', data: { requestId: 124 } });
 
             await expect(caller.create(input)).resolves.not.toThrow();
         });
@@ -178,7 +172,7 @@ describe('requestsRouter', () => {
     });
 
     describe('retry', () => {
-        it('should reset request fields and publish to QStash', async () => {
+        it('should reset request fields and add to BullMQ queue', async () => {
             const mockRequest = { id: 1, status: 'FAILED' };
             const mockUpdated = {
                 id: 1,
@@ -189,7 +183,7 @@ describe('requestsRouter', () => {
 
             mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
             mockPrisma.request.update.mockResolvedValue(mockUpdated);
-            mockQStash.publishJSON.mockResolvedValue({ messageId: 'msg-456' });
+            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-1', data: { requestId: 1 } });
 
             const result = await caller.retry(1);
 
@@ -201,14 +195,13 @@ describe('requestsRouter', () => {
                     stage1Status: 'pending',
                 }),
             });
-            expect(mockQStash.publishJSON).toHaveBeenCalledWith({
-                url: 'http://localhost:3000/api/analyze-request',
-                body: { requestId: 1 },
-                flowControl: {
-                    key: 'code-analysis',
-                    parallelism: 3,
-                },
-            });
+            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
+                'analyze',
+                { requestId: 1 },
+                {
+                    jobId: 'analyze-1',
+                }
+            );
             expect(result).toEqual(mockUpdated);
         });
         it('should throw NOT_FOUND if request does not exist', async () => {
