@@ -46,7 +46,7 @@ export async function getRequestViaAPI(
     id: number
 ): Promise<RequestResponse | null> {
     const response = await request.get(
-        `${baseURL}/api/trpc/requests.getById?input=${encodeURIComponent(JSON.stringify(id))}`
+        `${baseURL}/api/trpc/requests.getById?input=${encodeURIComponent(JSON.stringify({ json: id }))}`
     );
 
     if (!response.ok()) {
@@ -54,7 +54,7 @@ export async function getRequestViaAPI(
     }
 
     const json = await response.json();
-    return json.result.data.json;
+    return json.result?.data?.json || null;
 }
 
 /**

@@ -29,8 +29,9 @@ test.describe('Analysis Flow E2E @full', () => {
         const requestId = parseInt(url.match(/\/request\/(\d+)/)?.[1] || '0');
         expect(requestId).toBeGreaterThan(0);
 
-        // Verify initial status is QUEUED or PROCESSING
-        const statusText = page.locator('text=/queued|processing|排队|处理中/i').first();
+        // Verify initial status is QUEUED or PROCESSING (matches UI translations)
+        // EN: Waiting/Processing, ZH: 等待中/处理中, DE: Wartend/Verarbeitung
+        const statusText = page.locator('text=/waiting|processing|等待中|处理中|wartend|verarbeitung/i').first();
         await expect(statusText).toBeVisible({ timeout: 5000 });
 
         // Wait for analysis to complete (up to 2 minutes)
