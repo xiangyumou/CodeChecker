@@ -77,6 +77,8 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/codechecker_test"
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -164,6 +166,8 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://test:test@localhost:5432/codechecker_test"
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
