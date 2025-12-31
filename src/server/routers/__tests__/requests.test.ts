@@ -116,14 +116,33 @@ describe('requestsRouter', () => {
             await expect(caller.create({ imageReferences: [] })).rejects.toThrow();
         });
 
-        it('should allow imageReferences only', async () => {
-            const input = { imageReferences: ['ref'] };
-            const mockCreated = { id: 124, ...input, userPrompt: undefined, status: 'QUEUED' };
+        it('should allow imageReferences only and create request correctly', async () => {
+            const input = { imageReferences: ['ref1', 'ref2'] };
+            const mockCreated = { id: 124, imageReferences: JSON.stringify(['ref1', 'ref2']), userPrompt: null, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
             mockAnalysisQueue.add.mockResolvedValue({ id: 'job-124', data: { requestId: 124 } });
 
-            await expect(caller.create(input)).resolves.not.toThrow();
+            const result = await caller.create(input);
+
+            // Verify database was called with correct data
+            expect(mockPrisma.request.create).toHaveBeenCalledWith({
+                data: expect.objectContaining({
+                    imageReferences: JSON.stringify(['ref1', 'ref2']),
+                    status: 'QUEUED',
+                }),
+            });
+
+            // Verify queue was called
+            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
+                'analyze',
+                { requestId: 124 },
+                { jobId: 'analyze-124' }
+            );
+
+            // Verify return value
+            expect(result.id).toBe(124);
+            expect(result.status).toBe('QUEUED');
         });
     });
 

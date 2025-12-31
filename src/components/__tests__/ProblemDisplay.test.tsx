@@ -51,12 +51,13 @@ describe('ProblemDisplay', () => {
         expect(strong.tagName).toBe('STRONG')
     })
 
-    it('renders N/A for missing samples', () => {
+    it('renders localized "none" text for N/A samples in input and output sections', () => {
         const dataWithNA = { ...mockData, input_sample: 'N/A', output_sample: 'N/A' }
         render(<ProblemDisplay data={dataWithNA} />)
 
-        const pres = screen.getAllByText('none')
-        expect(pres.length).toBeGreaterThan(0)
+        // Should display 'none' translation key for both input and output sample sections
+        const noneElements = screen.getAllByText('none')
+        expect(noneElements).toHaveLength(2)
     })
 
     it('does not render notes section if notes are missing or N/A', () => {

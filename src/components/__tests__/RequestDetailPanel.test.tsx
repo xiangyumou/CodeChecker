@@ -4,6 +4,7 @@ import RequestDetailPanel from '../RequestDetailPanel';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import * as diff2html from 'diff2html';
 
 // Mock dependencies
 const mockUseQuery = vi.fn();
@@ -49,9 +50,10 @@ vi.mock('react-markdown', () => ({
     default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// Mock diff2html
+// Mock diff2html with spy
+const mockDiff2HtmlHtml = vi.fn((diffInput: string, options?: any) => '<div class="d2h-wrapper">Mock Diff HTML</div>');
 vi.mock('diff2html', () => ({
-    html: vi.fn(() => '<div>Mock Diff HTML</div>'),
+    html: (diffInput: string, options?: any) => mockDiff2HtmlHtml(diffInput, options),
 }));
 
 // Mock ShikiCodeRenderer
@@ -81,6 +83,7 @@ describe('RequestDetailPanel', () => {
     beforeEach(() => {
         mockUseQuery.mockReset();
         mockCreateNewRequest.mockReset();
+        mockDiff2HtmlHtml.mockClear();
         // Default safe return
         mockUseQuery.mockReturnValue({ data: undefined, isLoading: false });
         mockStore.selectedRequestId = null;
@@ -216,7 +219,7 @@ describe('RequestDetailPanel', () => {
         expect(screen.queryByText('analysisDetails')).not.toBeInTheDocument();
     });
 
-    it('renders modification analysis correctly', async () => {
+    it('renders modification analysis with actual code snippets and explanation', async () => {
         const user = userEvent.setup();
         mockStore.selectedRequestId = 1;
         const mockData = {
@@ -226,9 +229,9 @@ describe('RequestDetailPanel', () => {
             gptRawResponse: {
                 modification_analysis: [
                     {
-                        original_snippet: 'old code',
-                        modified_snippet: 'new code',
-                        explanation: 'did something'
+                        original_snippet: 'let oldVar = 1',
+                        modified_snippet: 'const newVar = 1',
+                        explanation: 'Replaced let with const for immutability'
                     }
                 ]
             }
@@ -240,27 +243,32 @@ describe('RequestDetailPanel', () => {
         const analysisTab = screen.getByText('analysisDetails');
         await user.click(analysisTab);
 
+        // Verify section labels are rendered
         expect(await screen.findByText('originalSnippet')).toBeInTheDocument();
-        expect(screen.getByText('did something')).toBeInTheDocument();
+        expect(screen.getByText('modifiedSnippet')).toBeInTheDocument();
 
-        // Verify diff2html was NOT called here (this is analysis tab)
-        // But we should verify it IS called in the diff tab if we had verified that tab.
-        // Let's create a specific test for diff2html argument verification or add it here if applicable.
-        // The implementation computes diffHtml in useMemo when request.gptRawResponse exists.
-        // The mockData in this test does NOT have .modified_code, so useMemo returns null.
+        // Verify actual code snippets are rendered (ShikiCodeRenderer mock renders <pre>{code}</pre>)
+        expect(screen.getByText('let oldVar = 1')).toBeInTheDocument();
+        expect(screen.getByText('const newVar = 1')).toBeInTheDocument();
+
+        // Verify explanation content is rendered (rendered via react-markdown mock as <div>)
+        expect(screen.getByText('Replaced let with const for immutability')).toBeInTheDocument();
     });
 
-    it('generates diff and renders it to the DOM', async () => {
+    it('generates diff with correct input and renders it to the DOM', async () => {
         const user = userEvent.setup();
         mockStore.selectedRequestId = 1;
+
+        const originalCode = 'const a = 1;';
+        const modifiedCode = 'const a = 2;';
 
         const mockData = {
             id: 1,
             status: 'COMPLETED',
             userPrompt: 'Test Prompt',
             gptRawResponse: {
-                original_code: 'const a = 1;',
-                modified_code: 'const a = 2;',
+                original_code: originalCode,
+                modified_code: modifiedCode,
             }
         };
         mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });
@@ -271,15 +279,15 @@ describe('RequestDetailPanel', () => {
         const diffTab = screen.getByText('codeDiff');
         await user.click(diffTab);
 
-        // Instead of spying on the library, we check if the mock output is rendered
-        // In a real integration test without mocks, we would check for specific diff classes like .d2h-ins
-        // Since we are mocking diff2html in this file (lines 53-55), we rely on that mock's output.
-        // The mock returns '<div>Mock Diff HTML</div>'.
+        // Verify diff2html was called with a diff string containing the code
+        expect(mockDiff2HtmlHtml).toHaveBeenCalled();
+        const diffInput = mockDiff2HtmlHtml.mock.calls[0][0];
+        // The diff string should contain both original and modified code markers
+        expect(diffInput).toContain('const a = 1');
+        expect(diffInput).toContain('const a = 2');
 
+        // Verify the mock output is rendered to the DOM
         expect(await screen.findByText('Mock Diff HTML')).toBeInTheDocument();
-
-        // This test proves the component calls the diff generator and puts the result in the DOM.
-        // It does NOT lock us into passing specific options 'side-by-side' etc.
     });
 
     it('renders fallback message when no user prompt is provided', () => {

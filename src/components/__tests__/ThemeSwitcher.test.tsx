@@ -56,12 +56,17 @@ describe('ThemeSwitcher', () => {
         expect(mockSetTheme).toHaveBeenCalledWith('dark')
     })
 
-    it('only renders once mounted to avoid hydration mismatch', () => {
-        // This is implicitly tested by the component working correctly
-        // The component uses useState to track mounted state
-        const { container } = render(<ThemeSwitcher />)
-        // After render, should have both icons (mounted state)
-        expect(container.querySelectorAll('svg').length).toBeGreaterThanOrEqual(1)
+    it('renders enabled and interactive button after mount', () => {
+        render(<ThemeSwitcher />)
+        const button = screen.getByRole('button', { name: /toggle theme/i })
+
+        // Button should be enabled and clickable after component mounts
+        expect(button).toBeEnabled()
+        expect(button).not.toHaveAttribute('aria-disabled')
+
+        // Both theme icons should be visible for toggling (Sun and Moon)
+        const icons = button.querySelectorAll('svg')
+        expect(icons.length).toBe(2)
     })
 
     it('has screen reader accessible name', () => {
