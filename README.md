@@ -57,11 +57,13 @@ Edit `.env` file:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
+| `DB_PASSWORD` | PostgreSQL password | ✅ |
 | `OPENAI_API_KEY` | OpenAI API key | ✅ |
 | `OPENAI_BASE_URL` | Custom OpenAI endpoint | Optional |
-| `DB_PASSWORD` | PostgreSQL password | ✅ |
 | `SETTINGS_TOKEN` | Admin panel token | ✅ |
 | `MAX_CONCURRENT_ANALYSIS_TASKS` | Worker concurrency | Optional (default: 3) |
+
+**Note:** PostgreSQL is the only officially supported database.
 
 ---
 
