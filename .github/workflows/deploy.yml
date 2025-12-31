@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # CI 阶段：测试
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+
+  # CI 阶段：构建并推送 Docker 镜像
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test  # 只有测试通过才会执行
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # CD 阶段：部署到 VPS
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: build-and-push  # 只有镜像推送成功才会执行
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            cd /opt/codechecker
+            
+            echo "📦 Pulling latest Docker image..."
+            docker compose pull code-checker
+            
+            echo "🔄 Restarting services..."
+            docker compose up -d code-checker
+            
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f
+            
+            echo "✅ Deployment completed!"
+            docker compose ps
