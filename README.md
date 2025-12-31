@@ -63,7 +63,9 @@ Edit `.env` file:
 | `SETTINGS_TOKEN` | Admin panel token | ✅ |
 | `MAX_CONCURRENT_ANALYSIS_TASKS` | Worker concurrency | Optional (default: 3) |
 
-**Note:** PostgreSQL is the only officially supported database.
+> **Database Support Policy:**  
+> PostgreSQL is the **only officially supported and tested** database.  
+> While the codebase may technically work with other databases (e.g., SQLite), we do not provide support, testing, or guarantees for non-PostgreSQL setups. Use at your own risk.
 
 ---
 
