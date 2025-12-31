@@ -14,6 +14,24 @@ services:
       timeout: 3s
       retries: 3
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    mem_limit: 200m
+    mem_reservation: 100m
+    environment:
+      POSTGRES_USER: codechecker
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev123}
+      POSTGRES_DB: codechecker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "codechecker" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   code-checker:
     build:
       context: .
@@ -27,14 +45,15 @@ services:
       - NODE_ENV=production
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    volumes:
-      # SQLite 数据持久化（如果用 PostgreSQL 可以移除）
-      - ./prisma/data:/app/prisma/data
+      - DB_PROVIDER=postgresql
+      - DATABASE_URL=postgresql://codechecker:${DB_PASSWORD:-dev123}@postgres:5432/codechecker
     restart: unless-stopped
     depends_on:
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
 
 volumes:
   redis_data:
-  prisma_data:
+  postgres_data:
