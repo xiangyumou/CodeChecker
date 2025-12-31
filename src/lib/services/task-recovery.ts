@@ -14,52 +14,45 @@ import logger from '@/lib/logger';
 export async function markIncompleteTasksAsFailed() {
     try {
         // Mark PROCESSING tasks as FAILED
+        // Note: With BullMQ, stalled jobs will be automatically retried.
+        // But for UI consistency, we mark tasks that were left in PROCESSING state
+        // during a crash.
         const processingResult = await prisma.request.updateMany({
             where: {
                 status: 'PROCESSING'
             },
             data: {
                 status: 'FAILED',
-                errorMessage: 'Service restarted while task was processing',
+                errorMessage: 'Service restarted while task was processing. You can retry it manually.',
                 isSuccess: false,
             }
         });
 
-        // Mark QUEUED tasks as FAILED
-        const queuedResult = await prisma.request.updateMany({
-            where: {
-                status: 'QUEUED'
-            },
-            data: {
-                status: 'FAILED',
-                errorMessage: 'Service restarted before task could be processed',
-                isSuccess: false,
-            }
-        });
+        // We NO LONGER mark QUEUED tasks as FAILED.
+        // Because with BullMQ + Redis, these tasks are persisted in Redis 
+        // and will be picked up by the Worker once it identifies itself.
 
-        const total = processingResult.count + queuedResult.count;
+        const total = processingResult.count;
 
         if (total > 0) {
             logger.warn(
                 {
                     processing: processingResult.count,
-                    queued: queuedResult.count,
                     total
                 },
-                'Marked incomplete tasks as FAILED due to service restart'
+                'Marked processing tasks as FAILED due to service restart'
             );
         } else {
-            logger.info('No incomplete tasks found on service startup');
+            logger.info('No processing tasks found on service startup');
         }
 
         return {
             processing: processingResult.count,
-            queued: queuedResult.count,
+            queued: 0,
             total
         };
     } catch (error) {
         logger.error({ err: error }, 'Failed to mark incomplete tasks as failed');
-        // Don't throw - service should continue starting up even if this fails
         return { processing: 0, queued: 0, total: 0 };
     }
 }
