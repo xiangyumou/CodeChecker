@@ -32,6 +32,8 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+        env:
+          DB_PROVIDER: postgresql
       
       - name: Run tests
         run: npm test
@@ -82,6 +84,8 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+        env:
+          DB_PROVIDER: postgresql
       
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -175,6 +179,8 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+        env:
+          DB_PROVIDER: postgresql
       
       - name: Generate Prisma Client
         run: npx prisma generate
