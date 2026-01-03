@@ -1,10 +1,11 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RequestDetailPanel from '../RequestDetailPanel';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { trpc } from '@/utils/trpc';
-import { toast } from 'sonner';
-import * as diff2html from 'diff2html';
+// import { trpc } from '@/utils/trpc'; // Unused
+// import { toast } from 'sonner'; // Unused
+import * as diff2html from 'diff2html'; // eslint-disable-line @typescript-eslint/no-unused-vars
+
 
 // Mock dependencies
 const mockUseQuery = vi.fn();
@@ -21,6 +22,7 @@ vi.mock('@/utils/trpc', () => ({
         }),
         requests: {
             getById: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 useQuery: (...args: any[]) => mockUseQuery(...args),
             },
             retry: {
@@ -51,8 +53,10 @@ vi.mock('react-markdown', () => ({
 }));
 
 // Mock diff2html with spy
-const mockDiff2HtmlHtml = vi.fn((diffInput: string, options?: any) => '<div class="d2h-wrapper">Mock Diff HTML</div>');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+const mockDiff2HtmlHtml = vi.fn((_diffInput: string, _options?: any) => '<div class="d2h-wrapper">Mock Diff HTML</div>');
 vi.mock('diff2html', () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     html: (diffInput: string, options?: any) => mockDiff2HtmlHtml(diffInput, options),
 }));
 

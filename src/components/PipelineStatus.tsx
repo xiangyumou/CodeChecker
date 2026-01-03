@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Check, Loader2, Circle, AlertCircle, Clock } from 'lucide-react';
+import { Check, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type StageStatus = 'pending' | 'processing' | 'completed' | 'failed';

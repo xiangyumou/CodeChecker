@@ -1,3 +1,4 @@
+
 import { test, expect } from '../fixtures/test-base';
 
 /**
@@ -6,7 +7,7 @@ import { test, expect } from '../fixtures/test-base';
  * @tags @smoke
  */
 test.describe('Navigation Smoke Tests @smoke', () => {
-    test('SM-04: Settings page loads with login form', async ({ page, settingsPage }) => {
+    test('SM-04: Settings page loads with login form', async ({ settingsPage }) => {
         await settingsPage.goto();
 
         // Should show login form (not authenticated)

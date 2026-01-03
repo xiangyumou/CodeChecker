@@ -199,14 +199,15 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
 
         logger.info({ requestId }, 'Task completed successfully');
 
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         logger.error({ err: error, requestId }, 'Task processing failed');
 
         await prisma.request.update({
             where: { id: requestId },
             data: {
                 status: 'FAILED',
-                errorMessage: error.message,
+                errorMessage,
                 isSuccess: false,
             },
         }).catch((updateError) => {

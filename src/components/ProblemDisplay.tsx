@@ -41,7 +41,7 @@ const MarkdownContent = ({ content }: { content: string }) => {
     );
 };
 
-const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
+const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType, title: string }) => (
     <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-primary" />
         <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{title}</h3>

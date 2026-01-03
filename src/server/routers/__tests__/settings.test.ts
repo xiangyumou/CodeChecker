@@ -25,7 +25,8 @@ describe('settingsRouter', () => {
     const createCaller = (token?: string) => {
         const headers = new Headers();
         if (token) headers.set('x-admin-token', token);
-        return settingsRouter.createCaller({ prisma: mockPrisma, headers } as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return settingsRouter.createCaller({ prisma: mockPrisma, headers } as unknown as any);
     };
 
     beforeEach(() => {
@@ -38,7 +39,8 @@ describe('settingsRouter', () => {
                 { key: 'OPENAI_MODEL', value: 'gpt-4' },
                 { key: 'MAX_RETRY', value: '3' },
             ];
-            mockPrisma.setting.findMany.mockResolvedValue(mockSettings as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.findMany.mockResolvedValue(mockSettings as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.getAll();
@@ -72,7 +74,8 @@ describe('settingsRouter', () => {
 
     describe('getByKey', () => {
         it('returns setting value for valid key', async () => {
-            mockPrisma.setting.findUnique.mockResolvedValue({ key: 'test', value: 'value' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.findUnique.mockResolvedValue({ key: 'test', value: 'value' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN); // admin
             const result = await caller.getByKey('test');
@@ -93,7 +96,8 @@ describe('settingsRouter', () => {
 
     describe('upsert', () => {
         it('updates existing setting for admin', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'k', value: 'v' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'k', value: 'v' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.upsert({ key: 'k', value: 'v' });
@@ -107,7 +111,8 @@ describe('settingsRouter', () => {
         });
 
         it('creates new setting when key does not exist', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'NEW_KEY', value: 'new_value' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'NEW_KEY', value: 'new_value' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.upsert({ key: 'NEW_KEY', value: 'new_value' });
@@ -129,7 +134,8 @@ describe('settingsRouter', () => {
 
     describe('batchUpdate', () => {
         it('updates multiple settings for admin', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'any', value: 'any' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'any', value: 'any' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             await caller.batchUpdate([
@@ -141,7 +147,8 @@ describe('settingsRouter', () => {
         });
 
         it('calls upsert with correct parameters for each setting', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'any', value: 'any' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'any', value: 'any' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             await caller.batchUpdate([
@@ -174,7 +181,8 @@ describe('settingsRouter', () => {
 
     describe('Edge Cases and Boundary Tests', () => {
         it('handles empty string value correctly', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'test-key', value: '' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'test-key', value: '' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.upsert({ key: 'test-key', value: '' });
@@ -189,7 +197,8 @@ describe('settingsRouter', () => {
 
         it('handles values with special characters', async () => {
             const specialValue = '{"json": true, "chars": "<>&\\""}';
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'json-key', value: specialValue } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'json-key', value: specialValue } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.upsert({ key: 'json-key', value: specialValue });
@@ -198,7 +207,8 @@ describe('settingsRouter', () => {
         });
 
         it('handles whitespace-only value', async () => {
-            mockPrisma.setting.upsert.mockResolvedValue({ key: 'ws-key', value: '   ' } as any);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            mockPrisma.setting.upsert.mockResolvedValue({ key: 'ws-key', value: '   ' } as unknown as any);
 
             const caller = createCaller(SETTINGS_TOKEN);
             const result = await caller.upsert({ key: 'ws-key', value: '   ' });

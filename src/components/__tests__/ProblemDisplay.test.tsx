@@ -67,7 +67,8 @@ describe('ProblemDisplay', () => {
     })
 
     it('renders gracefully with null data', () => {
-        const { container } = render(<ProblemDisplay data={null as any} />)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { container } = render(<ProblemDisplay data={null as unknown as any} />)
         expect(container).toBeEmptyDOMElement()
     })
 })

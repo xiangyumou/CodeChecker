@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { router, publicProcedure, adminProcedure } from '../trpc';
+import { router, adminProcedure } from '../trpc';
 
 const settingKeySchema = z.string().min(1);
 const updateSettingSchema = z.object({
@@ -70,7 +70,7 @@ export const settingsRouter = router({
                     where: { key: input },
                 });
                 return { success: true };
-            } catch (error) {
+            } catch {
                 // Ignore if not found
                 return { success: false };
             }

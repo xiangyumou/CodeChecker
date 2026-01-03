@@ -32,7 +32,7 @@ export default async function RootLayout({
     const locale = cookieStore.get('NEXT_LOCALE')?.value || 'zh';
 
     // Ensure that the incoming `locale` is valid
-    if (!routing.locales.includes(locale as any)) {
+    if (!((routing.locales as unknown) as string[]).includes(locale)) {
         notFound();
     }
 

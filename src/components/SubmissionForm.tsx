@@ -4,13 +4,13 @@ import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { trpc } from '@/utils/trpc';
 import { useTranslations } from 'next-intl';
-import { Send, Trash2, Upload, FileText, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { Send, Trash2, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+// import { Label } from '@/components/ui/label'; // Unused
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+// import { ScrollArea } from '@/components/ui/scroll-area'; // Unused
 import { motion, AnimatePresence } from 'framer-motion';
 import { ZoomableImage } from './ui/ZoomableImage';
 
@@ -70,7 +70,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 try {
                     const preview = await getBase64(file);
                     validFiles.push({ id: Math.random().toString(36).substr(2, 9), file, preview });
-                } catch (e) {
+                } catch { // Ignore error
                     toast.error(t('imageProcessingFailed'));
                 }
             } else {
@@ -111,8 +111,8 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 userPrompt: prompt || '',
                 imageReferences: imageBase64List.length > 0 ? imageBase64List : undefined,
             });
-        } catch (e) {
-            // Error handled by mutation
+        } catch { // Error handled by mutation
+            // No explicit action needed here as onError in createMutation handles it
         }
     };
 
@@ -200,7 +200,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                                     exit={{ opacity: 0, height: 0 }}
                                     transition={{ duration: 0.2 }}
                                 >
-                                    {files.map((file, index) => (
+                                    {files.map((file) => (
                                         <motion.div
                                             key={file.id}
                                             className="group relative w-24 h-24 flex-none rounded-lg overflow-hidden border border-border bg-surface"

@@ -24,7 +24,7 @@ vi.mock('@/utils/trpc', () => ({
         }),
         requests: {
             getById: {
-                useQuery: (...args: any[]) => mockUseQuery(...args),
+                useQuery: (...args: unknown[]) => mockUseQuery(...args),
             },
             retry: {
                 useMutation: () => ({

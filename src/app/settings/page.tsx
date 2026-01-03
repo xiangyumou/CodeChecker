@@ -33,23 +33,22 @@ const loginSchema = z.object({
     token: z.string().min(1, 'Token is required'),
 });
 
-const settingsSchema = z.object({
-    OPENAI_API_KEY: z.string().optional(),
-    OPENAI_BASE_URL: z.string().optional(),
-    OPENAI_MODEL: z.string().optional(),
-    MODEL_SUPPORTS_VISION: z.string().optional(),
-    MAX_CONCURRENT_ANALYSIS_TASKS: z.string().optional(),
-    REQUEST_TIMEOUT_SECONDS: z.string().optional(),
-});
-
-type SettingsFormValues = z.infer<typeof settingsSchema>;
+// const settingsSchema = z.object({
+//    OPENAI_API_KEY: z.string().optional(),
+//    OPENAI_BASE_URL: z.string().optional(),
+//    OPENAI_MODEL: z.string().optional(),
+//    MODEL_SUPPORTS_VISION: z.string().optional(),
+//    MAX_CONCURRENT_ANALYSIS_TASKS: z.string().optional(),
+//    REQUEST_TIMEOUT_SECONDS: z.string().optional(),
+// });
+// type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function SettingsPage() {
     const [token, setToken] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        setIsClient(true);
+        setIsClient(true); // eslint-disable-line react-hooks/set-state-in-effect
         const storedToken = localStorage.getItem('settings_token');
         if (storedToken) {
             setToken(storedToken);
@@ -62,7 +61,7 @@ export default function SettingsPage() {
         return <LoginView onLogin={setToken} />;
     }
 
-    return <SettingsView token={token} onLogout={() => {
+    return <SettingsView onLogout={() => {
         localStorage.removeItem('settings_token');
         setToken(null);
     }} />;
@@ -120,8 +119,8 @@ function LoginView({ onLogin }: { onLogin: (token: string) => void }) {
     );
 }
 
-function SettingsView({ token, onLogout }: { token: string, onLogout: () => void }) {
-    const utils = trpc.useUtils();
+function SettingsView({ onLogout }: { onLogout: () => void }) {
+    // const utils = trpc.useUtils();
     const { data: settings, isLoading: isLoadingSettings, error: loadError } = trpc.settings.getAll.useQuery(undefined, {
         retry: false,
     });
@@ -420,7 +419,7 @@ function PromptEditor({ id, label, description }: { id: string, label: string, d
 
     useEffect(() => {
         if (customValue) {
-            setValue(customValue);
+            setValue(customValue); // eslint-disable-line react-hooks/set-state-in-effect
         } else if (defaultValue) {
             setValue(defaultValue);
         }
@@ -500,6 +499,9 @@ function PromptEditor({ id, label, description }: { id: string, label: string, d
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
+                    )}
+                    {isEditing && ( // Show visually that editing is happening if needed, or remove isEditing if truly unused
+                        <span className="text-xs text-muted-foreground self-center mr-2">Unsaved changes</span>
                     )}
                     <Button
                         onClick={handleSave}

@@ -67,8 +67,8 @@ test.describe('Performance Tests @full', () => {
         const metrics = await page.evaluate(() => {
             if ('memory' in performance) {
                 return {
-                    usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-                    totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+                    usedJSHeapSize: (performance as unknown as { memory: { usedJSHeapSize: number } }).memory.usedJSHeapSize,
+                    totalJSHeapSize: (performance as unknown as { memory: { totalJSHeapSize: number } }).memory.totalJSHeapSize,
                 };
             }
             return null;

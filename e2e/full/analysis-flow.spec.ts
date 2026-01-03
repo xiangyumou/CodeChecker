@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/test-base';
-import { testCode, adminToken } from '../utils/test-data';
-import { waitForRequestStatus, createRequestViaAPI } from '../utils/api-helpers';
+import { testCode } from '../utils/test-data';
+import { waitForRequestStatus } from '../utils/api-helpers';
 
 /**
  * Full E2E test for complete code analysis flow
@@ -51,8 +51,8 @@ test.describe('Analysis Flow E2E @full', () => {
         await expect(analysisContent).toBeVisible();
     });
 
-    test('E2E-03: Can retry a failed request', async ({ page, request }) => {
-        const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000';
+    test('E2E-03: Can retry a failed request', async ({ page }) => {
+        // const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
         // Navigate to an existing failed request (if any)
         await page.goto('/');

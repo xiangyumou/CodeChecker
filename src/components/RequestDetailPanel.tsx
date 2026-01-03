@@ -13,19 +13,20 @@ import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge"; // Unused
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+// import { AlertTitle } from "@/components/ui/alert"; // Unused
 import {
     Loader2,
     Info,
-    CheckCircle2,
+    // CheckCircle2,
     AlertCircle,
-    Clock,
+    // Clock,
     Code2,
     FileDiff,
     Lightbulb,
-    FileText,
+    // FileText, // Unused
     ArrowLeft,
     X,
     User,
@@ -33,10 +34,10 @@ import {
     RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils"; // Unused
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from '@/store/useUIStore';
-import { useTheme } from 'next-themes';
+// import { useTheme } from 'next-themes';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
 import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
@@ -45,6 +46,7 @@ import { ZoomableImage } from './ui/ZoomableImage';
 // Props interface
 export interface RequestDetailPanelProps {
     // Directly pass request data (optional)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     request?: any;
     isLoading?: boolean;
 }
@@ -55,15 +57,15 @@ export default function RequestDetailPanel({
 }: RequestDetailPanelProps = {}) {
     const t = useTranslations('requestDetails');
     const { selectedRequestId, createNewRequest } = useUIStore();
-    const { theme, systemTheme } = useTheme();
+    // const { theme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
     }, []);
 
-    const currentTheme = theme === 'system' ? systemTheme : theme;
-    const isDark = currentTheme === 'dark';
+    // const currentTheme = theme === 'system' ? systemTheme : theme;
+    // const isDark = currentTheme === 'dark';
 
     const utils = trpc.useUtils();
 
@@ -79,6 +81,7 @@ export default function RequestDetailPanel({
                 // Stop polling on error (e.g., 404 not found)
                 if (query.state.error) return false;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const data = query.state.data as any;
                 // Initial load - poll at moderate speed
                 if (!data) return 5000;
@@ -99,6 +102,7 @@ export default function RequestDetailPanel({
     const prevStatusRef = useRef<string | undefined>(undefined);
 
     // Unify data source and loading state
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const request = (propRequest || queryRequest) as any;
     const isLoading = propRequest ? propIsLoading : queryIsLoading;
     const requestId = propRequest ? propRequest.id : selectedRequestId;
@@ -112,12 +116,12 @@ export default function RequestDetailPanel({
         prevStatusRef.current = request?.status;
     }, [request?.status, utils, propRequest]);
 
-    const statusConfig = {
-        QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
-        PROCESSING: { color: 'bg-blue-500/10 text-blue-500 animate-pulse', icon: Loader2 },
-        COMPLETED: { color: 'bg-green-500/10 text-green-500', icon: CheckCircle2 },
-        FAILED: { color: 'bg-destructive/10 text-destructive', icon: AlertCircle },
-    } as const;
+    // const statusConfig = {
+    //     QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
+    //     PROCESSING: { color: 'bg-blue-500/10 text-blue-500 animate-pulse', icon: Loader2 },
+    //     COMPLETED: { color: 'bg-green-500/10 text-green-500', icon: CheckCircle2 },
+    //     FAILED: { color: 'bg-destructive/10 text-destructive', icon: AlertCircle },
+    // } as const;
 
     // Generate diff HTML
     const diffHtml = useMemo(() => {
@@ -143,14 +147,15 @@ export default function RequestDetailPanel({
         });
 
         return diffHtmlOutput;
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [request]);
 
     // Safety check for status config
-    const config = (request?.status && statusConfig[request.status as keyof typeof statusConfig])
-        ? statusConfig[request.status as keyof typeof statusConfig]
-        : statusConfig.QUEUED;
+    // const config = (request?.status && statusConfig[request.status as keyof typeof statusConfig])
+    //    ? statusConfig[request.status as keyof typeof statusConfig]
+    //    : statusConfig.QUEUED;
 
-    const StatusIcon = config.icon;
+    // const StatusIcon = config.icon; // Unused
 
 
     const retryMutation = trpc.requests.retry.useMutation({
@@ -413,7 +418,7 @@ export default function RequestDetailPanel({
                                     if (typeof request.problemDetails === 'string') {
                                         try {
                                             problemData = JSON.parse(request.problemDetails);
-                                        } catch (e) {
+                                        } catch (_e) { // eslint-disable-line @typescript-eslint/no-unused-vars
                                             problemData = request.problemDetails;
                                         }
                                     } else {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 
@@ -25,7 +26,7 @@ function loadEnv() {
                 }
             });
         }
-    } catch (e) {
+    } catch {
         // Ignore error
     }
 }

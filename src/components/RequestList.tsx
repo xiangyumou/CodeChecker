@@ -29,7 +29,8 @@ export default function RequestList() {
     const router = useRouter();
     const [isRefetching, setIsRefetching] = useState(false);
     const { ref, inView } = useInView();
-    const { selectRequest, selectedRequestId } = useUIStore();
+    // const { selectRequest, selectedRequestId } = useUIStore();
+    const { selectedRequestId } = useUIStore();
 
     const {
         data: infiniteData,
@@ -40,15 +41,17 @@ export default function RequestList() {
     } = trpc.requests.list.useInfiniteQuery(
         { take: 20 },
         {
-            getNextPageParam: (lastPage: any[]) => {
+            getNextPageParam: (lastPage: unknown[]) => {
                 if (lastPage.length < 20) return undefined;
-                return lastPage[lastPage.length - 1].id;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return (lastPage[lastPage.length - 1] as any).id;
             },
 
             // Smart polling: dual-speed strategy
             // - 5s when there are active tasks (QUEUED/PROCESSING)
             // - 30s when all tasks are completed (to detect new requests from other users)
             // - Stop when page is hidden (save resources)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             refetchInterval: (data: any) => {
                 // Stop polling when page is not visible
                 if (typeof document !== 'undefined' && document.hidden) {
@@ -62,6 +65,7 @@ export default function RequestList() {
 
                 const allRequests = data.pages.flat();
                 const hasActiveTasks = allRequests.some(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (r: any) => r.status === 'QUEUED' || r.status === 'PROCESSING'
                 );
 
@@ -204,6 +208,7 @@ export default function RequestList() {
                         },
                     }}
                 >
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {requests.map((request: any) => {
                         const config = statusConfig[request.status as keyof typeof statusConfig] || statusConfig.QUEUED;
                         const StatusIcon = config.icon;

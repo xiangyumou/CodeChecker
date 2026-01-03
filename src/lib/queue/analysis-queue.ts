@@ -20,7 +20,7 @@ async function getConcurrencyLimit(): Promise<number> {
                 return parsed;
             }
         }
-    } catch (error) {
+    } catch {
         // Fall through to environment variable
     }
 

@@ -24,7 +24,7 @@ vi.mock('@/utils/trpc', () => ({
         }),
         requests: {
             list: {
-                useInfiniteQuery: (...args: any[]) => mockUseQuery(...args),
+                useInfiniteQuery: (...args: unknown[]) => mockUseQuery(...args),
             },
         },
     },

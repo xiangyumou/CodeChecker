@@ -1,5 +1,5 @@
 
-import { render, screen, act } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 import RequestList from '../RequestList'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -25,7 +25,7 @@ vi.mock('@/utils/trpc', () => ({
         }),
         requests: {
             list: {
-                useInfiniteQuery: (...args: any[]) => mockUseQuery(...args),
+                useInfiniteQuery: (...args: unknown[]) => mockUseQuery(...args),
             },
         },
     },

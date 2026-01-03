@@ -24,7 +24,7 @@ global.ResizeObserver = class ResizeObserver {
     observe() { }
     unobserve() { }
     disconnect() { }
-} as any;
+} as unknown as typeof ResizeObserver;
 
 // Mock window.alert
 if (typeof window !== 'undefined' && !window.alert) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Languages } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useUIStore } from '@/store/useUIStore';
 import clsx from 'clsx';
@@ -21,7 +21,6 @@ const languages = [
 
 export default function LanguageSwitcher() {
     const router = useRouter();
-    const pathname = usePathname();
     const locale = useLocale();
     const { setLanguage } = useUIStore();
 
@@ -30,6 +29,7 @@ export default function LanguageSwitcher() {
         setLanguage(newLocale);
 
         // Set cookie
+        // eslint-disable-next-line react-hooks/immutability
         document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
 
         // Refresh to update server components

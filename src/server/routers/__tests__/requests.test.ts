@@ -44,7 +44,8 @@ describe('requestsRouter', () => {
     headers.set('x-admin-token', SETTINGS_TOKEN);
 
     const caller = requestsRouter.createCaller({
-        prisma: mockPrisma as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        prisma: mockPrisma as unknown as any,
         headers,
     });
 
@@ -109,7 +110,8 @@ describe('requestsRouter', () => {
         });
 
         it('should throw validation error if both userPrompt and imageReferences are missing', async () => {
-            await expect(caller.create({} as any)).rejects.toThrow();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await expect(caller.create({} as unknown as any)).rejects.toThrow();
         });
 
         it('should throw validation error if imageReferences is empty and userPrompt is missing', async () => {

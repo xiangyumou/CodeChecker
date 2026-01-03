@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { authRouter } from '../auth';
-import { TRPCError } from '@trpc/server';
 import bcrypt from 'bcrypt';
 
 // Mock bcrypt
@@ -20,7 +19,8 @@ const mockPrisma = {
 
 describe('authRouter', () => {
     const caller = authRouter.createCaller({
-        prisma: mockPrisma as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        prisma: mockPrisma as unknown as any,
         headers: new Headers(),
     });
 
@@ -32,7 +32,8 @@ describe('authRouter', () => {
         it('should login successfully with correct credentials', async () => {
             const mockAdmin = { id: 1, username: 'admin', passwordHash: 'hashed' };
             mockPrisma.admin.findUnique.mockResolvedValue(mockAdmin);
-            (bcrypt.compare as any).mockResolvedValue(true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (bcrypt.compare as unknown as any).mockResolvedValue(true);
 
             const result = await caller.login({ username: 'admin', password: 'password' });
 
@@ -54,7 +55,8 @@ describe('authRouter', () => {
         it('should fail with invalid password', async () => {
             const mockAdmin = { id: 1, username: 'admin', passwordHash: 'hashed' };
             mockPrisma.admin.findUnique.mockResolvedValue(mockAdmin);
-            (bcrypt.compare as any).mockResolvedValue(false);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (bcrypt.compare as unknown as any).mockResolvedValue(false);
 
             await expect(caller.login({ username: 'admin', password: 'wrong' }))
                 .rejects.toThrow('Invalid username or password');

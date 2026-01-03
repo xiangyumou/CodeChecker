@@ -1,7 +1,5 @@
 import { describe, test, expect } from 'vitest';
 import { appRouter } from '@/server/routers'; // Assuming this imports the merged router
-import { createTRPCContext } from '@/server/trpc';
-import { TRPCError } from '@trpc/server';
 import { prisma } from '@/lib/db';
 
 // Mock dependencies if needed, but integration test is better if DB is set up.
@@ -40,13 +38,15 @@ describe('Security Audit Tests', () => {
 
         try {
             await caller.requests.create({ userPrompt: '' }); // Empty prompt to trigger validation
-        } catch (e: any) {
+        } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = e as any;
             // Should NOT be an UNAUTHORIZED error
-            expect(e.code).not.toBe('UNAUTHORIZED');
+            expect(error.code).not.toBe('UNAUTHORIZED');
             // It MUST be a BAD_REQUEST (Validation Error in TRPC)
-            expect(e.code).toBe('BAD_REQUEST');
+            expect(error.code).toBe('BAD_REQUEST');
             // Zod error details should be present
-            const zodError = JSON.parse(e.message);
+            const zodError = JSON.parse(error.message);
             expect(zodError).toMatchObject([
                 {
                     message: "Either userPrompt or imageReferences must be provided",

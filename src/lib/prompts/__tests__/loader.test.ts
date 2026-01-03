@@ -27,10 +27,12 @@ describe('Prompt Loader', () => {
     });
 
     it('should return DB value if present', async () => {
-        (prisma.setting.findUnique as any).mockResolvedValue({ key: 'test-prompt', value: 'DB Prompt Content' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockResolvedValue({ key: 'test-prompt', value: 'DB Prompt Content' });
 
         // We don't expect file read to be called here, but if it is, it should be mocked
-        (fs.readFile as any).mockResolvedValue('File Prompt Content');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fs.readFile as unknown as any).mockResolvedValue('File Prompt Content');
 
         const content = await getPrompt('test-prompt');
 
@@ -39,8 +41,10 @@ describe('Prompt Loader', () => {
     });
 
     it('should fallback to file system if DB has no value', async () => {
-        (prisma.setting.findUnique as any).mockResolvedValue(null);
-        (fs.readFile as any).mockResolvedValue('File Prompt Content');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockResolvedValue(null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fs.readFile as unknown as any).mockResolvedValue('File Prompt Content');
 
         const content = await getPrompt('test-prompt');
 
@@ -50,8 +54,10 @@ describe('Prompt Loader', () => {
     });
 
     it('should handle DB errors gracefully and fallback to file', async () => {
-        (prisma.setting.findUnique as any).mockRejectedValue(new Error('DB Error'));
-        (fs.readFile as any).mockResolvedValue('File Prompt Content');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockRejectedValue(new Error('DB Error'));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fs.readFile as unknown as any).mockResolvedValue('File Prompt Content');
 
         const content = await getPrompt('test-prompt');
 
@@ -60,7 +66,8 @@ describe('Prompt Loader', () => {
 
     it('should always query DB (DB values are not cached for real-time updates)', async () => {
         // The implementation intentionally does NOT cache DB values to allow instant updates
-        (prisma.setting.findUnique as any).mockResolvedValue({ key: 'db-prompt', value: 'DB Content' });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockResolvedValue({ key: 'db-prompt', value: 'DB Content' });
 
         // First call
         const firstCall = await getPrompt('db-prompt');
@@ -75,8 +82,10 @@ describe('Prompt Loader', () => {
 
     it('should cache file fallback values after first read', async () => {
         // When DB returns null, we fall back to file and cache it
-        (prisma.setting.findUnique as any).mockResolvedValue(null);
-        (fs.readFile as any).mockResolvedValue('Cached File Content');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockResolvedValue(null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fs.readFile as unknown as any).mockResolvedValue('Cached File Content');
 
         // First call - hits DB then file
         const firstCall = await getPrompt('file-prompt');
@@ -91,8 +100,10 @@ describe('Prompt Loader', () => {
     });
 
     it('should clear file cache when clearPromptCache is called', async () => {
-        (prisma.setting.findUnique as any).mockResolvedValue(null);
-        (fs.readFile as any).mockResolvedValue('Content');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.setting.findUnique as unknown as any).mockResolvedValue(null);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fs.readFile as unknown as any).mockResolvedValue('Content');
 
         // First call - caches file content
         await getPrompt('test-prompt');

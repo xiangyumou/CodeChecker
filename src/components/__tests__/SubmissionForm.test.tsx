@@ -5,7 +5,8 @@ import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 // Mock dependencies
-import { useRouter } from 'next/navigation'
+// Mock dependencies
+// import { useRouter } from 'next/navigation' // Unused dep
 const mockMutateAsync = vi.fn()
 const mockInvalidate = vi.fn()
 const mockPush = vi.fn()
@@ -28,8 +29,10 @@ vi.mock('@/utils/trpc', () => ({
         }),
         requests: {
             create: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 useMutation: ({ onSuccess }: any) => ({
-                    mutateAsync: mockMutateAsync.mockImplementation(async (data) => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    mutateAsync: mockMutateAsync.mockImplementation(async (_data) => {
                         // Simulate success
                         if (onSuccess) onSuccess({ id: 123 });
                         return { id: 123 };
@@ -39,7 +42,8 @@ vi.mock('@/utils/trpc', () => ({
         },
         settings: {
             getByKey: {
-                useQuery: (key: string) => ({
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                useQuery: (_key: string) => ({
                     data: mockVisionSupport(),
                 }),
             },
@@ -62,15 +66,19 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('../ui/ZoomableImage', () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ZoomableImage: ({ src, alt }: any) => <img src={src} alt={alt} />
 }))
 
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', () => ({
     motion: {
-        div: ({ children, initial, animate, exit, transition, ...props }: any) => <div {...props}>{children}</div>,
-        button: ({ children, initial, animate, exit, transition, whileHover, whileTap, ...props }: any) => <button {...props}>{children}</button>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        div: ({ children, initial: _initial, animate: _animate, exit: _exit, transition: _transition, ...props }: any) => <div {...props}>{children}</div>,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        button: ({ children, initial: _initial, animate: _animate, exit: _exit, transition: _transition, whileHover: _whileHover, whileTap: _whileTap, ...props }: any) => <button {...props}>{children}</button>,
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 

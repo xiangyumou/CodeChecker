@@ -96,8 +96,8 @@ export default function NotFound() {
                         Page not found
                     </h2>
                     <p className="max-w-md text-muted-foreground md:text-lg">
-                        Sorry, the page you are looking for doesn't exist or has been moved.
-                        Let's get you back on track.
+                        Sorry, the page you are looking for doesn&apos;t exist or has been moved.
+                        Let&apos;s get you back on track.
                     </p>
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:justify-center mt-8">

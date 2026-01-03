@@ -1,6 +1,6 @@
 # CodeChecker
 
-AI-powered code analysis and optimization tool with staged GPT evaluation.
+AI-powered code debugging tool for ACM/OI competitive programming.
 
 [![Docker](https://img.shields.io/badge/Docker-Required-blue)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -103,9 +103,8 @@ Edit `.env` file:
 
 #### Unit Tests
 ```bash
-npm test              # Run all unit tests (142 tests)
-npm run test:watch    # Run in watch mode
-npm run test:coverage # Generate coverage report
+npm test            # Run all unit tests (142 tests)
+npm run test:watch  # Run in watch mode
 ```
 
 #### E2E Tests (Playwright)

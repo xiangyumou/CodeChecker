@@ -31,7 +31,7 @@ describe('ShikiCodeRenderer', () => {
     });
 
     it('renders highlighted code after loading', async () => {
-        const { container } = render(<ShikiCodeRenderer code="const x = 1;" />);
+        render(<ShikiCodeRenderer code="const x = 1;" />);
         await waitFor(() => {
             expect(screen.getByText('const x = 1;')).toBeInTheDocument();
         });
