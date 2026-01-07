@@ -165,7 +165,7 @@ export const requestsRouter = router({
         }),
 
     // Retry request (resets existing request)
-    retry: adminProcedure
+    retry: publicProcedure
         .input(requestIdSchema)
         .mutation(async ({ ctx, input }) => {
             const request = await ctx.prisma.request.findUnique({

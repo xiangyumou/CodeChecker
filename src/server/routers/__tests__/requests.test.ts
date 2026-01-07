@@ -231,6 +231,39 @@ describe('requestsRouter', () => {
         });
     });
 
+    describe('retry (public access)', () => {
+        // Create a caller without admin token
+        const publicCaller = requestsRouter.createCaller({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            prisma: mockPrisma as unknown as any,
+            headers: new Headers(), // No admin token
+        });
+
+        it('should allow retry without admin token', async () => {
+            const mockRequest = { id: 2, status: 'FAILED' };
+            const mockUpdated = {
+                id: 2,
+                status: 'QUEUED',
+                isSuccess: false,
+                stage1Status: 'pending'
+            };
+
+            mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
+            mockPrisma.request.update.mockResolvedValue(mockUpdated);
+            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-2', data: { requestId: 2 } });
+
+            const result = await publicCaller.retry(2);
+
+            expect(mockPrisma.request.update).toHaveBeenCalledWith({
+                where: { id: 2 },
+                data: expect.objectContaining({
+                    status: 'QUEUED',
+                }),
+            });
+            expect(result).toEqual(mockUpdated);
+        });
+    });
+
     describe('prune', () => {
         it('should prune requests older than specified duration', async () => {
             // Mock date to control time
