@@ -204,7 +204,7 @@ export const requestsRouter = router({
                 'analyze',
                 { requestId: updatedRequest.id },
                 {
-                    jobId: `analyze-${updatedRequest.id}`,
+                    jobId: `analyze-${updatedRequest.id}-${Date.now()}`,
                 }
             );
 

@@ -220,7 +220,7 @@ describe('requestsRouter', () => {
                 'analyze',
                 { requestId: 1 },
                 {
-                    jobId: 'analyze-1',
+                    jobId: expect.stringMatching(/^analyze-1-\d+$/),
                 }
             );
             expect(result).toEqual(mockUpdated);
