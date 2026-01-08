@@ -301,7 +301,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /root/apps/codechecker
+            cd /hdd1/docker/apps/CodeChecker
             
             echo "📦 Pulling latest Docker image..."
             docker compose pull code-checker
