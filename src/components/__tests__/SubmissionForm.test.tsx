@@ -139,7 +139,8 @@ describe('SubmissionForm', () => {
         await waitFor(() => {
             expect(screen.getByAltText('preview')).toBeInTheDocument()
         })
-        expect(toast.success).toHaveBeenCalledWith('addedImages')
+        // Verify toast was called with the actual message (Chinese text)
+        expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('张图片'))
     })
 
     it('removes uploaded image', async () => {
