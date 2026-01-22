@@ -32,8 +32,9 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
             if (!isNaN(id)) {
                 selectRequest(id);
             }
+        } else {
+            createNewRequest();
         }
-        createNewRequest();
     }, [initialRequestId, selectRequest, createNewRequest]);
 
     const handleCreateNew = () => {

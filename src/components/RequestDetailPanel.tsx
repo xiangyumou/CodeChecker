@@ -221,6 +221,7 @@ export default function RequestDetailPanel({
                 <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
                     <AlertCircle className="w-12 h-12 text-muted" />
                     <p className="text-lg font-medium text-text" data-testid="error-message">{t('requestNotFound')}</p>
+                    <p className="text-sm text-muted-foreground">ID: {requestId || 'unknown'}</p>
                     <Button variant="outline" onClick={createNewRequest} className="mt-4">
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         {t('backToCreate') || 'Back'}
@@ -243,6 +244,19 @@ export default function RequestDetailPanel({
                         <h2 className="text-2xl font-extrabold tracking-tight text-text">
                             {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
                         </h2>
+                        {/* Status badge for QUEUED/PROCESSING states */}
+                        {(request.status === 'QUEUED' || request.status === 'PROCESSING') && (
+                            <Badge
+                                variant="secondary"
+                                className={request.status === 'QUEUED'
+                                    ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                }
+                                data-testid="request-status-badge"
+                            >
+                                {request.status === 'QUEUED' ? t('queued') : t('processing')}
+                            </Badge>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         {(request.status === 'FAILED' || request.status === 'COMPLETED') && (
