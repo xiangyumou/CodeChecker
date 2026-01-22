@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
     Loader2,
     Info,
@@ -34,6 +35,7 @@ import { useUIStore } from '@/store/useUIStore';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
 import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
+import { ZoomableImage } from './ui/ZoomableImage';
 
 // Props interface
 export interface RequestDetailPanelProps {
@@ -303,10 +305,17 @@ export default function RequestDetailPanel({
                                 {t('problemDetails')}
                             </TabsTrigger>
                         ) : (
-                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                <Info className="w-3.5 h-3.5 mr-1.5" />
-                                {t('problemDetails')}
-                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
+                                        <Info className="w-3.5 h-3.5 mr-1.5" />
+                                        {t('problemDetails')}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>完成阶段 1 后解锁</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                         {(request.stage2Status === 'completed' || request.status === 'COMPLETED') ? (
                             <TabsTrigger value="code" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
@@ -314,10 +323,17 @@ export default function RequestDetailPanel({
                                 {t('sourceCode')}
                             </TabsTrigger>
                         ) : (
-                            <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                <Code2 className="w-3.5 h-3.5 mr-1.5" />
-                                {t('sourceCode')}
-                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
+                                        <Code2 className="w-3.5 h-3.5 mr-1.5" />
+                                        {t('sourceCode')}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>完成阶段 2 后解锁</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                         {request.status === 'COMPLETED' ? (
                             <>
@@ -332,14 +348,28 @@ export default function RequestDetailPanel({
                             </>
                         ) : (
                             <>
-                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                    <FileDiff className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('codeDiff')}
-                                </div>
-                                <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                    <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('analysisDetails')}
-                                </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
+                                            <FileDiff className="w-3.5 h-3.5 mr-1.5" />
+                                            {t('codeDiff')}
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>分析完成后查看</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
+                                            <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
+                                            {t('analysisDetails')}
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>分析完成后查看</p>
+                                    </TooltipContent>
+                                </Tooltip>
                             </>
                         )}
                     </TabsList>

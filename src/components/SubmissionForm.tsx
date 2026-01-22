@@ -25,6 +25,44 @@ const getBase64 = (file: File): Promise<string> =>
         reader.onerror = (error) => reject(error);
     });
 
+// Helper function to get user-friendly error messages
+const getErrorMessage = (error: { message?: string }, defaultMsg: string): string => {
+    const msg = error.message?.toLowerCase() || '';
+
+    // API key errors
+    if (msg.includes('api key') || msg.includes('unauthorized') || msg.includes('401')) {
+        return 'API 密钥无效或未配置，请检查设置';
+    }
+
+    // Rate limit errors
+    if (msg.includes('rate limit') || msg.includes('429') || msg.includes('too many requests')) {
+        return '请求过于频繁，请稍后再试';
+    }
+
+    // Network errors
+    if (msg.includes('network') || msg.includes('fetch') || msg.includes('connection')) {
+        return '网络连接失败，请检查网络设置';
+    }
+
+    // Timeout errors
+    if (msg.includes('timeout') || msg.includes('timed out')) {
+        return '请求超时，请稍后重试';
+    }
+
+    // Model errors
+    if (msg.includes('model') || msg.includes('openai')) {
+        return 'AI 模型调用失败，请检查 API 配置';
+    }
+
+    // Database errors
+    if (msg.includes('database') || msg.includes('prisma')) {
+        return '数据库连接失败，请联系管理员';
+    }
+
+    // Default error message
+    return error.message || defaultMsg;
+};
+
 export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormProps) {
     const t = useTranslations('submissionForm');
     const router = useRouter();
@@ -50,7 +88,8 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
             setIsSubmitting(false);
         },
         onError: (error) => {
-            toast.error(error.message || t('errorMessage'));
+            const friendlyMessage = getErrorMessage(error, t('errorMessage'));
+            toast.error(friendlyMessage);
             setIsSubmitting(false);
         },
     });
@@ -59,28 +98,35 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         const validFiles: { id: string, file: File, preview: string }[] = [];
         const fileArray = newFiles instanceof FileList ? Array.from(newFiles) : newFiles;
 
+        // Show processing feedback
+        if (fileArray.length > 0) {
+            toast.info('正在处理图片...', { duration: 2000 });
+        }
+
         for (const file of fileArray) {
             if (file.type.startsWith('image/')) {
-                if (file.size / 1024 / 1024 > 2) {
-                    toast.error(t('validation.imageSizeError'));
+                // Check file size before processing
+                const sizeInMB = file.size / 1024 / 1024;
+                if (sizeInMB > 2) {
+                    toast.error(`图片 "${file.name}" 太大 (${sizeInMB.toFixed(1)}MB)，请选择小于 2MB 的图片`);
                     continue;
                 }
                 try {
                     const preview = await getBase64(file);
                     validFiles.push({ id: Math.random().toString(36).substr(2, 9), file, preview });
-                } catch { // Ignore error
-                    toast.error(t('imageProcessingFailed'));
+                } catch {
+                    toast.error(`处理图片 "${file.name}" 失败，请重试`);
                 }
             } else {
-                toast.warning(t('onlyImagesSupported'));
+                toast.warning(`仅支持图片文件，"${file.name}" 被跳过`);
             }
         }
 
         if (validFiles.length > 0) {
             setFiles(prev => [...prev, ...validFiles].slice(0, 5));
-            toast.success(t('addedImages', { count: validFiles.length }));
+            toast.success(`已添加 ${validFiles.length} 张图片`);
         }
-    }, [t]);
+    }, []);
 
     const handleFileChange = (newFiles: FileList | null) => {
         if (!newFiles) return;

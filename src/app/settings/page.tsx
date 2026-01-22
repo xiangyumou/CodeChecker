@@ -33,16 +33,6 @@ const loginSchema = z.object({
     token: z.string().min(1, 'Token is required'),
 });
 
-// const settingsSchema = z.object({
-//    OPENAI_API_KEY: z.string().optional(),
-//    OPENAI_BASE_URL: z.string().optional(),
-//    OPENAI_MODEL: z.string().optional(),
-//    MODEL_SUPPORTS_VISION: z.string().optional(),
-//    MAX_CONCURRENT_ANALYSIS_TASKS: z.string().optional(),
-//    REQUEST_TIMEOUT_SECONDS: z.string().optional(),
-// });
-// type SettingsFormValues = z.infer<typeof settingsSchema>;
-
 export default function SettingsPage() {
     const [token, setToken] = useState<string | null>(null);
     const [isClient, setIsClient] = useState(false);
@@ -120,7 +110,6 @@ function LoginView({ onLogin }: { onLogin: (token: string) => void }) {
 }
 
 function SettingsView({ onLogout }: { onLogout: () => void }) {
-    // const utils = trpc.useUtils();
     const { data: settings, isLoading: isLoadingSettings, error: loadError } = trpc.settings.getAll.useQuery(undefined, {
         retry: false,
     });

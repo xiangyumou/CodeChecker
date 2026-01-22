@@ -41,7 +41,6 @@ export default function RequestList() {
     const router = useRouter();
     const [isRefetching, setIsRefetching] = useState(false);
     const { ref, inView } = useInView();
-    // const { selectRequest, selectedRequestId } = useUIStore();
     const { selectedRequestId } = useUIStore();
 
     const {
@@ -225,6 +224,21 @@ export default function RequestList() {
                         const StatusIcon = config.icon;
                         const isSelected = selectedRequestId === request.id;
 
+                        // Calculate current stage for PROCESSING status
+                        const getStageLabel = () => {
+                            if (request.status !== 'PROCESSING') return t(request.status.toLowerCase());
+
+                            // Count completed stages
+                            let completedStages = 0;
+                            if (request.stage1Status === 'completed') completedStages++;
+                            if (request.stage2Status === 'completed') completedStages++;
+                            if (request.stage3Status === 'completed') completedStages++;
+
+                            // Show current stage (completed + 1, max 3)
+                            const currentStage = Math.min(completedStages + 1, 3);
+                            return `阶段 ${currentStage}/3`;
+                        };
+
                         return (
                             <motion.div
                                 key={request.id}
@@ -255,7 +269,7 @@ export default function RequestList() {
                                         </div>
                                         <Badge variant="secondary" className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-medium border-0 opacity-80", config.color)}>
                                             <StatusIcon className={cn("w-3 h-3 mr-1", config.iconClass)} />
-                                            {t(request.status.toLowerCase())}
+                                            {getStageLabel()}
                                         </Badge>
                                     </div>
 
