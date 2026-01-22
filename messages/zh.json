@@ -48,7 +48,8 @@
     "noHistory": "暂无分析历史",
     "queued": "等待中",
     "noPromptContent": "无输入内容",
-    "submitToSeeHere": "在该处提交请求以进行查看。"
+    "submitToSeeHere": "在该处提交请求以进行查看。",
+    "stage": "阶段 {stage}/3"
   },
   "requestDetails": {
     "title": "请求详情",

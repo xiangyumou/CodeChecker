@@ -48,7 +48,8 @@
     "noHistory": "No analysis history yet",
     "queued": "Waiting",
     "noPromptContent": "No prompt content",
-    "submitToSeeHere": "Submit a request to see it here."
+    "submitToSeeHere": "Submit a request to see it here.",
+    "stage": "Stage {stage}/3"
   },
   "requestDetails": {
     "title": "Request Details",

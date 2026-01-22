@@ -12,6 +12,7 @@ import * as Diff from 'diff';
 import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -173,18 +174,22 @@ export default function RequestDetailPanel({
     // Loading State
     if (isLoading) {
         return (
-            <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden">
+            <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden" data-testid="request-detail-loading">
                 <div className="p-6 border-b flex flex-col gap-4 bg-surface">
                     <div className="flex flex-row items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Button variant="ghost" size="icon" onClick={createNewRequest} className="mr-1 md:hidden">
                                 <ArrowLeft className="h-5 w-5" />
                             </Button>
-                            {/* Skeleton for title during loading */}
-                            <Skeleton className="h-8 w-48" />
+                            {/* Show actual loading status */}
+                            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                {t('processing')}
+                            </Badge>
                         </div>
                         <Skeleton className="h-9 w-9 rounded-md" />
                     </div>
+                    <Skeleton className="h-8 w-48" />
                 </div>
                 <ScrollArea className="flex-1 h-0 px-6 py-6">
                     <div className="space-y-8 animate-in fade-in duration-500">
@@ -212,10 +217,10 @@ export default function RequestDetailPanel({
     // Empty/Error State - static page, no polling (prevents infinite loop on deleted requests)
     if (!request || queryError) {
         return (
-            <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden">
+            <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden" data-testid="request-detail-error">
                 <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
                     <AlertCircle className="w-12 h-12 text-muted" />
-                    <p className="text-lg font-medium text-text">{t('requestNotFound')}</p>
+                    <p className="text-lg font-medium text-text" data-testid="error-message">{t('requestNotFound')}</p>
                     <Button variant="outline" onClick={createNewRequest} className="mt-4">
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         {t('backToCreate') || 'Back'}

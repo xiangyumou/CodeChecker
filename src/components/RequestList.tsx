@@ -236,7 +236,7 @@ export default function RequestList() {
 
                             // Show current stage (completed + 1, max 3)
                             const currentStage = Math.min(completedStages + 1, 3);
-                            return `阶段 ${currentStage}/3`;
+                            return t('stage', { stage: currentStage });
                         };
 
                         return (

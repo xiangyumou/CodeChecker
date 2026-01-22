@@ -44,7 +44,8 @@
     "noHistory": "Noch keine Analysehistorie vorhanden",
     "queued": "Wartend",
     "noPromptContent": "Kein Prompt-Inhalt",
-    "submitToSeeHere": "Senden Sie eine Anfrage, um sie hier zu sehen."
+    "submitToSeeHere": "Senden Sie eine Anfrage, um sie hier zu sehen.",
+    "stage": "Stufe {stage}/3"
   },
   "requestDetails": {
     "title": "Anfragedetails",

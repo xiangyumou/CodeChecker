@@ -40,9 +40,8 @@ test.describe('Navigation Smoke Tests @smoke', () => {
         await page.waitForLoadState('networkidle');
 
         // RequestDetailPanel shows 'Request not found' (en), '请求未找到' (zh), or 'Anfrage nicht gefunden' (de)
-        const notFoundIndicator = page.locator('text=/request not found|请求未找到|anfrage nicht gefunden/i')
-            .or(page.locator('p').filter({ hasText: /request not found|请求未找到/i }))
-            .first();
+        // Note: Using text selector as data-testid may not be in SSR HTML
+        const notFoundIndicator = page.getByText(/请求未找到|Request not found|Anfrage nicht gefunden/i);
 
         await expect(notFoundIndicator).toBeVisible({ timeout: 10000 });
     });

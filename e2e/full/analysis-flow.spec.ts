@@ -30,8 +30,9 @@ test.describe('Analysis Flow E2E @full', () => {
         expect(requestId).toBeGreaterThan(0);
 
         // Verify initial status is QUEUED or PROCESSING (matches UI translations)
-        // EN: Waiting/Processing, ZH: 等待中/处理中, DE: Wartend/Verarbeitung
-        const statusText = page.locator('text=/waiting|processing|等待中|处理中|wartend|verarbeitung/i').first();
+        // EN: Waiting/Processing, ZH: 等待中/处理中, DE: Wartend/In Bearbeitung
+        // Note: Status text is now visible in the detail panel loading state
+        const statusText = page.getByText(/等待中|处理中|Waiting|Processing|Wartend|In Bearbeitung/i);
         await expect(statusText).toBeVisible({ timeout: 5000 });
 
         // Wait for analysis to complete (up to 2 minutes)
@@ -71,7 +72,8 @@ test.describe('Analysis Flow E2E @full', () => {
             await retryButton.click();
 
             // Verify status changes back to QUEUED
-            const queuedStatus = page.locator('text=/queued|排队/i').first();
+            // EN: Waiting, ZH: 等待中, DE: Wartend
+            const queuedStatus = page.getByText(/等待中|Waiting|Wartend/i);
             await expect(queuedStatus).toBeVisible({ timeout: 5000 });
         } else {
             test.skip();
@@ -85,7 +87,8 @@ test.describe('Error Handling E2E @full', () => {
 
         // Should show not found message (matches all translation variants)
         // EN: "Request not found", ZH: "请求未找到", DE: "Anfrage nicht gefunden"
-        const notFound = page.locator('text=/not found|未找到|nicht gefunden|404/i').first();
+        // Note: Using text selector as data-testid may not be in SSR HTML
+        const notFound = page.getByText(/请求未找到|Request not found|Anfrage nicht gefunden/i);
         await expect(notFound).toBeVisible({ timeout: 5000 });
     });
 
