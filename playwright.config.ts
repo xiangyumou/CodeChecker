@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env.test for E2E tests
+dotenv.config({ path: path.resolve(__dirname, '.env.test') });
 
 /**
  * Playwright configuration for CodeChecker E2E tests

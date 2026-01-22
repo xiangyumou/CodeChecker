@@ -91,7 +91,7 @@ test.describe('Responsive Layout E2E @full', () => {
 
             // Switch to mobile
             await page.setViewportSize({ width: 375, height: 667 });
-            await page.waitForTimeout(500);
+            await page.waitForLoadState('domcontentloaded');
 
             // Content should still be visible (might be full-width now)
             await expect(content).toBeVisible();

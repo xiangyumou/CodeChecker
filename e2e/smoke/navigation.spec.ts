@@ -16,15 +16,11 @@ test.describe('Navigation Smoke Tests @smoke', () => {
         await expect(settingsPage.loginButton).toBeVisible();
     });
 
-    test('SM-04: Settings page login with invalid token shows error', async ({ page, settingsPage }) => {
+    test('SM-05: Settings page login with invalid token shows error', async ({ page, settingsPage }) => {
         await settingsPage.goto();
 
         // Try to login with invalid token
         await settingsPage.login('invalid-token-12345');
-
-        // After login with any token, page loads settings (token validation happens on API call)
-        // So we just verify the page attempted the login flow
-        await page.waitForTimeout(2000);
 
         // Either shows error toast OR shows settings page (with API error later)
         const result = await Promise.race([
@@ -36,7 +32,7 @@ test.describe('Navigation Smoke Tests @smoke', () => {
         expect(['toast', 'settings', 'none']).toContain(result);
     });
 
-    test('SM-06: 404 page for non-existent request', async ({ page }) => {
+    test('SM-08: 404 page for non-existent request', async ({ page }) => {
         // Navigate to non-existent request ID
         await page.goto('/request/999999');
 

@@ -21,9 +21,9 @@ test.describe('Submission Smoke Tests @smoke', () => {
         // Submit the form
         await dashboardPage.submitButton.click();
 
-        // Wait for navigation or request creation indication
+        // Wait for request creation indication (pending/processing status)
         // The request should appear in sidebar or we should navigate to detail page
-        await page.waitForTimeout(2000);
+        await page.waitForSelector('text=/queued|排队|处理|pending|processing/i', { timeout: 5000 }).catch(() => {});
 
         // Check for success indication:
         // 1. Toast notification

@@ -20,7 +20,7 @@ test.describe('Homepage Smoke Tests @smoke', () => {
         await expect(dashboardPage.submitButton).toBeVisible();
     });
 
-    test('SM-01: Request list sidebar is visible', async ({ page }) => {
+    test('SM-02: Request list sidebar is visible', async ({ page }) => {
         // Sidebar should be visible on desktop
         const sidebar = page.locator('aside').or(page.locator('[data-testid="sidebar"]')).first();
         await expect(sidebar).toBeVisible();
@@ -44,7 +44,7 @@ test.describe('Homepage Smoke Tests @smoke', () => {
         }
     });
 
-    test('SM-01: No console errors on page load', async ({ page }) => {
+    test('SM-07: No console errors on page load', async ({ page }) => {
         const errors: string[] = [];
 
         page.on('console', msg => {

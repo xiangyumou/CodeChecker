@@ -46,7 +46,14 @@ export class DashboardPage {
 
     // Actions
     async submitCode(code: string) {
-        await this.codeTextarea.fill(code);
+        // Click textarea to focus it first
+        await this.codeTextarea.click();
+        // Select all and delete to clear any existing content
+        await this.codeTextarea.fill('');
+        // Fill with code using type for better React event handling
+        await this.codeTextarea.pressSequentially(code, { delay: 10 });
+        // Wait for button to become enabled (React state update)
+        await expect(this.submitButton).toBeEnabled({ timeout: 5000 });
         await this.submitButton.click();
     }
 
