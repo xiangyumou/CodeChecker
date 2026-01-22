@@ -7,7 +7,9 @@ AI-powered code debugging tool for ACM/OI competitive programming.
 
 ---
 
-## 🚀 Quick Start (Docker Required)
+## Quick Start (Docker Required)
+
+> **Important:** Docker deployment is the only officially supported method.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) 20.10+
@@ -39,11 +41,141 @@ Open http://localhost:3000
 
 ---
 
-## 📋 Common Commands
+## Features
+
+### Code Analysis
+- Submit problem descriptions via text or images
+- Upload up to 5 images (JPG/PNG, 2MB each)
+- Drag & drop or paste images from clipboard
+- Real-time status updates (5-second polling)
+
+### Three-Stage Analysis Pipeline
+1. **Problem Extraction** - Extract structured problem details from text/images (title, constraints, samples)
+2. **Code Formatting** - Clean and structure submitted code
+3. **Deep Analysis** - Identify bugs and suggest fixes with explanations
+
+### Results Display
+- Structured problem details (title, time/memory limits, description, samples)
+- Syntax-highlighted source code with copy functionality
+- Side-by-side diff visualization (original vs. modified code)
+- Detailed modification analysis explaining each fix
+
+### Settings Panel (`/settings`)
+- Token-based admin authentication (via `SETTINGS_TOKEN`)
+- General settings:
+  - OpenAI API key and base URL
+  - Model selection (default: gpt-4o)
+  - Vision support toggle
+  - Max concurrent tasks (default: 3)
+  - Request timeout (default: 180 seconds)
+- Prompt customization for each analysis stage
+- Data management:
+  - Delete individual requests
+  - Prune old requests (by time: minutes, hours, days, months)
+  - Clear all data
+
+### Internationalization
+- English (en)
+- Chinese (zh)
+- German (de)
+
+### Theme Support
+- Dark mode toggle
+- Light mode toggle
+- System preference detection
+
+---
+
+## How It Works
+
+1. **Submit** your code and problem description (text or images)
+2. **Queue** - The request enters a BullMQ queue (Redis-backed)
+3. **Process** - Background worker processes through three stages:
+   - Stage 1 & 2 run in parallel (problem extraction + code formatting)
+   - Stage 3 uses results from stages 1 & 2 for deep analysis
+4. **Store** - Results are saved to PostgreSQL
+5. **Display** - UI polls for status updates every 5 seconds
+
+---
+
+## Usage
+
+### Submitting an Analysis Request
+
+1. Navigate to the home page
+2. Enter problem description in the text area
+3. (Optional) Upload up to 5 images via:
+   - Click to upload
+   - Drag & drop
+   - Paste from clipboard (Ctrl+V)
+4. Click "Submit" to start analysis
+
+### Viewing Results
+
+- Click on any request in the sidebar to view details
+- Results are displayed in four tabs:
+  - **Problem** - Structured problem details (title, limits, description, samples)
+  - **Code** - Formatted source code with syntax highlighting
+  - **Diff** - Side-by-side comparison of original vs. modified code
+  - **Analysis** - Detailed explanations for each modification
+
+### Retrying Failed Requests
+
+If an analysis fails, you can retry it from the request detail page.
+
+### Accessing Settings
+
+1. Navigate to `/settings`
+2. Enter your `SETTINGS_TOKEN` for authentication
+3. Configure:
+  - OpenAI API settings
+  - Model selection and concurrency
+  - Custom prompts for each stage
+  - Data management (delete/prune requests)
+
+---
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| **Database** | | | |
+| `DB_PROVIDER` | Database provider | Yes | `postgresql` |
+| `DB_USER` | Database user | Yes | `codechecker` |
+| `DB_PASSWORD` | Database password | Yes | - |
+| `DB_HOST` | Database host | Yes | `postgres` |
+| `DB_PORT` | Database port | Yes | `5432` |
+| `DB_NAME` | Database name | Yes | `codechecker` |
+| **OpenAI** | | | |
+| `OPENAI_API_KEY` | OpenAI API key | Yes | - |
+| `OPENAI_BASE_URL` | API endpoint | No | `https://api.openai.com/v1` |
+| `OPENAI_MODEL` | Model name | No | `gpt-4o` |
+| `MODEL_SUPPORTS_VISION` | Enable image support | No | `true` |
+| **Queue** | | | |
+| `MAX_CONCURRENT_ANALYSIS_TASKS` | Worker concurrency | No | `3` |
+| `REQUEST_TIMEOUT_SECONDS` | Request timeout | No | `180` |
+| **Other** | | | |
+| `NEXT_PUBLIC_APP_URL` | Application URL | Yes | `http://localhost:3000` |
+| `SETTINGS_TOKEN` | Admin panel token | Yes | - |
+| `LOG_LEVEL` | Logging level | No | `info` |
+| `LOG_PRETTY` | Pretty print logs | No | `false` |
+| `REDIS_HOST` | Redis host | Yes | `redis` |
+| `REDIS_PORT` | Redis port | Yes | `6379` |
+
+> **Database Support:**
+> PostgreSQL is the **only officially supported and tested** database.
+> While other databases may technically work, they are not supported.
+
+---
+
+## Common Commands
 
 ```bash
 make help          # Show all available commands
 make logs          # View application logs
+make logs-all      # View all service logs
 make restart       # Restart services
 make stop          # Stop all services
 make clean         # Remove all data (⚠️ destructive)
@@ -51,112 +183,78 @@ make clean         # Remove all data (⚠️ destructive)
 
 ---
 
-## ⚙️ Configuration
+## Architecture
 
-Edit `.env` file:
+### Services
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DB_PASSWORD` | PostgreSQL password | ✅ |
-| `OPENAI_API_KEY` | OpenAI API key | ✅ |
-| `OPENAI_BASE_URL` | Custom OpenAI endpoint | Optional |
-| `SETTINGS_TOKEN` | Admin panel token | ✅ |
-| `MAX_CONCURRENT_ANALYSIS_TASKS` | Worker concurrency | Optional (default: 3) |
+| Service | Description | Port | Memory |
+|---------|-------------|------|--------|
+| `code-checker` | Next.js application | 3000 | ~500MB |
+| `postgres` | PostgreSQL 16 database | 5432 | ~200MB |
+| `redis` | Redis 7 for BullMQ queue | 6379 | ~30MB |
 
-> **Database Support Policy:**  
-> PostgreSQL is the **only officially supported and tested** database.  
-> While the codebase may technically work with other databases (e.g., SQLite), we do not provide support, testing, or guarantees for non-PostgreSQL setups. Use at your own risk.
+**Total: ~730MB** (fits on 1GB VPS)
+
+### Tech Stack
+
+**Frontend:**
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Radix UI components
+- Framer Motion (animations)
+- Zustand (state management)
+
+**Backend:**
+- tRPC (type-safe RPC)
+- Prisma ORM
+- BullMQ (Redis-backed task queue)
+- bcrypt (password hashing)
+- Pino (logging)
+
+**Database:**
+- PostgreSQL 16 (only supported database)
+
+**Testing:**
+- Vitest (unit tests)
+- Playwright (E2E tests)
+
+### Task Processing
+
+- **Queue:** BullMQ with Redis
+- **Worker Concurrency:** Configurable (default: 3)
+- **Retry Strategy:** 3 attempts with exponential backoff (2s, 4s, 8s)
+- **Job Retention:** 100 successful jobs (24h), 200 failed jobs (7 days)
 
 ---
 
-## 🏗️ Architecture
+## Development
 
-```
-┌────────────┐     ┌──────────┐     ┌────────────┐
-│   Next.js  │────▶│  BullMQ  │────▶│   Worker   │
-│  (Web UI)  │     │  (Redis) │     │  (GPT API) │
-└────────────┘     └──────────┘     └────────────┘
-       │                                    │
-       └──────────┬────────────────────────┘
-                  │
-            ┌──────────┐
-            │PostgreSQL│
-            └──────────┘
-```
-
-**Services:**
-- `code-checker`: Next.js application (Port 3000)
-- `postgres`: PostgreSQL 16 database
-- `redis`: Redis 7 for task queue
-
-**Resource Usage (1GB VPS):**
-- PostgreSQL: ~200MB
-- Redis: ~30MB
-- Application: ~500MB
-- **Total: ~730MB** ✅
-
----
-
-## 🔧 Development
+> **Note:** Docker deployment is the only officially supported method. Local development setup is not documented or supported.
 
 ### Running Tests
 
 #### Unit Tests
 ```bash
-npm test            # Run all unit tests (142 tests)
-npm run test:watch  # Run in watch mode
+npm test           # Run all unit tests
+npm run test:watch # Run in watch mode
 ```
 
 #### E2E Tests (Playwright)
 
-| Command | Description | Requires OpenAI |
-|---------|-------------|-----------------|
-| `npm run test:e2e:smoke` | Smoke tests (UI, navigation, form) | ❌ No |
-| `npm run test:e2e:full` | Full analysis flow tests | ✅ Yes |
-| `npm run test:e2e` | All E2E tests | ⚠️ Partial |
-| `npm run test:e2e:ui` | Interactive Playwright UI | ⚠️ Partial |
-
-**Prerequisites for E2E tests:**
+First, install Playwright browsers:
 ```bash
-# Install Playwright browsers
 npx playwright install
-
-# Start the application first
-npm run dev
-
-# In another terminal, run E2E tests
-npm run test:e2e:smoke
 ```
 
-#### OpenAI Configuration for Full E2E Tests
-
-Full E2E tests require OpenAI API configuration in `.env`:
-```env
-OPENAI_API_KEY=your-api-key
-OPENAI_BASE_URL=https://api.openai.com/v1  # Optional for OpenAI-compatible APIs
-OPENAI_MODEL=gpt-4o                        # Default model
-```
-
-> **Note:** If `OPENAI_API_KEY` is not set, Full E2E tests will automatically skip.
-
-#### Docker-based Testing
+Then run the tests:
 ```bash
-make test    # Run unit tests in Docker
+npm run test:e2e:smoke  # Basic UI tests (no API required)
+npm run test:e2e:full   # Full analysis flow (requires OPENAI_API_KEY)
+npm run test:e2e        # All E2E tests
+npm run test:e2e:ui     # Interactive Playwright UI
 ```
-
-### CI/CD Testing
-
-GitHub Actions automatically runs:
-1. **Unit Tests** - All 142 unit tests
-2. **E2E Smoke Tests** - Basic UI and form functionality
-3. **E2E Full Tests** (Optional) - Complete analysis flow (requires `OPENAI_API_KEY` secret)
-
-Configure GitHub Secrets for Full E2E tests:
-- `OPENAI_API_KEY` - Required
-- `OPENAI_BASE_URL` - Optional
-- `OPENAI_MODEL` - Optional (defaults to `gpt-4o`)
-
----
 
 ### Database Management
 ```bash
@@ -172,24 +270,12 @@ make logs-all      # All services
 
 ---
 
-## 📦 Production Deployment
+## Troubleshooting
 
-### Option 1: VPS with Docker (Recommended)
-1. Follow Quick Start on your VPS
-2. Configure domain and SSL (nginx/Caddy)
-3. Set environment variables for production
-
-### Option 2: CI/CD with GitHub Actions
-See [CI/CD Setup Guide](docs/cicd-setup.md) for automated deployments.
-
----
-
-## 🐛 Troubleshooting
-
-**Services won't start:**
+### Services won't start
 ```bash
 # Check Docker status
-docker ps
+docker compose ps
 
 # View detailed logs
 docker compose logs
@@ -198,24 +284,59 @@ docker compose logs
 make clean && make start
 ```
 
-**Out of memory (VPS):**
+### Out of memory (VPS)
 - Ensure swap is configured
-- Check `docker-compose.yml` memory limits
-- Consider upgrading VPS plan
+- Check memory limits in `docker-compose.yml`
+- Minimum recommendation: 1GB RAM
 
-**Database connection errors:**
+### Database connection errors
 - Verify PostgreSQL is healthy: `docker compose ps`
 - Check `DATABASE_URL` in `.env`
+- Ensure database is initialized: `make db-migrate`
+
+### Analysis stuck in queue
+- Check Redis is running: `docker compose ps`
+- Verify `MAX_CONCURRENT_ANALYSIS_TASKS` setting
+- Check worker logs: `docker compose logs -f code-checker`
 
 ---
 
-## 📄 License
+## Production Deployment
+
+### VPS with Docker (Recommended)
+
+1. Follow Quick Start on your VPS
+2. Configure domain and SSL (nginx/Caddy)
+3. Set production environment variables
+
+### CI/CD with GitHub Actions
+
+See [CI/CD Setup Guide](docs/cicd-setup.md) for automated deployments.
+
+**GitHub Secrets for deployment:**
+- `VPS_HOST` - VPS hostname/IP
+- `VPS_USERNAME` - SSH username
+- `VPS_SSH_KEY` - SSH private key
+- `VPS_PORT` - SSH port (default: 22)
+
+---
+
+## Security
+
+- Token-based admin authentication (`SETTINGS_TOKEN`)
+- Password hashing with bcrypt
+- No user account system (stateless)
+- No data retention beyond analysis results
+
+---
+
+## License
 
 MIT License - see [LICENSE](LICENSE) file
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 1. Fork the repository
@@ -225,4 +346,4 @@ Contributions welcome! Please:
 
 ---
 
-**Note:** This project officially supports **Docker deployment only**. Development without Docker is not officially supported.
+**Note:** This project officially supports **Docker deployment only**.
