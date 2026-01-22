@@ -5,8 +5,6 @@ import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 // Mock dependencies
-// Mock dependencies
-// import { useRouter } from 'next/navigation' // Unused dep
 const mockMutateAsync = vi.fn()
 const mockInvalidate = vi.fn()
 const mockPush = vi.fn()
@@ -16,6 +14,7 @@ vi.mock('next/navigation', () => ({
         push: mockPush,
     }),
 }))
+
 const mockVisionSupport = vi.fn().mockReturnValue('true') // Default: vision enabled
 
 vi.mock('@/utils/trpc', () => ({
@@ -31,11 +30,11 @@ vi.mock('@/utils/trpc', () => ({
             create: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 useMutation: ({ onSuccess }: any) => ({
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    mutateAsync: mockMutateAsync.mockImplementation(async (_data) => {
-                        // Simulate success
-                        if (onSuccess) onSuccess({ id: 123 });
-                        return { id: 123 };
+                    mutateAsync: mockMutateAsync.mockImplementation(async (data: any) => {
+                        // Call onSuccess after promise resolves to simulate real tRPC behavior
+                        await Promise.resolve()
+                        if (onSuccess) onSuccess({ id: 123 })
+                        return { id: 123 }
                     }),
                 }),
             },
@@ -81,6 +80,46 @@ vi.mock('framer-motion', () => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
+
+// Mock FileReader to avoid potential circular reference issues in error formatting
+global.FileReader = class {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onload: ((event: any) => void) | null = null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onerror: ((event: any) => void) | null = null
+    readyState = 2 // DONE
+    result = 'data:image/png;base64,aGVsbG8='
+
+    readAsDataURL(_file: File) {
+        // Simulate async load
+        setTimeout(() => {
+            if (this.onload) {
+                this.onload({ target: this } as unknown as Event)
+            }
+        }, 0)
+    }
+
+    readAsText(_file: File) {
+        setTimeout(() => {
+            if (this.onload) {
+                this.onload({ target: this } as unknown as Event)
+            }
+        }, 0)
+    }
+
+    readAsArrayBuffer(_file: File) {
+        setTimeout(() => {
+            if (this.onload) {
+                this.onload({ target: this } as unknown as Event)
+            }
+        }, 0)
+    }
+
+    abort() {}
+    addEventListener() {}
+    removeEventListener() {}
+    dispatchEvent() { return true }
+} as any
 
 describe('SubmissionForm', () => {
     beforeEach(() => {

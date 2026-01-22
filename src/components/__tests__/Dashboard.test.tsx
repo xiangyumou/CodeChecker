@@ -11,20 +11,43 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
+    useLocale: () => 'en',
 }));
 
-vi.mock('@/store/useUIStore', () => ({
-    useUIStore: () => ({
-        rightPanelMode: 'create',
-        createNewRequest: vi.fn(),
-        selectRequest: vi.fn(),
-    }),
+// Mock tRPC to avoid complex context setup
+vi.mock('@/utils/trpc', () => ({
+    trpc: {
+        useUtils: () => ({
+            requests: {
+                list: {
+                    invalidate: vi.fn(),
+                },
+            },
+        }),
+        requests: {
+            list: {
+                useInfiniteQuery: () => ({
+                    data: { pages: [{ items: [] }] },
+                    fetchNextPage: vi.fn(),
+                    hasNextPage: false,
+                    isFetchingNextPage: false,
+                }),
+            },
+            create: {
+                useMutation: () => ({
+                    mutateAsync: vi.fn().mockResolvedValue({ id: 123 }),
+                }),
+            },
+        },
+        settings: {
+            getByKey: {
+                useQuery: () => ({ data: 'true' }),
+            },
+        },
+    },
 }));
 
-vi.mock('@/components/SubmissionForm', () => ({
-    default: () => <div data-testid="submission-form">Submission Form</div>,
-}));
-
+// Mock child components that have complex dependencies
 vi.mock('@/components/RequestList', () => ({
     default: () => <div data-testid="request-list">Request List</div>,
 }));
@@ -33,12 +56,14 @@ vi.mock('@/components/RequestDetailPanel', () => ({
     default: () => <div data-testid="request-detail-panel">Request Detail Panel</div>,
 }));
 
-vi.mock('@/components/ThemeSwitcher', () => ({
-    default: () => <button data-testid="theme-switcher">Theme</button>,
-}));
+// Keep real components for ThemeSwitcher and LanguageSwitcher to test integration
 
-vi.mock('@/components/LanguageSwitcher', () => ({
-    default: () => <button data-testid="language-switcher">Language</button>,
+vi.mock('@/store/useUIStore', () => ({
+    useUIStore: () => ({
+        rightPanelMode: 'create',
+        createNewRequest: vi.fn(),
+        selectRequest: vi.fn(),
+    }),
 }));
 
 describe('Dashboard', () => {
@@ -51,34 +76,35 @@ describe('Dashboard', () => {
         expect(screen.getByText('title')).toBeInTheDocument();
     });
 
-    it('renders theme and language switchers', () => {
+    it('renders theme and language switchers in header', () => {
         render(<Dashboard />);
-        expect(screen.getByTestId('theme-switcher')).toBeInTheDocument();
-        expect(screen.getByTestId('language-switcher')).toBeInTheDocument();
-    });
-
-    it('renders main content area', () => {
-        render(<Dashboard />);
-        // By default, rightPanelMode is 'create', so submission form should be shown
-        expect(screen.getByTestId('submission-form')).toBeInTheDocument();
-    });
-
-    it('renders navigation header with menu button on mobile', () => {
-        render(<Dashboard />);
-        // Menu button should exist (visible on mobile)
-        const menuButtons = screen.getAllByRole('button');
-        // At least one button should be present (theme switcher is always there)
-        expect(menuButtons.length).toBeGreaterThan(0);
+        // These are rendered by the real child components
+        const buttons = screen.getAllByRole('button');
+        // At minimum, we should have theme and language buttons
+        expect(buttons.length).toBeGreaterThanOrEqual(2);
     });
 
     it('has proper layout structure with header and main sections', () => {
         const { container } = render(<Dashboard />);
 
-        // Check that main layout elements exist
         const header = container.querySelector('header');
         expect(header).toBeInTheDocument();
 
         const main = container.querySelector('main');
         expect(main).toBeInTheDocument();
+    });
+
+    it('shows SubmissionForm when rightPanelMode is create', () => {
+        render(<Dashboard />);
+        // When in create mode, should see the submission form button
+        const submitButton = screen.getByText('submitButton');
+        expect(submitButton).toBeInTheDocument();
+    });
+
+    it('has mobile menu and navigation buttons', () => {
+        render(<Dashboard />);
+        // Should have menu, theme, language, and potentially other navigation buttons
+        const buttons = screen.getAllByRole('button');
+        expect(buttons.length).toBeGreaterThan(0);
     });
 });

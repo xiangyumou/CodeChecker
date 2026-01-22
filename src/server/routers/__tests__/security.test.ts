@@ -1,36 +1,18 @@
 import { describe, test, expect } from 'vitest';
-import { appRouter } from '@/server/routers'; // Assuming this imports the merged router
+import { appRouter } from '@/server/routers';
 import { prisma } from '@/lib/db';
-
-// Mock dependencies if needed, but integration test is better if DB is set up.
-// For now, we mainly want to test the GUARD (adminProcedure), so we might not even reach the DB.
-// If the guard works, it throws UNAUTHORIZED before hitting the logic.
+import { testUnauthorized, createPublicContext } from './helpers/auth-test-helper';
 
 describe('Security Audit Tests', () => {
-
-    // Create a context WITHOUT the admin token
-    const publicContext = {
-        prisma,
-        headers: new Headers(), // Empty headers, no x-admin-token
-    };
-
+    const publicContext = createPublicContext(prisma);
     const caller = appRouter.createCaller(publicContext);
 
-    // Note: requests.list and requests.getById are public (no auth required)
-    // Only destructive operations require adminProcedure
+    // Test destructive operations require auth
+    testUnauthorized(caller, 'requests.delete', () => caller.requests.delete(123));
+    testUnauthorized(caller, 'requests.prune', () => caller.requests.prune({ amount: 1, unit: 'hours' }));
+    testUnauthorized(caller, 'settings.getByKey', () => caller.settings.getByKey('OPENAI_API_KEY'));
 
-    test('requests.delete should throw UNAUTHORIZED without token', async () => {
-        await expect(caller.requests.delete(123)).rejects.toThrow('UNAUTHORIZED');
-    });
-
-    test('requests.prune should throw UNAUTHORIZED without token', async () => {
-        await expect(caller.requests.prune({ amount: 1, unit: 'hours' })).rejects.toThrow('UNAUTHORIZED');
-    });
-
-    test('settings.getByKey should throw UNAUTHORIZED without token', async () => {
-        await expect(caller.settings.getByKey('OPENAI_API_KEY')).rejects.toThrow('UNAUTHORIZED');
-    });
-
+    // Test that public endpoints don't require auth
     test('requests.create should be public (validation error, not auth error)', async () => {
         // When calling create without proper auth, it should NOT throw UNAUTHORIZED
         // Instead, it may throw validation error for missing required fields,
@@ -55,5 +37,4 @@ describe('Security Audit Tests', () => {
             ]);
         }
     });
-
 });

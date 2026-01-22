@@ -1,5 +1,6 @@
 import { settingsRouter } from '../settings';
 import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
+import { testUnauthorized } from './helpers/auth-test-helper';
 
 // Mock Prisma
 const mockPrisma = {
@@ -61,6 +62,7 @@ describe('settingsRouter', () => {
             expect(result).toEqual({});
         });
 
+        // Auth tests - different procedure than security.test.ts (getAll vs getByKey)
         it('throws UNAUTHORIZED for wrong token', async () => {
             const caller = createCaller('wrong-token');
             await expect(caller.getAll()).rejects.toThrow('UNAUTHORIZED');
