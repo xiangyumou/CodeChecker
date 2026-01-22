@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { prisma } from '@/lib/db';
+import logger from '@/lib/logger';
 
 const promptCache: Record<string, string> = {};
 
@@ -23,7 +24,7 @@ export async function getPromptFromFile(name: string): Promise<string> {
         const content = await fs.readFile(promptPath, 'utf-8');
         return content;
     } catch (error) {
-        console.error(`Error reading prompt "${name}":`, error);
+        logger.error(`Error reading prompt "${name}":`, error);
         throw new Error(`Prompt file "${name}.md" not found in src/lib/prompts/`);
     }
 }
@@ -43,7 +44,7 @@ export async function getPrompt(name: string): Promise<string> {
             return setting.value;
         }
     } catch (error) {
-        console.warn(`Failed to check settings for prompt "${name}", falling back to file. Error: ${error}`);
+        logger.warn(`Failed to check settings for prompt "${name}", falling back to file:`, error);
     }
 
     // Fallback to file (cached)

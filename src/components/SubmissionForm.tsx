@@ -7,10 +7,8 @@ import { useTranslations } from 'next-intl';
 import { Send, Trash2, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-// import { Label } from '@/components/ui/label'; // Unused
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-// import { ScrollArea } from '@/components/ui/scroll-area'; // Unused
 import { motion, AnimatePresence } from 'framer-motion';
 import { ZoomableImage } from './ui/ZoomableImage';
 

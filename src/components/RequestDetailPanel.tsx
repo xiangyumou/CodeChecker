@@ -13,20 +13,15 @@ import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { Badge } from "@/components/ui/badge"; // Unused
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-// import { AlertTitle } from "@/components/ui/alert"; // Unused
 import {
     Loader2,
     Info,
-    // CheckCircle2,
     AlertCircle,
-    // Clock,
     Code2,
     FileDiff,
     Lightbulb,
-    // FileText, // Unused
     ArrowLeft,
     X,
     User,
@@ -34,14 +29,11 @@ import {
     RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-// import { cn } from "@/lib/utils"; // Unused
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from '@/store/useUIStore';
-// import { useTheme } from 'next-themes';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
 import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
-import { ZoomableImage } from './ui/ZoomableImage';
 
 // Props interface
 export interface RequestDetailPanelProps {
@@ -57,15 +49,11 @@ export default function RequestDetailPanel({
 }: RequestDetailPanelProps = {}) {
     const t = useTranslations('requestDetails');
     const { selectedRequestId, createNewRequest } = useUIStore();
-    // const { theme, systemTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
     }, []);
-
-    // const currentTheme = theme === 'system' ? systemTheme : theme;
-    // const isDark = currentTheme === 'dark';
 
     const utils = trpc.useUtils();
 
@@ -116,13 +104,6 @@ export default function RequestDetailPanel({
         prevStatusRef.current = request?.status;
     }, [request?.status, utils, propRequest]);
 
-    // const statusConfig = {
-    //     QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock },
-    //     PROCESSING: { color: 'bg-blue-500/10 text-blue-500 animate-pulse', icon: Loader2 },
-    //     COMPLETED: { color: 'bg-green-500/10 text-green-500', icon: CheckCircle2 },
-    //     FAILED: { color: 'bg-destructive/10 text-destructive', icon: AlertCircle },
-    // } as const;
-
     // Generate diff HTML
     const diffHtml = useMemo(() => {
         if (!request?.gptRawResponse?.original_code || !request?.gptRawResponse?.modified_code) {
@@ -149,14 +130,6 @@ export default function RequestDetailPanel({
         return diffHtmlOutput;
         // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [request]);
-
-    // Safety check for status config
-    // const config = (request?.status && statusConfig[request.status as keyof typeof statusConfig])
-    //    ? statusConfig[request.status as keyof typeof statusConfig]
-    //    : statusConfig.QUEUED;
-
-    // const StatusIcon = config.icon; // Unused
-
 
     const retryMutation = trpc.requests.retry.useMutation({
         onSuccess: async () => {

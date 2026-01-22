@@ -16,6 +16,18 @@ import { useInView } from 'react-intersection-observer';
 import { useUIStore } from '@/store/useUIStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Polling intervals (in milliseconds)
+const POLLING_INTERVAL_ACTIVE = 5000; // 5s when tracking active tasks
+const POLLING_INTERVAL_IDLE = 30000; // 30s when idle
+const REFRESH_ANIMATION_DELAY = 500; // Visual delay for refresh button
+
+// Cache configuration (in milliseconds/seconds)
+const STALE_TIME = 30 * 1000; // 30 seconds
+const GC_TIME = 10 * 60 * 1000; // 10 minutes
+
+// Pagination
+const PAGE_SIZE = 20;
+
 const localeMap = {
     zh: zhCN,
     en: enUS,
@@ -39,10 +51,10 @@ export default function RequestList() {
         hasNextPage,
         isFetchingNextPage
     } = trpc.requests.list.useInfiniteQuery(
-        { take: 20 },
+        { take: PAGE_SIZE },
         {
             getNextPageParam: (lastPage: unknown[]) => {
-                if (lastPage.length < 20) return undefined;
+                if (lastPage.length < PAGE_SIZE) return undefined;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (lastPage[lastPage.length - 1] as any).id;
             },
@@ -60,7 +72,7 @@ export default function RequestList() {
 
                 // Check if there are any active tasks
                 if (!data || !data.pages) {
-                    return 30000; // Default to low frequency if no data yet
+                    return POLLING_INTERVAL_IDLE;
                 }
 
                 const allRequests = data.pages.flat();
@@ -69,17 +81,16 @@ export default function RequestList() {
                     (r: any) => r.status === 'QUEUED' || r.status === 'PROCESSING'
                 );
 
-                // High frequency (5s) when tracking active tasks
-                // Low frequency (30s) when idle (can still detect new requests)
-                return hasActiveTasks ? 5000 : 30000;
+                // High frequency when tracking active tasks
+                // Low frequency when idle (can still detect new requests)
+                return hasActiveTasks ? POLLING_INTERVAL_ACTIVE : POLLING_INTERVAL_IDLE;
             },
 
             // Cache configuration to prevent skeleton flashing
-            // Data stays fresh for 30 seconds
-            staleTime: 30 * 1000,
+            staleTime: STALE_TIME,
 
-            // Keep cached data for 10 minutes
-            gcTime: 10 * 60 * 1000,
+            // Keep cached data
+            gcTime: GC_TIME,
 
             // Don't refetch on mount if we have cached data
             refetchOnMount: false,
@@ -129,7 +140,7 @@ export default function RequestList() {
     const handleRefresh = async () => {
         setIsRefetching(true);
         await utils.requests.list.invalidate();
-        setTimeout(() => setIsRefetching(false), 500); // Visual delay for better feel
+        setTimeout(() => setIsRefetching(false), REFRESH_ANIMATION_DELAY);
     };
 
     if (isLoading && !infiniteData) {

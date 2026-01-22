@@ -32,17 +32,8 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
             if (!isNaN(id)) {
                 selectRequest(id);
             }
-        } else {
-            // If on root page, ensure we are in create mode?
-            // Maybe not strictly forced, but good for consistency usually.
-            // But if user was in detail mode and clicked back?
-            // For now, let's assume root = create mode.
-            // But be careful not to infinite loop or override user intent during interaction.
-            // Actually, if simply mounting Dashboard without ID, maybe just let it be?
-            // But requirement says "distinguish by route". So URL is truth.
-            // If URL is /, we should be in Create mode.
-            createNewRequest();
         }
+        createNewRequest();
     }, [initialRequestId, selectRequest, createNewRequest]);
 
     const handleCreateNew = () => {
