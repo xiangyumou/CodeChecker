@@ -139,7 +139,7 @@ export const requestsRouter = router({
             const newRequest = await ctx.prisma.request.create({
                 data: {
                     userPrompt: originalRequest.userPrompt,
-                    imageReferences: originalRequest.imageReferences as any,
+                    imageReferences: originalRequest.imageReferences as Prisma.InputJsonValue,
                     status: 'QUEUED',
                     isSuccess: false,
                 },

@@ -5,6 +5,7 @@
  */
 
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { getPrompt } from '@/lib/prompts/loader';
 import logger from '@/lib/logger';
 import OpenAI from 'openai';
@@ -133,7 +134,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         await prisma.request.update({
             where: { id: requestId },
             data: {
-                problemDetails: problemData as any,
+                problemDetails: problemData as Prisma.InputJsonValue,
                 stage1Status: 'completed',
                 stage1CompletedAt: new Date(),
                 formattedCode,
@@ -174,7 +175,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
 
         // Update final status
         const analysisJson = JSON.parse(analysisContent);
-        
+
         await prisma.request.update({
             where: { id: requestId },
             data: {

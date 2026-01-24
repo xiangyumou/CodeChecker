@@ -5,10 +5,11 @@ import { ArrowLeft, Loader2, RefreshCw, X } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import PipelineStatus, { type StageStatus } from "./PipelineStatus";
 import { useTranslations } from "next-intl";
+import type { RequestData } from '@/types/request';
 
 interface RequestDetailHeaderProps {
     requestId: number | null;
-    request: any;
+    request: RequestData;
     onRetry: () => void;
     onClose: () => void;
     isRetrying?: boolean;
@@ -33,8 +34,8 @@ export default function RequestDetailHeader({
                     <h2 className="text-2xl font-extrabold tracking-tight text-text">
                         {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
                     </h2>
-                    <StatusBadge 
-                        status={request.status} 
+                    <StatusBadge
+                        status={request.status}
                         stage1Status={request.stage1Status}
                         stage2Status={request.stage2Status}
                         stage3Status={request.stage3Status}

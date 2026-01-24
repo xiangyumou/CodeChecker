@@ -4,9 +4,10 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { User, Info, Code2, FileDiff, Lightbulb } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { RequestData } from '@/types/request';
 
 interface RequestDetailTabsProps {
-    request: any;
+    request: RequestData;
 }
 
 export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {

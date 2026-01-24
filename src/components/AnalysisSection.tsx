@@ -5,9 +5,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import ShikiCodeRenderer from "./ShikiCodeRenderer";
 import MarkdownRenderer from '@/components/MarkdownRenderer';
+import type { RequestData } from '@/types/request';
 
 interface AnalysisSectionProps {
-    request: any;
+    request: RequestData;
     mounted: boolean;
 }
 

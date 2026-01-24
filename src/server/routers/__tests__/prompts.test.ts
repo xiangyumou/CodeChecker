@@ -29,6 +29,7 @@ describe('promptsRouter', () => {
     headers.set('x-admin-token', SETTINGS_TOKEN);
 
     const createCaller = () => promptsRouter.createCaller({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Intentionally partial mock for testing
         prisma: {} as any,
         headers,
     });
