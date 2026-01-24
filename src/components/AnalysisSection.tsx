@@ -4,10 +4,7 @@ import { useTranslations } from "next-intl";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import ShikiCodeRenderer from "./ShikiCodeRenderer";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 interface AnalysisSectionProps {
     request: any;
@@ -72,14 +69,9 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
                             </div>
                         </div>
                         <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
-                            <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[rehypeKatex]}
-                                >
-                                    {mod.explanation}
-                                </ReactMarkdown>
-                            </div>
+                            <MarkdownRenderer className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">
+                                {mod.explanation}
+                            </MarkdownRenderer>
                         </div>
                     </div>
                 </div>

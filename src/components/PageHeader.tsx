@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import Logo from '@/components/Logo';
 
 interface PageHeaderProps {
     children?: React.ReactNode;
@@ -24,36 +25,14 @@ export default function PageHeader({ children, title, showHomeLink = true }: Pag
                     {showHomeLink ? (
                         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                             <div className="bg-primary/10 rounded-lg p-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="w-5 h-5 text-primary"
-                                >
-                                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-                                </svg>
+                                <Logo />
                             </div>
                             <h1 className="text-lg font-bold tracking-tight">{displayTitle}</h1>
                         </Link>
                     ) : (
                         <div className="flex items-center gap-2">
                             <div className="bg-primary/10 rounded-lg p-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="w-5 h-5 text-primary"
-                                >
-                                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-                                </svg>
+                                <Logo />
                             </div>
                             <h1 className="text-lg font-bold tracking-tight">{displayTitle}</h1>
                         </div>

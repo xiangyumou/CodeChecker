@@ -26,11 +26,13 @@
     "uploadHint": "或直接粘贴截图。支持多张 JPG/PNG 图片，单张不超过 2MB，最多 5 张。",
     "submitButton": "提交分析",
     "clearButton": "清空",
-    "imageProcessingFailed": "处理图片失败",
-    "onlyImagesSupported": "仅支持图片文件",
-    "addedImages": "已添加 {count} 张图片",
     "imageRemoved": "图片已移除",
-    "formCleared": "表单已清空"
+    "formCleared": "表单已清空",
+    "imageProcessing": "正在处理图片...",
+    "imageTooLarge": "图片 \"{name}\" 太大 ({size}MB)，请选择小于 {maxSize}MB 的图片",
+    "imageProcessFailed": "处理图片 \"{name}\" 失败，请重试",
+    "imageSkipped": "仅支持图片文件，\"{name}\" 被跳过",
+    "imagesAdded": "已添加 {count} 张图片"
   },
   "requestList": {
     "title": "分析历史",
@@ -144,7 +146,10 @@
     "diffTask": "差异",
     "analysisTask": "分析",
     "none": "无",
-    "samples": "样例"
+    "samples": "样例",
+    "stage1UnlockHint": "完成阶段 1 后解锁",
+    "stage2UnlockHint": "完成阶段 2 后解锁",
+    "analysisUnlockHint": "分析完成后查看"
   },
   "app": {
     "fetchRequestsError": "获取分析请求失败。",

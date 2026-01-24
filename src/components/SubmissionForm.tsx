@@ -1,22 +1,21 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { trpc } from '@/utils/trpc';
 import { useTranslations } from 'next-intl';
-import { Send, Trash2, Upload, X, Loader2 } from 'lucide-react';
+import { Send, Trash2, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import ImageGallery from './ImageGallery';
 
 interface SubmissionFormProps {
     onSubmissionSuccess?: () => void;
 }
 
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { useImageUpload, ImageUploadMessages } from '@/hooks/useImageUpload';
 
 import { getErrorMessage } from '@/utils/error-mapping';
 
@@ -25,7 +24,17 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
     const router = useRouter();
     const utils = trpc.useUtils();
     const [userPrompt, setUserPrompt] = useState('');
-    const { files, setFiles, processFiles, removeFile: hookRemoveFile, clearFiles } = useImageUpload();
+
+    // Create i18n messages for the image upload hook
+    const imageMessages: ImageUploadMessages = useMemo(() => ({
+        processing: t('imageProcessing'),
+        tooLarge: (name, size, maxSize) => t('imageTooLarge', { name, size, maxSize }),
+        processingFailed: (name) => t('imageProcessFailed', { name }),
+        onlyImages: (name) => t('imageSkipped', { name }),
+        added: (count) => t('imagesAdded', { count }),
+    }), [t]);
+
+    const { files, setFiles, processFiles, removeFile: hookRemoveFile, clearFiles } = useImageUpload(5, 2, imageMessages);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,11 +168,11 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                         {/* Labels removed for simplicity */}
 
                         {/* Image Preview List */}
-                        <ImageGallery 
-                            images={files} 
-                            onRemove={removeFile} 
-                            layout="horizontal" 
-                            readonly={false} 
+                        <ImageGallery
+                            images={files}
+                            onRemove={removeFile}
+                            layout="horizontal"
+                            readonly={false}
                             className="space-y-0"
                         />
 

@@ -6,9 +6,8 @@ import { useTranslations } from 'next-intl';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS, de } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
-import { RefreshCw, Eye, Clock, AlertCircle, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { RefreshCw, Eye, Clock, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect } from 'react';
@@ -215,8 +214,8 @@ export default function RequestList() {
                                                 {t('itemTitle', { id: request.id })}
                                             </span>
                                         </div>
-                                        <StatusBadge 
-                                            status={request.status} 
+                                        <StatusBadge
+                                            status={request.status}
                                             stage1Status={request.stage1Status}
                                             stage2Status={request.stage2Status}
                                             stage3Status={request.stage3Status}

@@ -138,7 +138,12 @@
     "problemTask": "Problem",
     "codeTask": "Code",
     "diffTask": "Diff",
-    "analysisTask": "Analyse"
+    "analysisTask": "Analyse",
+    "none": "Keine",
+    "samples": "Beispiele",
+    "stage1UnlockHint": "Wird nach Abschluss von Stufe 1 freigeschaltet",
+    "stage2UnlockHint": "Wird nach Abschluss von Stufe 2 freigeschaltet",
+    "analysisUnlockHint": "Verfügbar nach Abschluss der Analyse"
   },
   "app": {
     "fetchRequestsError": "Abrufen der Analyseanfragen fehlgeschlagen.",

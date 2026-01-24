@@ -2,26 +2,16 @@
 
 import { trpc } from '@/utils/trpc';
 import { useTranslations } from 'next-intl';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useMemo, useEffect, useState, useRef } from 'react';
 import * as Diff from 'diff';
 import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-    Loader2,
-    Info,
-    ArrowLeft,
-    AlertCircle,
-} from "lucide-react";
+import { Info, ArrowLeft, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from '@/store/useUIStore';
@@ -112,7 +102,6 @@ export default function RequestDetailPanel({
         });
 
         return diffHtmlOutput;
-        // eslint-disable-next-line react-hooks/preserve-manual-memoization
     }, [request]);
 
     const retryMutation = trpc.requests.retry.useMutation({
@@ -211,7 +200,7 @@ export default function RequestDetailPanel({
 
     return (
         <Tabs defaultValue="input" className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden">
-            <RequestDetailHeader 
+            <RequestDetailHeader
                 requestId={requestId}
                 request={request}
                 onRetry={handleRetry}
@@ -226,21 +215,16 @@ export default function RequestDetailPanel({
                 <div className="p-6 space-y-8 pb-12">
                     <TabsContent value="input" className="animate-in fade-in duration-300 space-y-6 mt-0">
                         {request.imageReferences && request.imageReferences.length > 0 && (
-                            <ImageGallery 
-                                images={request.imageReferences} 
-                                layout="grid" 
-                                readonly={true} 
+                            <ImageGallery
+                                images={request.imageReferences}
+                                layout="grid"
+                                readonly={true}
                             />
                         )}
                         <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
-                            <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[rehypeKatex]}
-                                >
-                                    {request.userPrompt || t('noUserPrompt')}
-                                </ReactMarkdown>
-                            </div>
+                            <MarkdownRenderer className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">
+                                {request.userPrompt || t('noUserPrompt')}
+                            </MarkdownRenderer>
                         </div>
                     </TabsContent>
 

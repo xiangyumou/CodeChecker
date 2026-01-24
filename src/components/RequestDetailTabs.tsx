@@ -19,7 +19,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                     <User className="w-3.5 h-3.5 mr-1.5" />
                     {t('userPrompt')}
                 </TabsTrigger>
-                
+
                 {(request.stage1Status === 'completed' || request.status === 'COMPLETED') ? (
                     <TabsTrigger value="problem" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
                         <Info className="w-3.5 h-3.5 mr-1.5" />
@@ -34,7 +34,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>完成阶段 1 后解锁</p>
+                            <p>{t('stage1UnlockHint')}</p>
                         </TooltipContent>
                     </Tooltip>
                 )}
@@ -53,7 +53,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>完成阶段 2 后解锁</p>
+                            <p>{t('stage2UnlockHint')}</p>
                         </TooltipContent>
                     </Tooltip>
                 )}
@@ -79,7 +79,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>分析完成后查看</p>
+                                <p>{t('analysisUnlockHint')}</p>
                             </TooltipContent>
                         </Tooltip>
                         <Tooltip>
@@ -90,7 +90,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>分析完成后查看</p>
+                                <p>{t('analysisUnlockHint')}</p>
                             </TooltipContent>
                         </Tooltip>
                     </>

@@ -120,9 +120,9 @@ global.FileReader = class {
         }, 0)
     }
 
-    abort() {}
-    addEventListener() {}
-    removeEventListener() {}
+    abort() { }
+    addEventListener() { }
+    removeEventListener() { }
     dispatchEvent() { return true }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
@@ -184,8 +184,8 @@ describe('SubmissionForm', () => {
         await waitFor(() => {
             expect(screen.getByAltText('submittedImageAlt')).toBeInTheDocument()
         })
-        // Verify toast was called with the actual message (Chinese text)
-        expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('张图片'))
+        // Verify toast was called with the translation key (mocked useTranslations returns the key)
+        expect(toast.success).toHaveBeenCalledWith('imagesAdded')
     })
 
     it('removes uploaded image', async () => {

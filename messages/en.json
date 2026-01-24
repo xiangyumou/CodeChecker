@@ -8,7 +8,16 @@
     "submitButton": "Submit Analysis",
     "clearButton": "Clear",
     "imageRemoved": "Image removed",
-    "formCleared": "Form cleared"
+    "formCleared": "Form cleared",
+    "imageProcessing": "Processing images...",
+    "imageTooLarge": "Image \"{name}\" too large ({size}MB), please select an image smaller than {maxSize}MB",
+    "imageProcessFailed": "Failed to process image \"{name}\", please try again",
+    "imageSkipped": "Only image files are supported, \"{name}\" skipped",
+    "imagesAdded": "Added {count} image(s)",
+    "validation": {
+      "emptySubmissionError": "Please enter a description/code or add an image!"
+    },
+    "errorMessage": "Failed to submit request."
   },
   "requestList": {
     "title": "Analysis History",
@@ -92,6 +101,9 @@
     "analysisTask": "Analysis",
     "none": "None",
     "samples": "Samples",
+    "stage1UnlockHint": "Unlocks after Stage 1 completes",
+    "stage2UnlockHint": "Unlocks after Stage 2 completes",
+    "analysisUnlockHint": "Available after analysis completes",
     "pipeline": {
       "stage1": "Problem Extraction",
       "stage2": "Code Formatting",

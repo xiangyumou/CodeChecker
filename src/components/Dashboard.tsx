@@ -5,6 +5,7 @@ import RequestList from '@/components/RequestList';
 import RequestDetailPanel from '@/components/RequestDetailPanel';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import Logo from '@/components/Logo';
 import { useTranslations } from 'next-intl';
 import { useUIStore } from '@/store/useUIStore';
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -60,18 +61,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                                     <div className="flex flex-col h-full bg-surface">
                                         <div className="p-4 border-b flex items-center gap-2">
                                             <div className="bg-primary/10 rounded-lg p-2">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="w-5 h-5 text-primary"
-                                                >
-                                                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-                                                </svg>
+                                                <Logo />
                                             </div>
                                             <span className="font-bold">{t('title')}</span>
                                         </div>
@@ -82,18 +72,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                         </div>
 
                         <div className="bg-primary/10 rounded-lg p-2 hidden md:block">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="w-5 h-5 text-primary"
-                            >
-                                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
-                            </svg>
+                            <Logo />
                         </div>
                         <h1 className="text-lg font-bold tracking-tight hidden md:block">{t('title')}</h1>
 

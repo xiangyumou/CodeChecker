@@ -1,9 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -30,14 +26,9 @@ const MarkdownContent = ({ content }: { content: string }) => {
     const t = useTranslations('requestDetails');
     if (!content || content === 'N/A') return <span className="text-muted-foreground italic">{t('none')}</span>;
     return (
-        <div className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed text-sm">
-            <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-            >
-                {content}
-            </ReactMarkdown>
-        </div>
+        <MarkdownRenderer className="text-muted-foreground leading-relaxed text-sm">
+            {content}
+        </MarkdownRenderer>
     );
 };
 
