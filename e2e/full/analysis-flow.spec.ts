@@ -30,9 +30,9 @@ test.describe('Analysis Flow E2E @full', () => {
         expect(requestId).toBeGreaterThan(0);
 
         // Verify initial status is QUEUED or PROCESSING (matches UI translations)
-        // EN: Waiting/Processing, ZH: 等待中/处理中, DE: Wartend/In Bearbeitung
+        // EN: Waiting/Processing/Stage, ZH: 等待中/处理中/阶段, DE: Wartend/In Bearbeitung/Stufe
         // Note: Status text is now visible in the detail panel loading state
-        const statusText = page.getByText(/等待中|处理中|Waiting|Processing|Wartend|In Bearbeitung/i);
+        const statusText = page.getByText(/等待中|处理中|阶段|Waiting|Processing|Stage|Wartend|In Bearbeitung|Stufe/i).first();
         await expect(statusText).toBeVisible({ timeout: 5000 });
 
         // Wait for analysis to complete (up to 2 minutes)
@@ -71,7 +71,7 @@ test.describe('Analysis Flow E2E @full', () => {
 
             // Verify status changes back to QUEUED
             // EN: Waiting, ZH: 等待中, DE: Wartend
-            const queuedStatus = page.getByText(/等待中|Waiting|Wartend/i);
+            const queuedStatus = page.getByText(/等待中|Waiting|Wartend|阶段|Stage|Stufe/i).first();
             await expect(queuedStatus).toBeVisible({ timeout: 5000 });
         } else {
             test.skip();

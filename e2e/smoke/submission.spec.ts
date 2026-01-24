@@ -17,7 +17,7 @@ test.describe('Submission Smoke Tests @smoke', () => {
 
         // Wait for request creation indication (pending/processing status)
         // The request should appear in sidebar or we should navigate to detail page
-        await page.waitForSelector('text=/queued|排队|处理|pending|processing/i', { timeout: 5000 }).catch(() => {});
+        await page.waitForSelector('text=/queued|排队|处理|pending|processing|stage|阶段|stufe/i', { timeout: 5000 }).catch(() => {});
 
         // Check for success indication:
         // 1. Toast notification
@@ -26,7 +26,7 @@ test.describe('Submission Smoke Tests @smoke', () => {
         const successIndicators = await Promise.race([
             page.waitForURL(/\/request\/\d+/, { timeout: 5000 }).then(() => 'url'),
             page.locator('[data-sonner-toast], [role="alert"]').first().waitFor({ timeout: 5000 }).then(() => 'toast'),
-            page.locator('text=/queued|排队|处理/i').first().waitFor({ timeout: 5000 }).then(() => 'status'),
+            page.locator('text=/queued|排队|处理|stage|阶段|stufe/i').first().waitFor({ timeout: 5000 }).then(() => 'status'),
         ]).catch(() => 'none');
 
         expect(['url', 'toast', 'status']).toContain(successIndicators);
