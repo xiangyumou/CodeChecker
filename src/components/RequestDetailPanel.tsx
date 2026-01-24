@@ -12,7 +12,6 @@ import * as Diff from 'diff';
 import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,24 +19,20 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
     Loader2,
     Info,
-    AlertCircle,
-    Code2,
-    FileDiff,
-    Lightbulb,
     ArrowLeft,
-    X,
-    User,
-    Image as ImageIcon,
-    RefreshCw
+    AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from '@/store/useUIStore';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
-import PipelineStatus, { type StageStatus } from './PipelineStatus';
+import StatusBadge from './StatusBadge';
+import RequestDetailHeader from './RequestDetailHeader';
+import RequestDetailTabs from './RequestDetailTabs';
+import AnalysisSection from './AnalysisSection';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
-import { getRequestPollingInterval } from '@/utils/polling';
-import { ZoomableImage } from './ui/ZoomableImage';
+import { useRequestPolling } from '@/hooks/useSmartPolling';
+import ImageGallery from './ImageGallery';
 
 // Props interface
 export interface RequestDetailPanelProps {
@@ -60,6 +55,7 @@ export default function RequestDetailPanel({
     }, []);
 
     const utils = trpc.useUtils();
+    const requestPolling = useRequestPolling();
 
     // Dashboard mode: query from tRPC using UIStore
     // Share mode: skip query, use propRequest
@@ -69,17 +65,7 @@ export default function RequestDetailPanel({
             enabled: !!selectedRequestId && !propRequest,
             retry: false, // Don't retry on failure (prevents infinite loop on 404)
             // Smart polling: only poll for active requests
-            refetchInterval: (query) => {
-                // Stop polling on error (e.g., 404 not found)
-                if (query.state.error) return false;
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const data = query.state.data as any;
-                // Initial load - poll at moderate speed
-                if (!data) return 5000;
-
-                return getRequestPollingInterval(data.status);
-            },
+            refetchInterval: requestPolling,
             refetchIntervalInBackground: false,
         }
     );
@@ -177,10 +163,7 @@ export default function RequestDetailPanel({
                                 <ArrowLeft className="h-5 w-5" />
                             </Button>
                             {/* Show actual loading status */}
-                            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
-                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                                {t('processing')}
-                            </Badge>
+                            <StatusBadge status="PROCESSING" />
                         </div>
                         <Skeleton className="h-9 w-9 rounded-md" />
                     </div>
@@ -228,190 +211,26 @@ export default function RequestDetailPanel({
 
     return (
         <Tabs defaultValue="input" className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden">
-            {/* Sticky Header Section */}
-            <div className="flex-none bg-surface z-10 shadow-sm border-b">
-                {/* Top Title Bar */}
-                <div className="p-6 flex flex-row items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" onClick={createNewRequest} className="mr-1 md:hidden">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                        <h2 className="text-2xl font-extrabold tracking-tight text-text">
-                            {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
-                        </h2>
-                        {/* Status badge for QUEUED/PROCESSING states */}
-                        {(request.status === 'QUEUED' || request.status === 'PROCESSING') && (
-                            <Badge
-                                variant="secondary"
-                                className={request.status === 'QUEUED'
-                                    ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                                }
-                                data-testid="request-status-badge"
-                            >
-                                {request.status === 'QUEUED' ? t('queued') : t('processing')}
-                            </Badge>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {(request.status === 'FAILED' || request.status === 'COMPLETED') && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleRetry}
-                                disabled={retryMutation.status === 'pending'}
-                                className="gap-2"
-                            >
-                                {retryMutation.status === 'pending' ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <RefreshCw className="h-4 w-4" />
-                                )}
-                                {t('retry')}
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={createNewRequest} title={t('closeDetails')}>
-                            <X className="h-5 w-5" />
-                        </Button>
-                    </div>
-                </div>
+            <RequestDetailHeader 
+                requestId={requestId}
+                request={request}
+                onRetry={handleRetry}
+                onClose={createNewRequest}
+                isRetrying={retryMutation.status === 'pending'}
+            />
 
-                {/* Persistent Pipeline Status */}
-                <div className="px-6 pb-6">
-                    <PipelineStatus
-                        stages={[
-                            {
-                                id: 'stage1',
-                                status: (request.stage1Status || 'pending') as StageStatus,
-                                completedAt: request.stage1CompletedAt,
-                            },
-                            {
-                                id: 'stage2',
-                                status: (request.stage2Status || 'pending') as StageStatus,
-                                completedAt: request.stage2CompletedAt,
-                            },
-                            {
-                                id: 'stage3',
-                                status: (request.stage3Status || 'pending') as StageStatus,
-                                completedAt: request.stage3CompletedAt,
-                            },
-                        ]}
-                    />
-                </div>
-
-                {/* Divider Line 1 (Already implicit by previous sections, but adding explicit separator logic if needed) 
-                    The user asked for "two horizontal lines to put these two together".
-                    I will use a border-top on the tabs container to separate it from pipeline, and the main border-b of the header separates it from content.
-                */}
-                <div className="border-t border-border" />
-
-                {/* Tabs List */}
-                <div className="px-6 py-3 bg-surface/50 backdrop-blur-sm">
-                    <TabsList className="w-full grid grid-cols-5 h-10 p-1 bg-surface2 rounded-lg border border-border">
-                        <TabsTrigger value="input" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
-                            <User className="w-3.5 h-3.5 mr-1.5" />
-                            {t('userPrompt')}
-                        </TabsTrigger>
-                        {/* Progressive tab unlocking based on stage completion */}
-                        {(request.stage1Status === 'completed' || request.status === 'COMPLETED') ? (
-                            <TabsTrigger value="problem" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
-                                <Info className="w-3.5 h-3.5 mr-1.5" />
-                                {t('problemDetails')}
-                            </TabsTrigger>
-                        ) : (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                        <Info className="w-3.5 h-3.5 mr-1.5" />
-                                        {t('problemDetails')}
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>完成阶段 1 后解锁</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                        {(request.stage2Status === 'completed' || request.status === 'COMPLETED') ? (
-                            <TabsTrigger value="code" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
-                                <Code2 className="w-3.5 h-3.5 mr-1.5" />
-                                {t('sourceCode')}
-                            </TabsTrigger>
-                        ) : (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                        <Code2 className="w-3.5 h-3.5 mr-1.5" />
-                                        {t('sourceCode')}
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>完成阶段 2 后解锁</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                        {request.status === 'COMPLETED' ? (
-                            <>
-                                <TabsTrigger value="diff" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
-                                    <FileDiff className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('codeDiff')}
-                                </TabsTrigger>
-                                <TabsTrigger value="analysis" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
-                                    <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
-                                    {t('analysisDetails')}
-                                </TabsTrigger>
-                            </>
-                        ) : (
-                            <>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                            <FileDiff className="w-3.5 h-3.5 mr-1.5" />
-                                            {t('codeDiff')}
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>分析完成后查看</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div className="opacity-50 flex items-center justify-center text-xs font-bold text-muted-foreground cursor-not-allowed">
-                                            <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
-                                            {t('analysisDetails')}
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>分析完成后查看</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </>
-                        )}
-                    </TabsList>
-                </div>
-            </div>
+            <RequestDetailTabs request={request} />
 
             {/* Scrollable Content */}
             <ScrollArea className="flex-1 h-0">
                 <div className="p-6 space-y-8 pb-12">
                     <TabsContent value="input" className="animate-in fade-in duration-300 space-y-6 mt-0">
                         {request.imageReferences && request.imageReferences.length > 0 && (
-                            <div className="space-y-2">
-                                <span className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-                                    <ImageIcon className="w-4 h-4" />
-                                    {t('submittedImages', { count: request.imageReferences.length })}
-                                </span>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {request.imageReferences.map((ref: string, idx: number) => (
-                                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-border bg-muted">
-                                            <ZoomableImage
-                                                src={ref}
-                                                alt={t('submittedImageAlt', { index: idx + 1 })}
-                                                className="w-full h-full object-contain"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <ImageGallery 
+                                images={request.imageReferences} 
+                                layout="grid" 
+                                readonly={true} 
+                            />
                         )}
                         <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
                             <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
@@ -425,153 +244,63 @@ export default function RequestDetailPanel({
                         </div>
                     </TabsContent>
 
-                    {/* Problem Details */}
-                    {(request.stage1Status === 'completed' || request.status === 'COMPLETED') && (
-                        <TabsContent value="problem" className="animate-in fade-in duration-300 mt-0">
-                            {(() => {
-                                let problemData: ProblemData | string | null = null;
+                    <TabsContent value="problem" className="animate-in fade-in duration-300 mt-0">
+                        {(() => {
+                            const problemData = (request.problemDetails || request.gptRawResponse?.organized_problem) as ProblemData | null;
 
-                                if (request.problemDetails) {
-                                    if (typeof request.problemDetails === 'string') {
-                                        try {
-                                            problemData = JSON.parse(request.problemDetails);
-                                        } catch (_e) { // eslint-disable-line @typescript-eslint/no-unused-vars
-                                            problemData = request.problemDetails;
-                                        }
-                                    } else {
-                                        problemData = request.problemDetails as unknown as ProblemData;
-                                    }
-                                } else if (request.gptRawResponse?.organized_problem) {
-                                    // Legacy/Fallback support
-                                    problemData = request.gptRawResponse.organized_problem as unknown as ProblemData;
-                                }
+                            if (problemData) {
+                                return <ProblemDisplay data={problemData} />;
+                            }
 
-                                if (problemData) {
-                                    return <ProblemDisplay data={problemData} />;
-                                }
+                            return (
+                                <Alert className="rounded-lg border-border bg-surface2">
+                                    <Info className="h-4 w-4" />
+                                    <AlertDescription>{t('noProblemDetails')}</AlertDescription>
+                                </Alert>
+                            );
+                        })()}
+                    </TabsContent>
 
-                                return (
-                                    <Alert className="rounded-lg border-border bg-surface2">
-                                        <Info className="h-4 w-4" />
-                                        <AlertDescription>{t('noProblemDetails')}</AlertDescription>
-                                    </Alert>
-                                );
-                            })()}
-                        </TabsContent>
-                    )}
+                    <TabsContent value="code" className="animate-in fade-in duration-300 mt-0">
+                        <div className="relative rounded-lg overflow-hidden border border-border bg-surface2">
+                            {request.formattedCode ? (
+                                <ShikiCodeRenderer
+                                    code={request.formattedCode}
+                                    language="python"
+                                />
+                            ) : request.gptRawResponse?.original_code ? (
+                                <ShikiCodeRenderer
+                                    code={request.gptRawResponse.original_code}
+                                    language="python"
+                                />
+                            ) : (
+                                <Alert className="rounded-lg border-border bg-surface2 m-4">
+                                    <Info className="h-4 w-4" />
+                                    <AlertDescription>{t('noOriginalCode')}</AlertDescription>
+                                </Alert>
+                            )}
+                        </div>
+                    </TabsContent>
 
-                    {/* Source Code */}
-                    {(request.stage2Status === 'completed' || request.status === 'COMPLETED') && (
-                        <TabsContent value="code" className="animate-in fade-in duration-300 mt-0">
-                            <div className="relative rounded-lg overflow-hidden border border-border bg-surface2">
-                                {request.formattedCode ? (
-                                    <ShikiCodeRenderer
-                                        code={request.formattedCode}
-                                        language="python"
-                                    />
-                                ) : request.gptRawResponse?.original_code ? (
-                                    <ShikiCodeRenderer
-                                        code={request.gptRawResponse.original_code}
-                                        language="python"
-                                    />
-                                ) : (
-                                    <Alert className="rounded-lg border-border bg-surface2 m-4">
-                                        <Info className="h-4 w-4" />
-                                        <AlertDescription>{t('noOriginalCode')}</AlertDescription>
-                                    </Alert>
-                                )}
+                    <TabsContent value="diff" className="animate-in fade-in duration-300 mt-0">
+                        {diffHtml ? (
+                            <div className="rounded-lg border border-border overflow-hidden bg-white dark:bg-zinc-950">
+                                <div
+                                    className="p-1 scale-[0.9] origin-top-left"
+                                    dangerouslySetInnerHTML={{ __html: diffHtml }}
+                                />
                             </div>
-                        </TabsContent>
-                    )}
+                        ) : (
+                            <Alert className="rounded-lg border-border bg-surface2">
+                                <Info className="h-4 w-4" />
+                                <AlertDescription>{t('diffMissingBoth')}</AlertDescription>
+                            </Alert>
+                        )}
+                    </TabsContent>
 
-                    {/* Code Diff & Analysis */}
-                    {request.status === 'COMPLETED' && (
-                        <>
-                            <TabsContent value="diff" className="animate-in fade-in duration-300 mt-0">
-                                {diffHtml ? (
-                                    <div className="rounded-lg border border-border overflow-hidden bg-white dark:bg-zinc-950">
-                                        <div
-                                            className="p-1 scale-[0.9] origin-top-left"
-                                            dangerouslySetInnerHTML={{ __html: diffHtml }}
-                                        />
-                                    </div>
-                                ) : (
-                                    <Alert className="rounded-lg border-border bg-surface2">
-                                        <Info className="h-4 w-4" />
-                                        <AlertDescription>{t('diffMissingBoth')}</AlertDescription>
-                                    </Alert>
-                                )}
-                            </TabsContent>
-
-                            <TabsContent value="analysis" className="animate-in fade-in duration-300 mt-0">
-                                <div className="space-y-6">
-                                    {request.gptRawResponse?.modification_analysis?.length > 0 ? (
-                                        request.gptRawResponse.modification_analysis.map((mod: { original_snippet: string; modified_snippet: string; explanation: string }, idx: number) => (
-                                            <div key={idx} className="relative pl-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-primary/20">
-                                                <div className="absolute left-1 top-1.5 w-5 h-5 rounded-full bg-primary text-[10px] flex items-center justify-center font-bold text-primary-foreground">
-                                                    {idx + 1}
-                                                </div>
-                                                <div className="space-y-4">
-                                                    <div className="grid grid-cols-1 gap-4">
-                                                        <div className="space-y-2">
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('originalSnippet')}</span>
-                                                            <div className="rounded-lg overflow-hidden border border-border">
-                                                                {mounted ? (
-                                                                    <ShikiCodeRenderer
-                                                                        language="cpp"
-                                                                        code={mod.original_snippet}
-                                                                        showLineNumbers={false}
-                                                                        className="shiki-container text-[0.8125rem]"
-                                                                    />
-                                                                ) : (
-                                                                    <pre className="p-3">
-                                                                        <code>{mod.original_snippet}</code>
-                                                                    </pre>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t('modifiedSnippet')}</span>
-                                                            <div className="rounded-lg overflow-hidden border border-border">
-                                                                {mounted ? (
-                                                                    <ShikiCodeRenderer
-                                                                        language="cpp"
-                                                                        code={mod.modified_snippet}
-                                                                        showLineNumbers={false}
-                                                                        className="shiki-container text-[0.8125rem]"
-                                                                    />
-                                                                ) : (
-                                                                    <pre className="p-3">
-                                                                        <code>{mod.modified_snippet}</code>
-                                                                    </pre>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
-                                                        <div className="prose dark:prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm">
-                                                            <ReactMarkdown
-                                                                remarkPlugins={[remarkGfm, remarkMath]}
-                                                                rehypePlugins={[rehypeKatex]}
-                                                            >
-                                                                {mod.explanation}
-                                                            </ReactMarkdown>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <Alert className="rounded-lg border-border bg-surface2">
-                                            <Info className="h-4 w-4" />
-                                            <AlertDescription>{t('noAnalysisDetails')}</AlertDescription>
-                                        </Alert>
-                                    )}
-                                </div>
-                            </TabsContent>
-                        </>
-                    )}
-
+                    <TabsContent value="analysis" className="animate-in fade-in duration-300 mt-0">
+                        <AnalysisSection request={request} mounted={mounted} />
+                    </TabsContent>
                 </div>
             </ScrollArea>
         </Tabs>

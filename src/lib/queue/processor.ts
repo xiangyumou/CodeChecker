@@ -66,9 +66,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             baseURL,
         });
 
-        const imageReferences = request.imageReferences
-            ? JSON.parse(request.imageReferences)
-            : [];
+        const imageReferences = (request.imageReferences as unknown as string[]) || [];
 
         if (imageReferences.length > 0 && !supportsVision) {
             throw new Error('Model does not support vision/image inputs');
@@ -135,7 +133,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         await prisma.request.update({
             where: { id: requestId },
             data: {
-                problemDetails: JSON.stringify(problemData),
+                problemDetails: problemData as any,
                 stage1Status: 'completed',
                 stage1CompletedAt: new Date(),
                 formattedCode,
@@ -175,22 +173,24 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         }
 
         // Update final status
+        const analysisJson = JSON.parse(analysisContent);
+        
         await prisma.request.update({
             where: { id: requestId },
             data: {
                 status: 'COMPLETED',
-                analysisResult: analysisContent,
+                analysisResult: analysisJson,
                 stage3Status: 'completed',
                 stage3CompletedAt: new Date(),
                 isSuccess: true,
                 errorMessage: null,
                 // Legacy compatibility
-                gptRawResponse: JSON.stringify({
+                gptRawResponse: {
                     organized_problem: problemData,
-                    modified_code: JSON.parse(analysisContent).modified_code,
-                    modification_analysis: JSON.parse(analysisContent).modification_analysis,
+                    modified_code: analysisJson.modified_code,
+                    modification_analysis: analysisJson.modification_analysis,
                     original_code: formattedCode,
-                }),
+                },
             },
         });
 

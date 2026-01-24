@@ -146,7 +146,7 @@ describe('RequestDetailPanel', () => {
                 status: 'COMPLETED',
                 userPrompt: 'Test Prompt',
                 stage1Status: 'completed',
-                problemDetails: JSON.stringify({
+                problemDetails: {
                     title: 'Structured Title',
                     time_limit: '1.0s',
                     memory_limit: '256MB',
@@ -156,7 +156,7 @@ describe('RequestDetailPanel', () => {
                     input_sample: '1 2',
                     output_sample: '3',
                     notes: 'Notes'
-                }),
+                },
                 gptRawResponse: {}
             };
             mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });
@@ -172,7 +172,7 @@ describe('RequestDetailPanel', () => {
             expect(screen.getByText('Structured Description')).toBeInTheDocument();
         });
 
-        it('renders fallback when problemDetails parsing fails', async () => {
+        it('renders problem data even if stage1 is completed', async () => {
             const user = userEvent.setup();
             mockStore.selectedRequestId = 1;
             const mockData = {
@@ -180,7 +180,7 @@ describe('RequestDetailPanel', () => {
                 status: 'COMPLETED',
                 userPrompt: 'Test Prompt',
                 stage1Status: 'completed',
-                problemDetails: 'Raw String Problem', // Not JSON
+                problemDetails: { title: 'Raw Object Problem' },
                 gptRawResponse: {}
             };
             mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });
@@ -191,7 +191,7 @@ describe('RequestDetailPanel', () => {
             const problemTab = screen.getByText('problemDetails');
             await user.click(problemTab);
 
-            expect(await screen.findByText('Raw String Problem')).toBeInTheDocument();
+            expect(await screen.findByText('Raw Object Problem')).toBeInTheDocument();
         });
     });
 
@@ -280,7 +280,7 @@ describe('RequestDetailPanel', () => {
                 stage1Status: 'completed',
                 stage2Status: 'completed',
                 stage3Status: 'completed',
-                problemDetails: '{}',
+                problemDetails: {},
                 gptRawResponse: {}
             };
             mockUseQuery.mockReturnValue({ isLoading: false, data: mockData });

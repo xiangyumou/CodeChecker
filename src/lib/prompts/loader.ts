@@ -24,7 +24,7 @@ export async function getPromptFromFile(name: string): Promise<string> {
         const content = await fs.readFile(promptPath, 'utf-8');
         return content;
     } catch (error) {
-        logger.error(`Error reading prompt "${name}":`, error);
+        logger.error({ err: error, name }, 'Error reading prompt file');
         throw new Error(`Prompt file "${name}.md" not found in src/lib/prompts/`);
     }
 }
@@ -44,7 +44,7 @@ export async function getPrompt(name: string): Promise<string> {
             return setting.value;
         }
     } catch (error) {
-        logger.warn(`Failed to check settings for prompt "${name}", falling back to file:`, error);
+        logger.warn({ err: error, name }, 'Failed to check settings for prompt, falling back to file');
     }
 
     // Fallback to file (cached)

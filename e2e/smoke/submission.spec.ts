@@ -12,14 +12,8 @@ test.describe('Submission Smoke Tests @smoke', () => {
     });
 
     test('SM-02: Can submit code for analysis', async ({ page, dashboardPage }) => {
-        // Fill in the code textarea
-        await dashboardPage.codeTextarea.fill(testCode.simple);
-
-        // Verify submit button is enabled
-        await expect(dashboardPage.submitButton).toBeEnabled();
-
-        // Submit the form
-        await dashboardPage.submitButton.click();
+        // Fill in the code and submit
+        await dashboardPage.submitCode(testCode.simple);
 
         // Wait for request creation indication (pending/processing status)
         // The request should appear in sidebar or we should navigate to detail page

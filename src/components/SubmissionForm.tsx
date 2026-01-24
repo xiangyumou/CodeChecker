@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ZoomableImage } from './ui/ZoomableImage';
+import { motion } from 'framer-motion';
+import ImageGallery from './ImageGallery';
 
 interface SubmissionFormProps {
     onSubmissionSuccess?: () => void;
@@ -134,7 +134,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
     };
 
     return (
-        <form onSubmit={handleSubmit} onPaste={handlePaste} className="h-full flex flex-col p-6 space-y-4">
+        <form onSubmit={handleSubmit} onPaste={handlePaste} className="h-full flex flex-col p-6 space-y-4" data-testid="submission-form">
             {/* Header removed for simplicity */}
 
             <div className="flex-1 min-h-0 flex flex-col gap-4">
@@ -143,6 +143,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     {/* Labels removed for simplicity */}
                     <Textarea
                         id="prompt"
+                        data-testid="submission-prompt"
                         placeholder={t('unifiedInputPlaceholder')}
                         className="flex-1 resize-none rounded-lg border-border p-4 text-base bg-surface focus-visible:ring-ring"
                         value={userPrompt}
@@ -158,49 +159,13 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                         {/* Labels removed for simplicity */}
 
                         {/* Image Preview List */}
-                        <AnimatePresence mode="popLayout">
-                            {files.length > 0 && (
-                                <motion.div
-                                    className="flex gap-2 overflow-x-auto pb-2"
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    {files.map((file) => (
-                                        <motion.div
-                                            key={file.id}
-                                            className="group relative w-24 h-24 flex-none rounded-lg overflow-hidden border border-border bg-surface"
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <ZoomableImage
-                                                src={file.preview}
-                                                alt="preview"
-                                                className="w-full h-full object-cover cursor-pointer"
-                                            />
-                                            {/* Hover overlay for dimming - pointer-events-none to allow click-to-zoom on underlying image */}
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
-                                            {/* Delete button - top right */}
-                                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <motion.button
-                                                    type="button"
-                                                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); removeFile(file.id); }}
-                                                    className="bg-black/50 hover:bg-destructive text-white rounded-full p-1 transition-colors backdrop-blur-sm"
-                                                    whileHover={{ scale: 1.1 }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </motion.button>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <ImageGallery 
+                            images={files} 
+                            onRemove={removeFile} 
+                            layout="horizontal" 
+                            readonly={false} 
+                            className="space-y-0"
+                        />
 
                         {/* Drop Zone */}
                         <div
@@ -241,6 +206,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 <Button
                     type="submit"
                     size="lg"
+                    data-testid="submission-submit"
                     className="flex-1 rounded-lg h-12 text-base font-semibold transition-all gap-2 bg-primary text-primary-foreground hover:brightness-110 active:scale-99 shadow-none"
                     disabled={isSubmitting || (!userPrompt && files.length === 0)}
                 >

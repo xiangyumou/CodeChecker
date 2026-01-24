@@ -15,18 +15,13 @@ import { useState, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useUIStore } from '@/store/useUIStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import StatusBadge from './StatusBadge';
+import { useRequestListPolling } from '@/hooks/useSmartPolling';
 
-import { getRequestListPollingInterval } from '@/utils/polling';
-
-// Cache configuration (in milliseconds/seconds)
-const STALE_TIME = 30 * 1000; // 30 seconds
-const GC_TIME = 10 * 60 * 1000; // 10 minutes
-
-// Pagination
+const STALE_TIME = 30 * 1000;
+const GC_TIME = 10 * 60 * 1000;
 const PAGE_SIZE = 20;
-
-
-const REFRESH_ANIMATION_DELAY = 500; // Visual delay for refresh button
+const REFRESH_ANIMATION_DELAY = 500;
 
 const localeMap = {
     zh: zhCN,
@@ -42,6 +37,7 @@ export default function RequestList() {
     const [isRefetching, setIsRefetching] = useState(false);
     const { ref, inView } = useInView();
     const { selectedRequestId } = useUIStore();
+    const listPolling = useRequestListPolling();
 
     const {
         data: infiniteData,
@@ -59,10 +55,7 @@ export default function RequestList() {
             },
 
             // Smart polling: dual-speed strategy
-            // - 5s when there are active tasks (QUEUED/PROCESSING)
-            // - 30s when all tasks are completed (to detect new requests from other users)
-            // - Stop when page is hidden (save resources)
-            refetchInterval: getRequestListPollingInterval,
+            refetchInterval: listPolling,
 
             // Cache configuration to prevent skeleton flashing
             staleTime: STALE_TIME,
@@ -107,13 +100,6 @@ export default function RequestList() {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [utils]);
-
-    const statusConfig = {
-        QUEUED: { color: 'bg-muted text-muted-foreground', icon: Clock, iconClass: '' },
-        PROCESSING: { color: 'bg-blue-500/10 text-blue-500', icon: Loader2, iconClass: 'animate-spin' },
-        COMPLETED: { color: 'bg-green-500/10 text-green-500', icon: CheckCircle2, iconClass: '' },
-        FAILED: { color: 'bg-destructive/10 text-destructive', icon: AlertCircle, iconClass: '' },
-    } as const;
 
     const handleRefresh = async () => {
         setIsRefetching(true);
@@ -199,24 +185,7 @@ export default function RequestList() {
                 >
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {requests.map((request: any) => {
-                        const config = statusConfig[request.status as keyof typeof statusConfig] || statusConfig.QUEUED;
-                        const StatusIcon = config.icon;
                         const isSelected = selectedRequestId === request.id;
-
-                        // Calculate current stage for PROCESSING status
-                        const getStageLabel = () => {
-                            if (request.status !== 'PROCESSING') return t(request.status.toLowerCase());
-
-                            // Count completed stages
-                            let completedStages = 0;
-                            if (request.stage1Status === 'completed') completedStages++;
-                            if (request.stage2Status === 'completed') completedStages++;
-                            if (request.stage3Status === 'completed') completedStages++;
-
-                            // Show current stage (completed + 1, max 3)
-                            const currentStage = Math.min(completedStages + 1, 3);
-                            return t('stage', { stage: currentStage });
-                        };
 
                         return (
                             <motion.div
@@ -246,10 +215,12 @@ export default function RequestList() {
                                                 {t('itemTitle', { id: request.id })}
                                             </span>
                                         </div>
-                                        <Badge variant="secondary" className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-medium border-0 opacity-80", config.color)}>
-                                            <StatusIcon className={cn("w-3 h-3 mr-1", config.iconClass)} />
-                                            {getStageLabel()}
-                                        </Badge>
+                                        <StatusBadge 
+                                            status={request.status} 
+                                            stage1Status={request.stage1Status}
+                                            stage2Status={request.stage2Status}
+                                            stage3Status={request.stage3Status}
+                                        />
                                     </div>
 
                                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">

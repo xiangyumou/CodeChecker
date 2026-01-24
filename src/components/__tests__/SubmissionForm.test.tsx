@@ -182,7 +182,7 @@ describe('SubmissionForm', () => {
 
         // Wait for preview to appear (mocked ZoomableImage should render something)
         await waitFor(() => {
-            expect(screen.getByAltText('preview')).toBeInTheDocument()
+            expect(screen.getByAltText('submittedImageAlt')).toBeInTheDocument()
         })
         // Verify toast was called with the actual message (Chinese text)
         expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('张图片'))
@@ -198,7 +198,7 @@ describe('SubmissionForm', () => {
 
         // Wait for preview to appear
         await waitFor(() => {
-            expect(screen.getByAltText('preview')).toBeInTheDocument()
+            expect(screen.getByAltText('submittedImageAlt')).toBeInTheDocument()
         })
 
         // Find the X button by searching for the icon inside a button
@@ -208,7 +208,7 @@ describe('SubmissionForm', () => {
         await user.click(xBtn as HTMLElement)
 
         await waitFor(() => {
-            expect(screen.queryByAltText('preview')).not.toBeInTheDocument()
+            expect(screen.queryByAltText('submittedImageAlt')).not.toBeInTheDocument()
         })
         expect(toast.info).toHaveBeenCalledWith('imageRemoved')
     })
@@ -246,7 +246,7 @@ describe('SubmissionForm', () => {
         })
 
         await waitFor(() => {
-            expect(screen.getByAltText('preview')).toBeInTheDocument()
+            expect(screen.getByAltText('submittedImageAlt')).toBeInTheDocument()
         })
     })
 

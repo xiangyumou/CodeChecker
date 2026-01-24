@@ -25,12 +25,12 @@ model Request {
   id              Int      @id @default(autoincrement())
   status          String   @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
   userPrompt      String?
-  imageReferences String?  // JSON array stored as string
+  imageReferences Json?
   
   // Multi-stage pipeline fields
-  problemDetails    String?  // JSON string: title, description, time_limit, etc.
+  problemDetails    Json?
   formattedCode     String?  // String: Cleaned and formatted source code
-  analysisResult    String?  // JSON string: modifications and analysis
+  analysisResult    Json?
   
   // Pipeline stage tracking
   stage1Status      String?  @default("pending") // pending, processing, completed, failed
@@ -40,7 +40,7 @@ model Request {
   stage2CompletedAt DateTime?
   stage3CompletedAt DateTime?
   
-  gptRawResponse    String?
+  gptRawResponse    Json?
   errorMessage    String?
   isSuccess       Boolean  @default(false)
   createdAt       DateTime @default(now())

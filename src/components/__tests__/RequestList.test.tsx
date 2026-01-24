@@ -155,7 +155,7 @@ describe('RequestList', () => {
             expect(options.refetchInterval).toBeDefined()
 
             // Execute refetchInterval function - should be a short interval for active tasks
-            const interval = options.refetchInterval(mockData)
+            const interval = options.refetchInterval({ state: { data: mockData } })
             // Should be actively polling (false means disabled, number means enabled)
             expect(typeof interval).toBe('number')
             expect(interval).toBeLessThan(10000) // Less than 10 seconds for active tasks
@@ -171,7 +171,7 @@ describe('RequestList', () => {
             mockUseQuery.mockReturnValue({ isPending: false, data: mockData, isLoading: false })
             render(<RequestList />)
 
-            const interval = mockUseQuery.mock.calls[0][1].refetchInterval(mockData)
+            const interval = mockUseQuery.mock.calls[0][1].refetchInterval({ state: { data: mockData } })
 
             // Should poll less frequently for completed tasks
             expect(typeof interval).toBe('number')
@@ -191,7 +191,7 @@ describe('RequestList', () => {
             mockUseQuery.mockReturnValue({ isPending: false, data: mockData, isLoading: false })
             render(<RequestList />)
 
-            const interval = mockUseQuery.mock.calls[0][1].refetchInterval(mockData)
+            const interval = mockUseQuery.mock.calls[0][1].refetchInterval({ state: { data: mockData } })
 
             // Should stop polling (returns false) when document is hidden
             expect(interval).toBe(false)

@@ -60,8 +60,8 @@ describe('requestsRouter', () => {
         it('should return request by id', async () => {
             const mockRequest = {
                 id: 1,
-                imageReferences: '["img1"]',
-                gptRawResponse: '{"foo":"bar"}'
+                imageReferences: ["img1"],
+                gptRawResponse: { foo: "bar" }
             };
             mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
 
@@ -94,7 +94,7 @@ describe('requestsRouter', () => {
             expect(mockPrisma.request.create).toHaveBeenCalledWith({
                 data: expect.objectContaining({
                     userPrompt: 'Test Prompt',
-                    imageReferences: JSON.stringify(['ref']),
+                    imageReferences: ['ref'],
                     status: 'QUEUED',
                 }),
             });
@@ -120,7 +120,7 @@ describe('requestsRouter', () => {
 
         it('should allow imageReferences only and create request correctly', async () => {
             const input = { imageReferences: ['ref1', 'ref2'] };
-            const mockCreated = { id: 124, imageReferences: JSON.stringify(['ref1', 'ref2']), userPrompt: null, status: 'QUEUED' };
+            const mockCreated = { id: 124, imageReferences: ['ref1', 'ref2'], userPrompt: null, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
             mockAnalysisQueue.add.mockResolvedValue({ id: 'job-124', data: { requestId: 124 } });
@@ -130,7 +130,7 @@ describe('requestsRouter', () => {
             // Verify database was called with correct data
             expect(mockPrisma.request.create).toHaveBeenCalledWith({
                 data: expect.objectContaining({
-                    imageReferences: JSON.stringify(['ref1', 'ref2']),
+                    imageReferences: ['ref1', 'ref2'],
                     status: 'QUEUED',
                 }),
             });

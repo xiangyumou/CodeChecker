@@ -116,7 +116,7 @@ describe('processAnalysisTask', () => {
                 id: 1,
                 status: 'QUEUED',
                 userPrompt: 'test',
-                imageReferences: '["http://example.com/image.jpg"]',
+                imageReferences: ["http://example.com/image.jpg"],
             });
             mockPrisma.setting.findMany.mockResolvedValue([]);
             mockPrisma.request.update.mockResolvedValue({});
@@ -205,7 +205,7 @@ describe('processAnalysisTask', () => {
             );
 
             expect(completedCall).toBeDefined();
-            expect(completedCall?.[0]?.data?.problemDetails).toBe('{"problem":"test problem"}');
+            expect(completedCall?.[0]?.data?.problemDetails).toEqual({problem:"test problem"});
             expect(completedCall?.[0]?.data?.formattedCode).toBe('formatted code');
         });
 
@@ -351,7 +351,7 @@ describe('processAnalysisTask', () => {
                 id: 1,
                 status: 'QUEUED',
                 userPrompt: null,
-                imageReferences: '["http://example.com/img1.jpg", "http://example.com/img2.jpg"]',
+                imageReferences: ["http://example.com/img1.jpg", "http://example.com/img2.jpg"],
             });
 
             try {
@@ -394,7 +394,7 @@ describe('processAnalysisTask', () => {
                 id: 1,
                 status: 'QUEUED',
                 userPrompt: 'Help me fix this code',
-                imageReferences: '["http://example.com/img.jpg"]',
+                imageReferences: ["http://example.com/img.jpg"],
             });
 
             try {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { router, publicProcedure, adminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import { analysisQueue } from '@/lib/queue/analysis-queue';
+import { Prisma } from '@prisma/client';
 
 // Zod schemas for validation
 const createRequestSchema = z.object({
@@ -68,12 +69,6 @@ export const requestsRouter = router({
             // Parse JSON fields
             return {
                 ...request,
-                imageReferences: request.imageReferences
-                    ? JSON.parse(request.imageReferences)
-                    : null,
-                gptRawResponse: request.gptRawResponse
-                    ? JSON.parse(request.gptRawResponse)
-                    : null,
                 // Stage tracking fields are already included from the database query
             };
         }),
@@ -85,9 +80,7 @@ export const requestsRouter = router({
             const request = await ctx.prisma.request.create({
                 data: {
                     userPrompt: input.userPrompt,
-                    imageReferences: input.imageReferences
-                        ? JSON.stringify(input.imageReferences)
-                        : null,
+                    imageReferences: input.imageReferences ?? undefined,
                     status: 'QUEUED',
                     isSuccess: false,
                 },
@@ -146,7 +139,7 @@ export const requestsRouter = router({
             const newRequest = await ctx.prisma.request.create({
                 data: {
                     userPrompt: originalRequest.userPrompt,
-                    imageReferences: originalRequest.imageReferences,
+                    imageReferences: originalRequest.imageReferences as any,
                     status: 'QUEUED',
                     isSuccess: false,
                 },
@@ -186,10 +179,10 @@ export const requestsRouter = router({
                     status: 'QUEUED',
                     isSuccess: false,
                     errorMessage: null,
-                    gptRawResponse: null,
+                    gptRawResponse: Prisma.JsonNull,
                     formattedCode: null,
-                    problemDetails: null,
-                    analysisResult: null,
+                    problemDetails: Prisma.JsonNull,
+                    analysisResult: Prisma.JsonNull,
                     stage1Status: 'pending',
                     stage2Status: 'pending',
                     stage3Status: 'pending',

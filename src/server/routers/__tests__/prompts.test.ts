@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
 import { promptsRouter } from '../prompts';
 
 // Mock getPromptFromFile with hoisted mock
@@ -29,6 +29,7 @@ describe('promptsRouter', () => {
     headers.set('x-admin-token', SETTINGS_TOKEN);
 
     const createCaller = () => promptsRouter.createCaller({
+        prisma: {} as any,
         headers,
     });
 

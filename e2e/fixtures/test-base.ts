@@ -18,12 +18,14 @@ export class DashboardPage {
     }
 
     get codeTextarea() {
-        return this.page.locator('textarea').first();
+        return this.page.locator('[data-testid="submission-prompt"]').or(this.page.locator('textarea')).first();
     }
 
     get submitButton() {
         // Button text from translations: "Analyze" (en), "分析" (zh), "Analysieren" (de)
-        return this.page.getByRole('button', { name: /analyze|分析|analysieren|submit|提交|senden/i });
+        return this.page.locator('[data-testid="submission-submit"]').or(
+            this.page.getByRole('button', { name: /analyze|分析|analysieren|submit|提交|senden/i })
+        ).first();
     }
 
     get requestList() {
@@ -50,8 +52,8 @@ export class DashboardPage {
         await this.codeTextarea.click();
         // Select all and delete to clear any existing content
         await this.codeTextarea.fill('');
-        // Fill with code using type for better React event handling
-        await this.codeTextarea.pressSequentially(code, { delay: 10 });
+        // Fill with code
+        await this.codeTextarea.fill(code);
         // Wait for button to become enabled (React state update)
         await expect(this.submitButton).toBeEnabled({ timeout: 5000 });
         await this.submitButton.click();
