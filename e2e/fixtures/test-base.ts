@@ -66,33 +66,6 @@ export class DashboardPage {
     }
 }
 
-/**
- * Page Object Model for the Settings page
- */
-export class SettingsPage {
-    constructor(private page: Page) { }
-
-    async goto() {
-        await this.page.goto('/settings', { waitUntil: 'domcontentloaded' });
-    }
-
-    get loginForm() {
-        return this.page.locator('form').first();
-    }
-
-    get tokenInput() {
-        return this.page.locator('input[type="password"], input[type="text"]').first();
-    }
-
-    get loginButton() {
-        return this.page.getByRole('button', { name: /access settings|login|登录|anmelden/i });
-    }
-
-    async login(token: string) {
-        await this.tokenInput.fill(token);
-        await this.loginButton.click();
-    }
-}
 
 /**
  * Page Object Model for Request Detail panel
@@ -130,19 +103,12 @@ export class RequestDetailPanel {
     }
 }
 
-/**
- * Extended test fixture with page objects
- */
 export const test = base.extend<{
     dashboardPage: DashboardPage;
-    settingsPage: SettingsPage;
     requestDetailPanel: RequestDetailPanel;
 }>({
     dashboardPage: async ({ page }, use) => {
         await use(new DashboardPage(page));
-    },
-    settingsPage: async ({ page }, use) => {
-        await use(new SettingsPage(page));
     },
     requestDetailPanel: async ({ page }, use) => {
         await use(new RequestDetailPanel(page));
