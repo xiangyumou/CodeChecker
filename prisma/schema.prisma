@@ -11,16 +11,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@map("admins")
-}
-
 model Request {
   id              Int      @id @default(autoincrement())
   status          String   @default("QUEUED") // QUEUED, PROCESSING, COMPLETED, FAILED
