@@ -144,12 +144,10 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
 
     return (
         <form onSubmit={handleSubmit} onPaste={handlePaste} className="h-full flex flex-col p-6 space-y-4" data-testid="submission-form">
-            {/* Header removed for simplicity */}
 
             <div className="flex-1 min-h-0 flex flex-col gap-4">
                 {/* Text Input */}
                 <div className="flex-1 flex flex-col gap-2 min-h-0">
-                    {/* Labels removed for simplicity */}
                     <Textarea
                         id="prompt"
                         data-testid="submission-prompt"
@@ -162,10 +160,8 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 </div>
 
 
-                {/* Image Upload Section - Only show if vision is supported */}
                 {supportsVision && (
                     <div className="flex-none flex flex-col gap-2">
-                        {/* Labels removed for simplicity */}
 
                         {/* Image Preview List */}
                         <ImageGallery
@@ -235,7 +231,6 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 </Button>
             </div>
 
-            {/* Tip removed for simplicity */}
         </form>
     );
 }

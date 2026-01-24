@@ -18,44 +18,33 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
 });
 
 // Subscribe to Prisma log events and route to our logger
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(prisma as unknown as any).$on('error', (e: any) => {
+// Subscribe to Prisma log events and route to our logger
+prisma.$on('error' as never, (e: Prisma.LogEvent) => {
     logger.error({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        msg: (e as any).message,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        target: (e as any).target,
+        msg: e.message,
+        target: e.target,
         source: 'prisma',
     });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(prisma as unknown as any).$on('warn', (e: any) => {
+prisma.$on('warn' as never, (e: Prisma.LogEvent) => {
     logger.warn({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        msg: (e as any).message,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        target: (e as any).target,
+        msg: e.message,
+        target: e.target,
         source: 'prisma',
     });
 });
 
 // Only log slow queries (>200ms) in development
 if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (prisma as unknown as any).$on('query', (e: any) => {
+    prisma.$on('query' as never, (e: Prisma.QueryEvent) => {
         // Only log if query took longer than 200ms
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((e as any).duration > 200) {
+        if (e.duration > 200) {
             logger.debug({
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                msg: `Slow query detected (${(e as any).duration}ms)`,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                query: (e as any).query,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                duration: (e as any).duration,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                target: (e as any).target,
+                msg: `Slow query detected (${e.duration}ms)`,
+                query: e.query,
+                duration: e.duration,
+                target: e.target,
                 source: 'prisma',
             });
         }
