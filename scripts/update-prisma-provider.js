@@ -2,13 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// Read DB_PROVIDER from environment variables or .env file if needed
-// Note: In a real Next.js app, .env is loaded by Next.js, but for this standalone script
-// we might need to verify if specific loading is expected. 
-// For simplicity in Vercel/Build envs, we expect process.env to be populated.
-// If running locally, you might want to preload dotenv. 
-// We will try to read .env file manually if process.env.DB_PROVIDER is not set,
-// just to be helpful in local dev without strictly requiring `dotenv` package as a dependency if not already there.
+// Read DB_PROVIDER from environment variables or .env file
+// If running locally without .env loaded, we try to load it manually.
 
 function loadEnv() {
     try {

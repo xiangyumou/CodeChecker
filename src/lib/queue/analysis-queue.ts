@@ -9,24 +9,11 @@ import logger from '@/lib/logger';
 
 // 获取并发限制配置
 async function getConcurrencyLimit(): Promise<number> {
-    try {
-        const { prisma } = await import('@/lib/db');
-        const setting = await prisma.setting.findUnique({
-            where: { key: 'MAX_CONCURRENT_ANALYSIS_TASKS' }
-        });
-        if (setting?.value) {
-            const parsed = parseInt(setting.value);
-            if (!isNaN(parsed) && parsed > 0) {
-                return parsed;
-            }
-        }
-    } catch {
-        // Fall through to environment variable
-    }
-
-    const envValue = process.env.MAX_CONCURRENT_ANALYSIS_TASKS;
-    if (envValue) {
-        const parsed = parseInt(envValue);
+    const { getSetting, AppSettings } = await import('@/lib/settings');
+    const value = await getSetting(AppSettings.MAX_CONCURRENT_ANALYSIS_TASKS);
+    
+    if (value) {
+        const parsed = parseInt(value);
         if (!isNaN(parsed) && parsed > 0) {
             return parsed;
         }

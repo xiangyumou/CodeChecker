@@ -53,8 +53,6 @@ test.describe('Analysis Flow E2E @full', () => {
     });
 
     test('E2E-03: Can retry a failed request', async ({ page }) => {
-        // const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000';
-
         // Navigate to an existing failed request (if any)
         await page.goto('/');
 

@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 // Mock dependencies
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockMutateAsync = vi.fn()
 const mockInvalidate = vi.fn()
 const mockPush = vi.fn()
@@ -30,7 +31,8 @@ vi.mock('@/utils/trpc', () => ({
             create: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 useMutation: ({ onSuccess }: any) => ({
-                    mutateAsync: mockMutateAsync.mockImplementation(async (data: any) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    mutateAsync: mockMutateAsync.mockImplementation(async (_data: any) => {
                         // Call onSuccess after promise resolves to simulate real tRPC behavior
                         await Promise.resolve()
                         if (onSuccess) onSuccess({ id: 123 })
@@ -94,7 +96,8 @@ global.FileReader = class {
         // Simulate async load
         setTimeout(() => {
             if (this.onload) {
-                this.onload({ target: this } as unknown as Event)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.onload({ target: this } as any)
             }
         }, 0)
     }
@@ -102,7 +105,8 @@ global.FileReader = class {
     readAsText(_file: File) {
         setTimeout(() => {
             if (this.onload) {
-                this.onload({ target: this } as unknown as Event)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.onload({ target: this } as any)
             }
         }, 0)
     }
@@ -110,7 +114,8 @@ global.FileReader = class {
     readAsArrayBuffer(_file: File) {
         setTimeout(() => {
             if (this.onload) {
-                this.onload({ target: this } as unknown as Event)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.onload({ target: this } as any)
             }
         }, 0)
     }
@@ -119,6 +124,7 @@ global.FileReader = class {
     addEventListener() {}
     removeEventListener() {}
     dispatchEvent() { return true }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
 
 describe('SubmissionForm', () => {

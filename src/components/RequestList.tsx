@@ -16,10 +16,7 @@ import { useInView } from 'react-intersection-observer';
 import { useUIStore } from '@/store/useUIStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Polling intervals (in milliseconds)
-const POLLING_INTERVAL_ACTIVE = 5000; // 5s when tracking active tasks
-const POLLING_INTERVAL_IDLE = 30000; // 30s when idle
-const REFRESH_ANIMATION_DELAY = 500; // Visual delay for refresh button
+import { getRequestListPollingInterval } from '@/utils/polling';
 
 // Cache configuration (in milliseconds/seconds)
 const STALE_TIME = 30 * 1000; // 30 seconds
@@ -27,6 +24,9 @@ const GC_TIME = 10 * 60 * 1000; // 10 minutes
 
 // Pagination
 const PAGE_SIZE = 20;
+
+
+const REFRESH_ANIMATION_DELAY = 500; // Visual delay for refresh button
 
 const localeMap = {
     zh: zhCN,
@@ -62,28 +62,7 @@ export default function RequestList() {
             // - 5s when there are active tasks (QUEUED/PROCESSING)
             // - 30s when all tasks are completed (to detect new requests from other users)
             // - Stop when page is hidden (save resources)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            refetchInterval: (data: any) => {
-                // Stop polling when page is not visible
-                if (typeof document !== 'undefined' && document.hidden) {
-                    return false;
-                }
-
-                // Check if there are any active tasks
-                if (!data || !data.pages) {
-                    return POLLING_INTERVAL_IDLE;
-                }
-
-                const allRequests = data.pages.flat();
-                const hasActiveTasks = allRequests.some(
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (r: any) => r.status === 'QUEUED' || r.status === 'PROCESSING'
-                );
-
-                // High frequency when tracking active tasks
-                // Low frequency when idle (can still detect new requests)
-                return hasActiveTasks ? POLLING_INTERVAL_ACTIVE : POLLING_INTERVAL_IDLE;
-            },
+            refetchInterval: getRequestListPollingInterval,
 
             // Cache configuration to prevent skeleton flashing
             staleTime: STALE_TIME,

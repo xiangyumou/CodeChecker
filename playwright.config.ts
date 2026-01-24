@@ -63,14 +63,6 @@ export default defineConfig({
     },
 
     /* Cross-browser testing (optional, can be enabled for CI) */
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
 
     /* Mobile viewport testing */
     {

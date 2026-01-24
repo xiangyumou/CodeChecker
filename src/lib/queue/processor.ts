@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db';
 import { getPrompt } from '@/lib/prompts/loader';
 import logger from '@/lib/logger';
 import OpenAI from 'openai';
+import { getAllSettings, AppSettings } from '@/lib/settings';
 
 export async function processAnalysisTask(requestId: number): Promise<void> {
     try {
@@ -39,22 +40,18 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         });
 
         // Load settings
-        const settings = await prisma.setting.findMany();
-        const settingsMap = settings.reduce((acc, setting) => {
-            acc[setting.key] = setting.value;
-            return acc;
-        }, {} as Record<string, string>);
+        const settingsMap = await getAllSettings();
 
-        const apiKey = settingsMap['OPENAI_API_KEY'] || process.env.OPENAI_API_KEY;
-        const baseURL = settingsMap['OPENAI_BASE_URL'] || process.env.OPENAI_BASE_URL;
-        const model = settingsMap['OPENAI_MODEL'] || process.env.OPENAI_MODEL || 'gpt-4o';
+        const apiKey = settingsMap[AppSettings.OPENAI_API_KEY] || process.env.OPENAI_API_KEY;
+        const baseURL = settingsMap[AppSettings.OPENAI_BASE_URL] || process.env.OPENAI_BASE_URL;
+        const model = settingsMap[AppSettings.OPENAI_MODEL] || process.env.OPENAI_MODEL || 'gpt-4o';
         const supportsVision = (
-            settingsMap['MODEL_SUPPORTS_VISION'] ||
+            settingsMap[AppSettings.MODEL_SUPPORTS_VISION] ||
             process.env.MODEL_SUPPORTS_VISION ||
             'true'
         ).toLowerCase() === 'true';
         const timeoutSeconds = parseInt(
-            settingsMap['REQUEST_TIMEOUT_SECONDS'] ||
+            settingsMap[AppSettings.REQUEST_TIMEOUT_SECONDS] ||
             process.env.REQUEST_TIMEOUT_SECONDS ||
             '180'
         );

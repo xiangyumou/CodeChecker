@@ -36,6 +36,7 @@ import { useUIStore } from '@/store/useUIStore';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
 import PipelineStatus, { type StageStatus } from './PipelineStatus';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
+import { getRequestPollingInterval } from '@/utils/polling';
 import { ZoomableImage } from './ui/ZoomableImage';
 
 // Props interface
@@ -77,13 +78,7 @@ export default function RequestDetailPanel({
                 // Initial load - poll at moderate speed
                 if (!data) return 5000;
 
-                // Only poll for active statuses
-                if (data.status === 'QUEUED' || data.status === 'PROCESSING') {
-                    return 5000; // 5 seconds for active tasks
-                }
-
-                // COMPLETED or FAILED - stop polling
-                return false;
+                return getRequestPollingInterval(data.status);
             },
             refetchIntervalInBackground: false,
         }
