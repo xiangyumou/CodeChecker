@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 // Mock dependencies
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockMutateAsync = vi.fn()
 const mockInvalidate = vi.fn()
 const mockPush = vi.fn()
@@ -31,8 +30,7 @@ vi.mock('@/utils/trpc', () => ({
             create: {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 useMutation: ({ onSuccess }: any) => ({
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    mutateAsync: mockMutateAsync.mockImplementation(async (_data: any) => {
+                    mutateAsync: mockMutateAsync.mockImplementation(async () => {
                         // Call onSuccess after promise resolves to simulate real tRPC behavior
                         await Promise.resolve()
                         if (onSuccess) onSuccess({ id: 123 })
@@ -67,7 +65,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('../ui/ZoomableImage', () => ({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @next/next/no-img-element, @typescript-eslint/no-explicit-any
     ZoomableImage: ({ src, alt }: any) => <img src={src} alt={alt} />
 }))
 
@@ -92,7 +90,7 @@ global.FileReader = class {
     readyState = 2 // DONE
     result = 'data:image/png;base64,aGVsbG8='
 
-    readAsDataURL(_file: File) {
+    readAsDataURL() {
         // Simulate async load
         setTimeout(() => {
             if (this.onload) {
@@ -102,7 +100,7 @@ global.FileReader = class {
         }, 0)
     }
 
-    readAsText(_file: File) {
+    readAsText() {
         setTimeout(() => {
             if (this.onload) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,7 +109,7 @@ global.FileReader = class {
         }, 0)
     }
 
-    readAsArrayBuffer(_file: File) {
+    readAsArrayBuffer() {
         setTimeout(() => {
             if (this.onload) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

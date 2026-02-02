@@ -144,7 +144,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors from incomplete mock
             }
 
@@ -162,7 +162,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -194,7 +194,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -205,7 +205,7 @@ describe('processAnalysisTask', () => {
             );
 
             expect(completedCall).toBeDefined();
-            expect(completedCall?.[0]?.data?.problemDetails).toEqual({problem:"test problem"});
+            expect(completedCall?.[0]?.data?.problemDetails).toEqual({ problem: "test problem" });
             expect(completedCall?.[0]?.data?.formattedCode).toBe('formatted code');
         });
 
@@ -217,7 +217,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -246,7 +246,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -334,7 +334,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -356,7 +356,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -378,7 +378,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -399,7 +399,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 
@@ -438,7 +438,7 @@ describe('processAnalysisTask', () => {
 
             try {
                 await processAnalysisTask(1);
-            } catch (e) {
+            } catch {
                 // Ignore errors
             }
 

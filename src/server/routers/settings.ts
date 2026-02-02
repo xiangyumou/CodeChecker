@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { router, adminProcedure } from '../trpc';
-import { getAllSettings } from '@/lib/settings';
+
 
 const settingKeySchema = z.string().min(1);
 const updateSettingSchema = z.object({

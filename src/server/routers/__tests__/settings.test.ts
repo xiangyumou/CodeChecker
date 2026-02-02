@@ -1,6 +1,6 @@
 import { settingsRouter } from '../settings';
 import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
-import { testUnauthorized } from './helpers/auth-test-helper';
+
 
 // Mock Prisma
 const mockPrisma = {

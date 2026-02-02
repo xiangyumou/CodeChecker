@@ -57,7 +57,7 @@ export default function StatusBadge({
 
     return (
         <Badge
-            variant={config.variant as any}
+            variant={config.variant}
             className={cn(
                 "rounded-md px-1.5 py-0.5 text-[10px] font-medium border-0 shadow-none",
                 className
