@@ -70,7 +70,7 @@ describe('ShikiCodeRenderer', () => {
         // Component should render (not crash) with a div - but html will be empty
         const renderedDiv = container.querySelector('.test-class');
         expect(renderedDiv).toBeInTheDocument();
-        // On error, the html state is empty, so the div's innerHTML should be empty
-        expect(renderedDiv!.innerHTML).toBe('');
+        // On error, the html state is empty, so the inner div's innerHTML should be empty
+        expect(renderedDiv!.querySelector('.p-4')!.innerHTML).toBe('');
     });
 });

@@ -11,7 +11,7 @@ describe('Button', () => {
 
         it('renders with different variants', () => {
             const { rerender } = render(<Button variant="destructive">Destructive</Button>)
-            expect(screen.getByRole('button')).toHaveClass('bg-destructive')
+            expect(screen.getByRole('button')).toHaveClass('bg-danger')
 
             rerender(<Button variant="outline">Outline</Button>)
             expect(screen.getByRole('button')).toHaveClass('border')

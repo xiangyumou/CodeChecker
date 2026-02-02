@@ -71,12 +71,21 @@
 
   --radius: 8px;
 
-  /* Alpha Variants */
+  /* Alpha Variants (Section 3.2) */
   --primary-a10: color-mix(in srgb, var(--primary), transparent 90%);
   --primary-a20: color-mix(in srgb, var(--primary), transparent 80%);
   --danger-a10: color-mix(in srgb, var(--danger), transparent 90%);
+  --danger-a20: color-mix(in srgb, var(--danger), transparent 80%);
   --warning-a10: color-mix(in srgb, var(--warning), transparent 90%);
+  --warning-a20: color-mix(in srgb, var(--warning), transparent 80%);
   --info-a10: color-mix(in srgb, var(--info), transparent 90%);
+  --info-a20: color-mix(in srgb, var(--info), transparent 80%);
+  --muted-a10: color-mix(in srgb, var(--muted-foreground), transparent 90%);
+  --muted-a20: color-mix(in srgb, var(--muted-foreground), transparent 80%);
+
+  /* Focus Ring (Section 3.2) */
+  --ring-width: 3px;
+  --ring-offset: 2px;
 
   /* Syntax Highlight (Section 3.2) */
   --code-keyword: var(--primary);
@@ -189,7 +198,7 @@
   }
 
   h3 {
-    @apply text-[14px] font-bold uppercase tracking-wider;
+    @apply text-[14px] font-bold;
   }
 
   p,

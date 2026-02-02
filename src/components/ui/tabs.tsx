@@ -97,8 +97,8 @@ function TabsTrigger({
         <motion.span
           layoutId={context?.layoutId || "active-tab-indicator"}
           className={cn(
-            "absolute inset-0 z-[-1] rounded-md shadow-sm",
-            "bg-background dark:bg-input/30 dark:border dark:border-input"
+            "absolute inset-0 z-[-1] rounded-md border-border",
+            "bg-background"
           )}
           initial={false}
           transition={{

@@ -20,7 +20,7 @@ function EmptyState({
     return (
         <div
             className={cn(
-                "flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-500",
+                "flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500",
                 className
             )}
             {...props}
@@ -30,7 +30,7 @@ function EmptyState({
                     <Icon className="w-8 h-8 text-primary/60" />
                 </div>
             )}
-            <h3 className="text-sm font-semibold mb-1 uppercase tracking-wider">{title}</h3>
+            <h3 className="text-sm font-semibold mb-1">{title}</h3>
             {description && (
                 <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed">
                     {description}

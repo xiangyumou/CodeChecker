@@ -74,7 +74,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                         <div className="bg-primary/10 rounded-lg p-2 hidden md:block">
                             <Logo />
                         </div>
-                        <h2 className="text-[20px] font-bold tracking-tight hidden md:block">{t('title')}</h2>
+                        <h2 className="font-bold hidden md:block">{t('title')}</h2>
 
                         {/* Desktop Sidebar Toggle */}
                         <Button
@@ -128,7 +128,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                 <section className="flex-1 flex flex-col min-w-0 bg-surface2 relative">
                     <div className="flex-1 p-4 md:p-6 overflow-hidden w-full flex flex-col">
                         {rightPanelMode === 'create' ? (
-                            <div className="h-full bg-surface border rounded-lg overflow-hidden flex flex-col">
+                            <div className="h-full bg-card border rounded-xl overflow-hidden flex flex-col">
                                 <SubmissionForm />
                             </div>
                         ) : (

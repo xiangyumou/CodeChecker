@@ -110,7 +110,7 @@ export default function RequestList() {
     if (isLoading && !infiniteData) {
         return (
             <div className="flex flex-col h-full">
-                <div className="p-4 border-b bg-muted/5">
+                <div className="p-4 border-b bg-surface2">
                     <Skeleton className="h-6 w-32" />
                 </div>
                 <div className="p-3 space-y-3">
@@ -131,8 +131,8 @@ export default function RequestList() {
     if (requests.length === 0) {
         return (
             <div className="flex flex-col h-full">
-                <div className="flex justify-between items-center p-4 border-b bg-muted/5">
-                    <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-[0.05em]">{t('title')}</h2>
+                <div className="flex justify-between items-center p-4 border-b bg-surface2">
+                    <h2 className="text-sm font-bold text-muted-foreground">{t('title')}</h2>
                     <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefetching} className="h-8 w-8 text-muted-foreground">
                         <RefreshCw className={cn("w-3.5 h-3.5", isRefetching && "animate-spin")} />
                     </Button>
@@ -149,10 +149,10 @@ export default function RequestList() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-muted/5 min-h-0">
-            <div className="flex justify-between items-center px-4 py-3 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex flex-col h-full bg-surface2 min-h-0">
+            <div className="flex justify-between items-center px-4 py-3 bg-surface2/50 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-[0.05em]">{t('title')}</h2>
+                    <h2 className="text-sm font-bold text-muted-foreground">{t('title')}</h2>
                 </div>
                 <Button
                     variant="ghost"
