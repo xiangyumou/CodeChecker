@@ -155,7 +155,7 @@ export default function RequestList() {
         <div className="flex flex-col h-full bg-muted/5 min-h-0">
             <div className="flex justify-between items-center px-4 py-3 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('title')}</h2>
+                    <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-[0.05em]">{t('title')}</h2>
                 </div>
                 <Button
                     variant="ghost"
@@ -190,10 +190,10 @@ export default function RequestList() {
                             <motion.div
                                 key={request.id}
                                 className={cn(
-                                    "group relative bg-card border rounded-lg p-4 transition-all duration-200 cursor-pointer",
+                                    "group relative bg-card border rounded-lg p-4 transition-all duration-200 cursor-pointer overflow-hidden shadow-none",
                                     isSelected
-                                        ? "border-primary ring-1 ring-primary shadow-md bg-primary/5"
-                                        : "border-border hover:border-primary"
+                                        ? "border-l-[3px] border-l-primary bg-surface2 border-y-border border-r-border pl-[13px]"
+                                        : "border-border hover:border-primary/50"
                                 )}
                                 onClick={() => router.push(`/request/${request.id}`)}
                                 variants={{

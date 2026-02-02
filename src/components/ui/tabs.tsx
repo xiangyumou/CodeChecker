@@ -58,7 +58,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
+        "bg-surface2 text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[var(--space-xs)]",
         className
       )}
       {...props}
@@ -82,7 +82,7 @@ function TabsTrigger({
       className={cn(
         "relative z-10 flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color] cursor-pointer",
         // Focus styles
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "focus-visible:outline focus-visible:outline-[var(--ring-width)] focus-visible:outline-ring focus-visible:outline-offset-[var(--ring-offset)]",
         // Disabled styles
         "disabled:pointer-events-none disabled:opacity-50",
         // Text colors

@@ -74,7 +74,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                         <div className="bg-primary/10 rounded-lg p-2 hidden md:block">
                             <Logo />
                         </div>
-                        <h1 className="text-lg font-bold tracking-tight hidden md:block">{t('title')}</h1>
+                        <h2 className="text-[20px] font-bold tracking-tight hidden md:block">{t('title')}</h2>
 
                         {/* Desktop Sidebar Toggle */}
                         <Button

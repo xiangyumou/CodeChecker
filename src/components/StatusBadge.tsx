@@ -16,10 +16,10 @@ interface StatusBadgeProps {
 }
 
 const statusConfig = {
-    QUEUED: { color: 'bg-muted text-muted-foreground border-transparent', icon: Clock, iconClass: '' },
-    PROCESSING: { color: 'bg-blue-500/10 text-blue-500 border-blue-500/20', icon: Loader2, iconClass: 'animate-spin' },
-    COMPLETED: { color: 'bg-green-500/10 text-green-500 border-green-500/20', icon: CheckCircle2, iconClass: '' },
-    FAILED: { color: 'bg-destructive/10 text-destructive border-destructive/20', icon: AlertCircle, iconClass: '' },
+    QUEUED: { variant: 'secondary', icon: Clock, iconClass: '' },
+    PROCESSING: { variant: 'info', icon: Loader2, iconClass: 'animate-spin' },
+    COMPLETED: { variant: 'success', icon: CheckCircle2, iconClass: '' },
+    FAILED: { variant: 'error', icon: AlertCircle, iconClass: '' },
 } as const;
 
 export default function StatusBadge({
@@ -30,7 +30,7 @@ export default function StatusBadge({
     className
 }: StatusBadgeProps) {
     const t = useTranslations('requestList');
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.QUEUED;
     const StatusIcon = config.icon;
 
@@ -56,11 +56,10 @@ export default function StatusBadge({
     };
 
     return (
-        <Badge 
-            variant="secondary" 
+        <Badge
+            variant={config.variant as any}
             className={cn(
-                "rounded-md px-1.5 py-0.5 text-[10px] font-medium border shadow-none", 
-                config.color,
+                "rounded-md px-1.5 py-0.5 text-[10px] font-medium border-0 shadow-none",
                 className
             )}
             data-testid="request-status-badge"

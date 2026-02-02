@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createHighlighter, type Highlighter, type ShikiTransformer } from 'shiki';
 import { useTheme } from 'next-themes';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 
@@ -76,9 +77,11 @@ export default function ShikiCodeRenderer({
     }
 
     return (
-        <div
-            className={className}
-            dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <div className={cn("code-block border bg-surface2 rounded-lg overflow-hidden", className)}>
+            <div
+                className="p-4 overflow-x-auto font-mono text-[13px] leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: html }}
+            />
+        </div>
     );
 }
