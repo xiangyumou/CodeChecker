@@ -15,14 +15,21 @@
   --color-surface: var(--surface);
   --color-surface2: var(--surface2);
   --color-text: var(--text);
-  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
   --color-info: var(--info);
 
+  /* Syntax Highlight */
+  --color-code-keyword: var(--code-keyword);
+  --color-code-string: var(--code-string);
+  --color-code-function: var(--code-function);
+
   /* Shadcn Mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -30,7 +37,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -52,8 +59,8 @@
   --surface2: #f7f7f8;
 
   --text: #343541;
-  --muted: var(--surface2);
-  /* Text muted color variable moved to muted-foreground */
+  --muted-foreground: #8e8ea0;
+  /* The 'muted' text color from UI.md */
 
   --border: #e5e5e5;
   --ring: #10a37f;
@@ -67,15 +74,21 @@
   /* Alpha Variants */
   --primary-a10: color-mix(in srgb, var(--primary), transparent 90%);
   --primary-a20: color-mix(in srgb, var(--primary), transparent 80%);
-  --danger-a10:  color-mix(in srgb, var(--danger), transparent 90%);
+  --danger-a10: color-mix(in srgb, var(--danger), transparent 90%);
   --warning-a10: color-mix(in srgb, var(--warning), transparent 90%);
-  --info-a10:    color-mix(in srgb, var(--info), transparent 90%);
+  --info-a10: color-mix(in srgb, var(--info), transparent 90%);
+
+  /* Syntax Highlight (Section 3.2) */
+  --code-keyword: var(--primary);
+  --code-string: var(--info);
+  --code-function: var(--warning);
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
 
   /* Shadow Scale */
   --shadow-none: 0 0 0 transparent;
-  --shadow-subtle: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-float: 0 10px 30px rgba(0,0,0,0.1);
-  --shadow-modal: 0 20px 50px rgba(0,0,0,0.2);
+  --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-modal: 0 20px 50px rgba(0, 0, 0, 0.2);
 
   /* Shadcn Mappings - Light */
   --background: var(--bg);
@@ -92,9 +105,8 @@
   --secondary: var(--surface2);
   --secondary-foreground: var(--text);
 
-  --muted-background: var(--surface2);
-  /* Shadcn 'muted' is often bg */
-  --muted-foreground: #8e8ea0;
+  --muted: var(--surface2);
+  /* Keep as bg layer for Shadcn */
 
   --accent: var(--surface2);
   --accent-foreground: var(--text);
@@ -103,7 +115,6 @@
   --destructive-foreground: #ffffff;
 
   --input: var(--surface);
-  /* Input bg */
 
   /* Font */
   --font-inter: Inter, system-ui, sans-serif;
@@ -129,13 +140,9 @@
   --surface2: #202123;
 
   --text: #ececf1;
-  --muted: var(--surface2);
+  --muted-foreground: #8e8ea0;
 
   --border: #565869;
-
-  /* Inherit/Keep others same as light if not specified, but usually need adjustments */
-  /* --primary: #10a37f; (Same) */
-  /* --ring: #10a37f; (Same) */
 
   /* Shadcn Mappings - Dark */
   --background: var(--bg);
@@ -152,8 +159,7 @@
   --secondary: var(--surface2);
   --secondary-foreground: var(--text);
 
-  --muted-background: var(--surface2);
-  --muted-foreground: #8e8ea0;
+  --muted: var(--surface2);
 
   --accent: var(--surface2);
   --accent-foreground: var(--text);
@@ -173,7 +179,7 @@
     @apply bg-background text-foreground font-sans;
   }
 
-  /* Typography Scale */
+  /* Typography Scale (Section 4.2) */
   h1 {
     @apply text-[24px] font-bold;
   }
@@ -183,7 +189,7 @@
   }
 
   h3 {
-    @apply text-[14px] font-bold;
+    @apply text-[14px] font-bold uppercase tracking-wider;
   }
 
   p,
@@ -205,14 +211,14 @@
     }
   }
 
-  /* Shiki Code Styles */
+  /* Shiki Code Styles (Section 5.9) */
   .shiki {
-    @apply rounded-lg overflow-x-auto;
-    background-color: transparent !important;
+    @apply rounded-lg border border-border overflow-x-auto;
+    background-color: var(--surface2) !important;
   }
 
   .shiki code {
-    @apply block min-w-full font-mono;
+    @apply block min-w-full font-mono text-[13px] leading-[1.6] py-4;
     counter-reset: step;
     counter-increment: step 0;
   }
@@ -233,4 +239,25 @@
     opacity: 0.4;
     user-select: none;
   }
+}
+
+/* Toast Styles (Section 5.7) */
+.sonner-toast {
+  @apply !bg-surface !border !border-border !rounded-lg !shadow-lg !p-4 !min-w-[280px];
+}
+
+.sonner-toast-success {
+  border-left: 3px solid var(--primary) !important;
+}
+
+.sonner-toast-warning {
+  border-left: 3px solid var(--warning) !important;
+}
+
+.sonner-toast-error {
+  border-left: 3px solid var(--danger) !important;
+}
+
+.sonner-toast-info {
+  border-left: 3px solid var(--info) !important;
 }

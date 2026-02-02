@@ -19,6 +19,7 @@ import ShikiCodeRenderer from './ShikiCodeRenderer';
 import StatusBadge from './StatusBadge';
 import RequestDetailHeader from './RequestDetailHeader';
 import RequestDetailTabs from './RequestDetailTabs';
+import { EmptyState } from '@/components/ui/empty-state';
 import AnalysisSection from './AnalysisSection';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
 import { useRequestPolling } from '@/hooks/useSmartPolling';
@@ -134,9 +135,11 @@ export default function RequestDetailPanel({
 
     if (!requestId) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-muted-foreground">
-                <Info className="w-12 h-12" />
-                <p className="text-lg font-medium">{t('selectRequestToView')}</p>
+            <div className="flex flex-col items-center justify-center h-full">
+                <EmptyState
+                    icon={Info}
+                    title={t('selectRequestToView')}
+                />
             </div>
         );
     }
@@ -185,14 +188,18 @@ export default function RequestDetailPanel({
     if (!request || queryError) {
         return (
             <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden" data-testid="request-detail-error">
-                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
-                    <AlertCircle className="w-12 h-12 text-muted" />
-                    <p className="text-lg font-medium text-text" data-testid="error-message">{t('requestNotFound')}</p>
-                    <p className="text-sm text-muted-foreground">ID: {requestId || 'unknown'}</p>
-                    <Button variant="outline" onClick={createNewRequest} className="mt-4">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        {t('backToCreate') || 'Back'}
-                    </Button>
+                <div className="flex flex-col items-center justify-center h-full">
+                    <EmptyState
+                        icon={AlertCircle}
+                        title={t('requestNotFound')}
+                        description={`ID: ${requestId || 'unknown'}`}
+                        action={
+                            <Button variant="outline" onClick={createNewRequest}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                {t('backToCreate') || 'Back'}
+                            </Button>
+                        }
+                    />
                 </div>
             </div>
         );

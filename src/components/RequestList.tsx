@@ -16,6 +16,7 @@ import { useUIStore } from '@/store/useUIStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import StatusBadge from './StatusBadge';
 import { useRequestListPolling } from '@/hooks/useSmartPolling';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const STALE_TIME = 30 * 1000;
 const GC_TIME = 10 * 60 * 1000;
@@ -131,21 +132,17 @@ export default function RequestList() {
         return (
             <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center p-4 border-b bg-muted/5">
-                    <h2 className="text-base font-semibold tracking-tight">{t('title')}</h2>
+                    <h2 className="text-[12px] font-bold text-muted-foreground uppercase tracking-[0.05em]">{t('title')}</h2>
                     <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefetching} className="h-8 w-8 text-muted-foreground">
                         <RefreshCw className={cn("w-3.5 h-3.5", isRefetching && "animate-spin")} />
                     </Button>
                 </div>
-                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-                    <div className="bg-primary/5 rounded-full p-6 ring-1 ring-primary/10">
-                        <Sparkles className="w-8 h-8 text-primary/60" />
-                    </div>
-                    <div className="space-y-1 max-w-[200px]">
-                        <p className="text-sm font-medium">{t('noHistory')}</p>
-                        <p className="text-xs text-muted-foreground">
-                            {t('submitToSeeHere')}
-                        </p>
-                    </div>
+                <div className="flex-1 flex items-center justify-center">
+                    <EmptyState
+                        icon={Sparkles}
+                        title={t('noHistory')}
+                        description={t('submitToSeeHere')}
+                    />
                 </div>
             </div>
         );
