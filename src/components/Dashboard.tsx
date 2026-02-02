@@ -60,7 +60,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                                 <DrawerContent className="w-[280px] h-full rounded-none border-r">
                                     <div className="flex flex-col h-full bg-surface">
                                         <div className="p-4 border-b flex items-center gap-2">
-                                            <div className="bg-primary/10 rounded-lg p-2">
+                                            <div className="bg-primary-a10 rounded-lg p-2">
                                                 <Logo />
                                             </div>
                                             <span className="font-bold">{t('title')}</span>
@@ -71,7 +71,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             </Drawer>
                         </div>
 
-                        <div className="bg-primary/10 rounded-lg p-2 hidden md:block">
+                        <div className="bg-primary-a10 rounded-lg p-2 hidden md:block">
                             <Logo />
                         </div>
                         <h2 className="font-bold hidden md:block">{t('title')}</h2>

@@ -28,8 +28,8 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
     return (
         <div className="space-y-6">
             {analysis.map((mod: { original_snippet: string; modified_snippet: string; explanation: string }, idx: number) => (
-                <div key={idx} className="relative pl-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-primary/20">
-                    <div className="absolute left-1 top-1.5 w-5 h-5 rounded-full bg-primary text-[10px] flex items-center justify-center font-bold text-primary-foreground">
+                <div key={idx} className="relative pl-8 before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-primary-a20">
+                    <div className="absolute left-1 top-1.5 w-5 h-5 rounded-full bg-primary text-[10px] flex items-center justify-center font-bold text-white shadow-none">
                         {idx + 1}
                     </div>
                     <div className="space-y-4">
@@ -69,7 +69,7 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                        <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                             <MarkdownRenderer className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">
                                 {mod.explanation}
                             </MarkdownRenderer>

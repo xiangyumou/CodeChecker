@@ -27,19 +27,21 @@ export default function RequestDetailHeader({
     return (
         <div className="flex-none bg-surface z-10 shadow-sm border-b">
             <div className="p-6 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" onClick={onClose} className="mr-1 md:hidden">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Button variant="ghost" size="icon" onClick={onClose} className="mr-0 md:hidden shrink-0">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
-                    <h2 className="text-2xl font-extrabold tracking-tight text-text">
-                        {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
-                    </h2>
-                    <StatusBadge
-                        status={request.status}
-                        stage1Status={request.stage1Status}
-                        stage2Status={request.stage2Status}
-                        stage3Status={request.stage3Status}
-                    />
+                    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 min-w-0 flex-1">
+                        <h2 className="text-[18px] md:text-[20px] font-bold tracking-tight text-text truncate">
+                            {requestId ? t('drawerTitleWithId', { id: requestId }) : t('drawerTitle')}
+                        </h2>
+                        <StatusBadge
+                            status={request.status}
+                            stage1Status={request.stage1Status}
+                            stage2Status={request.stage2Status}
+                            stage3Status={request.stage3Status}
+                        />
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     {(request.status === 'FAILED' || request.status === 'COMPLETED') && (

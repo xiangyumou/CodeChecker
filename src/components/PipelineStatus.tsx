@@ -98,41 +98,39 @@ export default function PipelineStatus({ stages, className }: PipelineStatusProp
                     ))}
                 </div>
 
-                {/* Mobile: Vertical layout */}
-                <div className="flex md:hidden flex-col gap-3">
+                {/* Mobile: Horizontal layout with scrolling */}
+                <div className="flex md:hidden items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                     {stages.map((stage, index) => (
-                        <div key={stage.id} className="flex flex-col">
+                        <div key={stage.id} className="flex items-center">
                             <motion.div
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="flex items-center gap-3"
+                                className="flex items-center gap-2"
                             >
                                 {/* Stage indicator */}
                                 <div className={cn(
-                                    'flex items-center justify-center w-9 h-9 rounded-full border-2 transition-all duration-300 flex-shrink-0',
+                                    'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300 flex-shrink-0',
                                     getStageColor(stage.status)
                                 )}>
                                     {getStageIcon(stage.status)}
                                 </div>
 
-                                {/* Stage info */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold text-text">
+                                {/* Stage label (abbreviated or smaller on mobile) */}
+                                <div className="whitespace-nowrap">
+                                    <div className="text-[11px] font-bold text-text">
                                         {t(`stage${index + 1}` as 'stage1' | 'stage2' | 'stage3')}
                                     </div>
                                 </div>
                             </motion.div>
 
-                            {/* Connection line for mobile */}
+                            {/* Connection line */}
                             {index < stages.length - 1 && (
-                                <div className="flex">
-                                    <div className="w-9 flex justify-center">
-                                        <div className={cn(
-                                            'w-0.5 h-6 rounded-full transition-all duration-500',
-                                            getConnectionColor(stage.status, stages[index + 1].status)
-                                        )} />
-                                    </div>
+                                <div className="flex-shrink-0 px-2">
+                                    <div className={cn(
+                                        'h-0.5 w-6 rounded-full transition-all duration-500',
+                                        getConnectionColor(stage.status, stages[index + 1].status)
+                                    )} />
                                 </div>
                             )}
                         </div>

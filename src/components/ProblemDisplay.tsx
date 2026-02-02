@@ -64,7 +64,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
         <div className="flex flex-col gap-8 animate-in fade-in duration-300 pb-10">
             {/* Header / Title Section */}
             <div className="space-y-4">
-                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+                <h1 className="text-[24px] font-bold tracking-tight text-foreground">
                     {problem.title}
                 </h1>
 
@@ -85,7 +85,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
             {/* Description */}
             <section>
                 <SectionHeader icon={FileText} title={t('problemDescription')} />
-                <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                     <MarkdownContent content={problem.description} />
                 </div>
             </section>
@@ -94,13 +94,13 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
             <div className="grid md:grid-cols-2 gap-8">
                 <section>
                     <SectionHeader icon={Terminal} title={t('inputFormat')} />
-                    <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                    <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.input_format} />
                     </div>
                 </section>
                 <section>
                     <SectionHeader icon={Terminal} title={t('outputFormat')} />
-                    <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                    <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.output_format} />
                     </div>
                 </section>
@@ -133,7 +133,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
                     <Separator />
                     <section>
                         <SectionHeader icon={FileText} title={t('notes')} />
-                        <div className="bg-amber-500/10 rounded-lg p-6 border border-amber-500/20">
+                        <div className="bg-[var(--warning-a10)] rounded-lg p-6 border border-[var(--warning-a20)] overflow-x-auto">
                             <MarkdownContent content={problem.notes} />
                         </div>
                     </section>

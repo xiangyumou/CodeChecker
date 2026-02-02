@@ -228,7 +228,7 @@ export default function RequestDetailPanel({
                                 readonly={true}
                             />
                         )}
-                        <div className="bg-primary/5 rounded-lg p-6 border border-primary/10">
+                        <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                             <MarkdownRenderer className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">
                                 {request.userPrompt || t('noUserPrompt')}
                             </MarkdownRenderer>
@@ -253,7 +253,7 @@ export default function RequestDetailPanel({
                     </TabsContent>
 
                     <TabsContent value="code" className="animate-in fade-in duration-300 mt-0">
-                        <div className="relative rounded-lg overflow-hidden border border-border bg-surface2">
+                        <div className="relative rounded-lg overflow-x-auto border border-border bg-surface2">
                             {request.formattedCode ? (
                                 <ShikiCodeRenderer
                                     code={request.formattedCode}
@@ -275,7 +275,7 @@ export default function RequestDetailPanel({
 
                     <TabsContent value="diff" className="animate-in fade-in duration-300 mt-0">
                         {diffHtml ? (
-                            <div className="rounded-lg border border-border overflow-hidden bg-white dark:bg-zinc-950">
+                            <div className="rounded-lg border border-border overflow-x-auto bg-white dark:bg-zinc-950">
                                 <div
                                     className="p-1 scale-[0.9] origin-top-left"
                                     dangerouslySetInnerHTML={{ __html: diffHtml }}

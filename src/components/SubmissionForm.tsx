@@ -176,7 +176,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                         <div
                             className={cn(
                                 "flex-none relative border border-dashed rounded-lg p-4 transition-all cursor-pointer flex items-center justify-center gap-4 bg-surface2 h-20",
-                                isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary",
+                                isDragOver ? "border-primary bg-primary-a10" : "border-border hover:border-primary",
                             )}
                             onClick={() => fileInputRef.current?.click()}
                             onDragOver={handleDragOver}

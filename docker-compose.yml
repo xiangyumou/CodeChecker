@@ -13,6 +13,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+    ports:
+      - "6379:6379"
 
   postgres:
     image: postgres:16-alpine
@@ -31,6 +33,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+    ports:
+      - "5432:5432"
 
   code-checker:
     build:

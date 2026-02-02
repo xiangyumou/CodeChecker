@@ -14,15 +14,15 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
     const t = useTranslations('requestDetails');
 
     return (
-        <div className="px-6 py-3 bg-surface/50 backdrop-blur-sm">
-            <TabsList className="w-full grid grid-cols-5 h-10 p-1 bg-surface2 rounded-lg border border-border">
-                <TabsTrigger value="input" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
+        <div className="px-4 py-3 bg-surface/50 backdrop-blur-sm border-b overflow-x-auto no-scrollbar">
+            <TabsList className="flex md:grid md:grid-cols-5 h-auto md:h-10 p-1 bg-surface2 rounded-lg border border-border min-w-max md:min-w-full">
+                <TabsTrigger value="input" className="whitespace-nowrap rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary py-2 md:py-1.5 flex-1 md:flex-none">
                     <User className="w-3.5 h-3.5 mr-1.5" />
                     {t('userPrompt')}
                 </TabsTrigger>
 
                 {(request.stage1Status === 'completed' || request.status === 'COMPLETED') ? (
-                    <TabsTrigger value="problem" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
+                    <TabsTrigger value="problem" className="whitespace-nowrap rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary py-2 md:py-1.5 flex-1 md:flex-none">
                         <Info className="w-3.5 h-3.5 mr-1.5" />
                         {t('problemDetails')}
                     </TabsTrigger>
@@ -41,7 +41,7 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
                 )}
 
                 {(request.stage2Status === 'completed' || request.status === 'COMPLETED') ? (
-                    <TabsTrigger value="code" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
+                    <TabsTrigger value="code" className="whitespace-nowrap rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary py-2 md:py-1.5 flex-1 md:flex-none">
                         <Code2 className="w-3.5 h-3.5 mr-1.5" />
                         {t('sourceCode')}
                     </TabsTrigger>
@@ -61,11 +61,11 @@ export default function RequestDetailTabs({ request }: RequestDetailTabsProps) {
 
                 {request.status === 'COMPLETED' ? (
                     <>
-                        <TabsTrigger value="diff" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
+                        <TabsTrigger value="diff" className="whitespace-nowrap rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary py-2 md:py-1.5 flex-1 md:flex-none">
                             <FileDiff className="w-3.5 h-3.5 mr-1.5" />
                             {t('codeDiff')}
                         </TabsTrigger>
-                        <TabsTrigger value="analysis" className="rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary">
+                        <TabsTrigger value="analysis" className="whitespace-nowrap rounded-md text-xs font-bold transition-all data-[state=active]:bg-surface data-[state=active]:shadow-sm data-[state=active]:text-primary py-2 md:py-1.5 flex-1 md:flex-none">
                             <Lightbulb className="w-3.5 h-3.5 mr-1.5" />
                             {t('analysisDetails')}
                         </TabsTrigger>
