@@ -1,11 +1,11 @@
 import { initTRPC } from '@trpc/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
 import superjson from 'superjson';
 
 // Create context for tRPC
 export const createTRPCContext = async (opts: { headers: Headers }) => {
     return {
-        prisma,
+        db,
         headers: opts.headers,
     };
 };

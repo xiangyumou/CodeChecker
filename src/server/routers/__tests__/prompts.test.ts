@@ -30,7 +30,7 @@ describe('promptsRouter', () => {
 
     const createCaller = () => promptsRouter.createCaller({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Intentionally partial mock for testing
-        prisma: {} as any,
+        db: {} as any,
         headers,
     });
 

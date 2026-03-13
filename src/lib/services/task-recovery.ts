@@ -1,4 +1,6 @@
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
+import { requests } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import logger from '@/lib/logger';
 
 /**
@@ -14,38 +16,37 @@ import logger from '@/lib/logger';
 export async function markIncompleteTasksAsFailed() {
     try {
         // Mark PROCESSING tasks as FAILED
-        const processingResult = await prisma.request.updateMany({
-            where: {
-                status: 'PROCESSING'
-            },
-            data: {
+        const processingResult = await db
+            .update(requests)
+            .set({
                 status: 'FAILED',
                 errorMessage: 'Service restarted while task was processing. You can retry it manually.',
                 isSuccess: false,
-            }
-        });
+            })
+            .where(eq(requests.status, 'PROCESSING'));
 
         // Mark QUEUED tasks as FAILED
         // Note: With in-memory queue, queued tasks are lost on restart.
         // Users need to retry these tasks manually.
-        const queuedResult = await prisma.request.updateMany({
-            where: {
-                status: 'QUEUED'
-            },
-            data: {
+        const queuedResult = await db
+            .update(requests)
+            .set({
                 status: 'FAILED',
                 errorMessage: 'Service restarted while task was queued. You can retry it manually.',
                 isSuccess: false,
-            }
-        });
+            })
+            .where(eq(requests.status, 'QUEUED'));
 
-        const total = processingResult.count + queuedResult.count;
+        // Get the number of rows changed
+        const processingCount = processingResult.changes ?? 0;
+        const queuedCount = queuedResult.changes ?? 0;
+        const total = processingCount + queuedCount;
 
         if (total > 0) {
             logger.warn(
                 {
-                    processing: processingResult.count,
-                    queued: queuedResult.count,
+                    processing: processingCount,
+                    queued: queuedCount,
                     total
                 },
                 'Marked incomplete tasks as FAILED due to service restart'
@@ -55,8 +56,8 @@ export async function markIncompleteTasksAsFailed() {
         }
 
         return {
-            processing: processingResult.count,
-            queued: queuedResult.count,
+            processing: processingCount,
+            queued: queuedCount,
             total
         };
     } catch (error) {

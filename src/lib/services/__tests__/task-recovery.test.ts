@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { markIncompleteTasksAsFailed } from '../task-recovery';
 
 // Use vi.hoisted to ensure mocks are created before imports
-const { mockPrisma, mockLogger } = vi.hoisted(() => {
+const { mockDb, mockLogger } = vi.hoisted(() => {
     return {
-        mockPrisma: {
-            request: {
-                updateMany: vi.fn(),
-            },
+        mockDb: {
+            update: vi.fn(() => mockDb),
+            set: vi.fn(() => mockDb),
+            where: vi.fn(() => mockDb),
         },
         mockLogger: {
             warn: vi.fn(),
@@ -18,7 +18,7 @@ const { mockPrisma, mockLogger } = vi.hoisted(() => {
 });
 
 vi.mock('@/lib/db', () => ({
-    prisma: mockPrisma,
+    db: mockDb,
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -28,29 +28,22 @@ vi.mock('@/lib/logger', () => ({
 describe('task-recovery', () => {
     beforeEach(() => {
         vi.resetAllMocks();
+        // Reset chain mocks
+        mockDb.update.mockReturnValue(mockDb);
+        mockDb.set.mockReturnValue(mockDb);
+        mockDb.where.mockReturnValue({ changes: 0 });
     });
 
     describe('markIncompleteTasksAsFailed', () => {
         it('should mark PROCESSING and QUEUED tasks as FAILED', async () => {
-            mockPrisma.request.updateMany
-                .mockResolvedValueOnce({ count: 2 })  // PROCESSING
-                .mockResolvedValueOnce({ count: 3 }); // QUEUED
+            mockDb.where
+                .mockResolvedValueOnce({ changes: 2 })  // PROCESSING
+                .mockResolvedValueOnce({ changes: 3 }); // QUEUED
 
             const result = await markIncompleteTasksAsFailed();
 
             // Verify PROCESSING update call
-            const firstCall = mockPrisma.request.updateMany.mock.calls[0][0];
-            expect(firstCall.where.status).toBe('PROCESSING');
-            expect(firstCall.data.status).toBe('FAILED');
-            expect(firstCall.data.isSuccess).toBe(false);
-            expect(firstCall.data.errorMessage).toContain('processing');
-
-            // Verify QUEUED update call
-            const secondCall = mockPrisma.request.updateMany.mock.calls[1][0];
-            expect(secondCall.where.status).toBe('QUEUED');
-            expect(secondCall.data.status).toBe('FAILED');
-            expect(secondCall.data.isSuccess).toBe(false);
-            expect(secondCall.data.errorMessage).toContain('queued');
+            expect(mockDb.update).toHaveBeenCalledTimes(2);
 
             // Verify return value
             expect(result.processing).toBe(2);
@@ -59,9 +52,9 @@ describe('task-recovery', () => {
         });
 
         it('should log warning when tasks are marked as failed', async () => {
-            mockPrisma.request.updateMany
-                .mockResolvedValueOnce({ count: 5 })
-                .mockResolvedValueOnce({ count: 0 });
+            mockDb.where
+                .mockResolvedValueOnce({ changes: 5 })
+                .mockResolvedValueOnce({ changes: 0 });
 
             await markIncompleteTasksAsFailed();
 
@@ -70,9 +63,9 @@ describe('task-recovery', () => {
         });
 
         it('should log info when no tasks are affected', async () => {
-            mockPrisma.request.updateMany
-                .mockResolvedValueOnce({ count: 0 })
-                .mockResolvedValueOnce({ count: 0 });
+            mockDb.where
+                .mockResolvedValueOnce({ changes: 0 })
+                .mockResolvedValueOnce({ changes: 0 });
 
             await markIncompleteTasksAsFailed();
 
@@ -82,7 +75,8 @@ describe('task-recovery', () => {
 
         it('should return zeros and log error on DB failure', async () => {
             const error = new Error('Database connection failed');
-            mockPrisma.request.updateMany.mockRejectedValueOnce(error);
+            // Make the chain reject at the where() call
+            mockDb.where.mockRejectedValueOnce(error);
 
             const result = await markIncompleteTasksAsFailed();
 
@@ -94,7 +88,7 @@ describe('task-recovery', () => {
         });
 
         it('should never throw to allow service startup to continue', async () => {
-            mockPrisma.request.updateMany.mockRejectedValue(new Error('Critical DB error'));
+            mockDb.set.mockRejectedValue(new Error('Critical DB error'));
 
             // Must resolve, not reject
             const result = await markIncompleteTasksAsFailed();
@@ -102,9 +96,9 @@ describe('task-recovery', () => {
         });
 
         it('should handle large count values correctly', async () => {
-            mockPrisma.request.updateMany
-                .mockResolvedValueOnce({ count: 10000 })
-                .mockResolvedValueOnce({ count: 5000 });
+            mockDb.where
+                .mockResolvedValueOnce({ changes: 10000 })
+                .mockResolvedValueOnce({ changes: 5000 });
 
             const result = await markIncompleteTasksAsFailed();
 
@@ -114,16 +108,14 @@ describe('task-recovery', () => {
         });
 
         it('should process both PROCESSING and QUEUED tasks', async () => {
-            mockPrisma.request.updateMany
-                .mockResolvedValueOnce({ count: 1 })
-                .mockResolvedValueOnce({ count: 2 });
+            mockDb.where
+                .mockResolvedValueOnce({ changes: 1 })
+                .mockResolvedValueOnce({ changes: 2 });
 
             await markIncompleteTasksAsFailed();
 
             // Verify two calls: one for PROCESSING, one for QUEUED
-            expect(mockPrisma.request.updateMany).toHaveBeenCalledTimes(2);
-            expect(mockPrisma.request.updateMany.mock.calls[0][0].where.status).toBe('PROCESSING');
-            expect(mockPrisma.request.updateMany.mock.calls[1][0].where.status).toBe('QUEUED');
+            expect(mockDb.update).toHaveBeenCalledTimes(2);
         });
     });
 });

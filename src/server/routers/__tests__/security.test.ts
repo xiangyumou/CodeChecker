@@ -1,10 +1,11 @@
 import { describe, test, expect } from 'vitest';
 import { appRouter } from '@/server/routers';
-import { prisma } from '@/lib/db';
 import { testUnauthorized, createPublicContext } from './helpers/auth-test-helper';
 
 describe('Security Audit Tests', () => {
-    const publicContext = createPublicContext(prisma);
+    // Mock db for testing
+    const mockDb = {};
+    const publicContext = createPublicContext(mockDb);
     const caller = appRouter.createCaller(publicContext);
 
     // Test destructive operations require auth

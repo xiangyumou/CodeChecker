@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
+import { settings } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import logger from '@/lib/logger';
 
 const promptCache: Record<string, string> = {};
@@ -37,11 +39,9 @@ export async function getPromptFromFile(name: string): Promise<string> {
 export async function getPrompt(name: string): Promise<string> {
     // Check database first
     try {
-        const setting = await prisma.setting.findUnique({
-            where: { key: name },
-        });
-        if (setting?.value) {
-            return setting.value;
+        const result = await db.select().from(settings).where(eq(settings.key, name)).limit(1);
+        if (result[0]?.value) {
+            return result[0].value;
         }
     } catch (error) {
         logger.warn({ err: error, name }, 'Failed to check settings for prompt, falling back to file');

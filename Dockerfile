@@ -4,13 +4,13 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 RUN npm config set registry https://registry.npmmirror.com
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -18,8 +18,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Drizzle migrations
+RUN npm run db:generate
 
 # Build the Next.js application
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -53,11 +53,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Standalone mode doesn't include all chunks required by instrumentation
 COPY --from=builder --chown=nextjs:nodejs /app/.next/server ./.next/server
 
-# Ensure prisma schema and migrations are available if needed
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+# Create data directory for SQLite with correct permissions
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
 COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./
 RUN chmod +x ./docker-entrypoint.sh
+
+# Copy drizzle migrations
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 
 USER nextjs
 
@@ -68,6 +71,6 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 # Server.js is created by next build from the standalone output
-# We wrap the start command to ensure prisma migrations run if needed
+# We wrap the start command to ensure migrations run if needed
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]

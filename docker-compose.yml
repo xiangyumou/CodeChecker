@@ -1,24 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres
-    restart: unless-stopped
-    mem_limit: 200m
-    mem_reservation: 100m
-    environment:
-      POSTGRES_USER: ${DB_USER:-codechecker}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev123}
-      POSTGRES_DB: ${DB_NAME:-codechecker}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "${DB_USER:-codechecker}" ]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    ports:
-      - "5432:5432"
-
   code-checker:
     build:
       context: .
@@ -30,12 +10,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DB_PROVIDER=${DB_PROVIDER:-postgresql}
-      # DATABASE_URL is automatically constructed from DB_* variables in .env
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data  # Persist SQLite database
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-volumes:
-  postgres_data:

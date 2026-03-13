@@ -1,4 +1,6 @@
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/db';
+import { settings } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Centralized settings retrieval logic
@@ -6,11 +8,9 @@ import { prisma } from '@/lib/db';
  */
 export async function getSetting(key: string, defaultValue?: string): Promise<string | undefined> {
     try {
-        const setting = await prisma.setting.findUnique({
-            where: { key }
-        });
-        if (setting?.value) {
-            return setting.value;
+        const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+        if (result[0]?.value) {
+            return result[0].value;
         }
     } catch (error) {
         // Log error but don't fail, fall back to env/default
@@ -23,8 +23,8 @@ export async function getSetting(key: string, defaultValue?: string): Promise<st
 
 export async function getAllSettings(): Promise<Record<string, string>> {
     try {
-        const settings = await prisma.setting.findMany();
-        return settings.reduce((acc, setting) => {
+        const allSettings = await db.select().from(settings);
+        return allSettings.reduce((acc, setting) => {
             acc[setting.key] = setting.value;
             return acc;
         }, {} as Record<string, string>);

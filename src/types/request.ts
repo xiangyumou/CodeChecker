@@ -1,12 +1,13 @@
-import { Request as PrismaRequest } from '@prisma/client';
+// Drizzle-generated types (from schema)
+import type { Request as DrizzleRequest } from '@/lib/db/schema';
 
-// Re-export Prisma generated type for use in components
-export type { Request as PrismaRequest } from '@prisma/client';
+// Re-export Drizzle type for use in components
+export type { Request as DrizzleRequest } from '@/lib/db/schema';
 
 // Stage status type
 export type StageStatusValue = 'pending' | 'processing' | 'completed' | 'failed';
 
-// Request status type  
+// Request status type
 export type RequestStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
 // Modification analysis item from GPT response
@@ -30,7 +31,7 @@ export interface ImageReference {
 }
 
 // Extended request type for frontend use with proper typing
-export interface RequestData extends Omit<PrismaRequest, 'gptRawResponse' | 'problemDetails' | 'analysisResult' | 'imageReferences' | 'stage1Status' | 'stage2Status' | 'stage3Status'> {
+export interface RequestData extends Omit<DrizzleRequest, 'gptRawResponse' | 'problemDetails' | 'analysisResult' | 'imageReferences' | 'stage1Status' | 'stage2Status' | 'stage3Status'> {
     gptRawResponse: GptRawResponse | null;
     problemDetails: Record<string, unknown> | null;
     analysisResult: Record<string, unknown> | null;

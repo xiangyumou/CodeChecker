@@ -32,9 +32,9 @@ export function testUnauthorized(
  * Create a public context (no admin token) for testing auth guards
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPublicContext(prisma: any) {
+export function createPublicContext(db: any) {
     return {
-        prisma,
+        db,
         headers: new Headers(), // Empty headers, no x-admin-token
     };
 }

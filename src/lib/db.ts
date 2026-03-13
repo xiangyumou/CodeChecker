@@ -1,55 +1,43 @@
-import { PrismaClient } from '@prisma/client';
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import * as schema from './db/schema';
+import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import logger from './logger';
+import path from 'path';
+import fs from 'fs';
 
-const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined;
-};
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-    log: [
-        // Only log errors and warnings by default
-        { level: 'error', emit: 'event' },
-        { level: 'warn', emit: 'event' },
-        // Log slow queries (>200ms) in development
-        ...(process.env.NODE_ENV === 'development'
-            ? [{ level: 'query' as const, emit: 'event' as const } as const]
-            : []),
-    ],
-});
-
-// Subscribe to Prisma log events and route to our logger
-// Subscribe to Prisma log events and route to our logger
-prisma.$on('error' as never, (e: Prisma.LogEvent) => {
-    logger.error({
-        msg: e.message,
-        target: e.target,
-        source: 'prisma',
-    });
-});
-
-prisma.$on('warn' as never, (e: Prisma.LogEvent) => {
-    logger.warn({
-        msg: e.message,
-        target: e.target,
-        source: 'prisma',
-    });
-});
-
-// Only log slow queries (>200ms) in development
-if (process.env.NODE_ENV === 'development') {
-    prisma.$on('query' as never, (e: Prisma.QueryEvent) => {
-        // Only log if query took longer than 200ms
-        if (e.duration > 200) {
-            logger.debug({
-                msg: `Slow query detected (${e.duration}ms)`,
-                query: e.query,
-                duration: e.duration,
-                target: e.target,
-                source: 'prisma',
-            });
-        }
-    });
+// Ensure data directory exists
+const dataDir = process.env.DATA_DIR || './data';
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
 }
 
+const sqlitePath = path.join(dataDir, 'codechecker.db');
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Create database connection
+const sqlite = new Database(sqlitePath);
+
+// Enable WAL mode for better concurrency
+sqlite.pragma('journal_mode = WAL');
+
+// Create drizzle instance
+export const db = drizzle(sqlite, { schema });
+
+// Run migrations on startup
+export function runMigrations() {
+    try {
+        const migrationsFolder = path.join(process.cwd(), 'drizzle');
+        migrate(db, { migrationsFolder });
+        logger.info('Database migrations completed');
+    } catch (error) {
+        logger.error({ error }, 'Failed to run migrations');
+        throw error;
+    }
+}
+
+// For tests - allow creating isolated connections
+export function createTestDB(dbPath: string) {
+    const sqlite = new Database(dbPath);
+    sqlite.pragma('journal_mode = WAL');
+    return drizzle(sqlite, { schema });
+}

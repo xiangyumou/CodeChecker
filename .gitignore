@@ -41,6 +41,11 @@ yarn-error.log*
 /prisma/data/*.db
 /prisma/prisma/data/*.db
 
+# sqlite
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+
 
 # IDEs
 .vscode/

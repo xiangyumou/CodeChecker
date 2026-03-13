@@ -4,8 +4,9 @@
  * 被内存队列调用
  */
 
-import { prisma } from '@/lib/db';
-import { Prisma } from '@prisma/client';
+import { db } from '@/lib/db';
+import { requests } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { getPrompt } from '@/lib/prompts/loader';
 import logger from '@/lib/logger';
 import OpenAI from 'openai';
@@ -16,9 +17,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         logger.info({ requestId }, 'Starting task processing');
 
         // Load request and configuration
-        const request = await prisma.request.findUnique({
-            where: { id: requestId },
-        });
+        const request = await db.select().from(requests).where(eq(requests.id, requestId)).limit(1).then(rows => rows[0]);
 
         if (!request) {
             logger.warn({ requestId }, 'Request not found (likely deleted)');
@@ -35,10 +34,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         }
 
         // Update status to PROCESSING
-        await prisma.request.update({
-            where: { id: requestId },
-            data: { status: 'PROCESSING' },
-        });
+        await db.update(requests).set({ status: 'PROCESSING' }).where(eq(requests.id, requestId));
 
         // Load settings
         const settingsMap = await getAllSettings();
@@ -96,13 +92,10 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         logger.info({ requestId }, 'Starting Step 1 & 2 in parallel');
 
         // Update both stages to processing
-        await prisma.request.update({
-            where: { id: requestId },
-            data: {
-                stage1Status: 'processing',
-                stage2Status: 'processing',
-            },
-        });
+        await db.update(requests).set({
+            stage1Status: 'processing',
+            stage2Status: 'processing',
+        }).where(eq(requests.id, requestId));
 
         // Execute Step 1 and Step 2 in parallel
         const [step1Response, step2Response] = await Promise.all([
@@ -131,26 +124,22 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         const formattedCode = codeData.code || '';
 
         // Update both stages as completed
-        await prisma.request.update({
-            where: { id: requestId },
-            data: {
-                problemDetails: problemData as Prisma.InputJsonValue,
-                stage1Status: 'completed',
-                stage1CompletedAt: new Date(),
-                formattedCode,
-                stage2Status: 'completed',
-                stage2CompletedAt: new Date(),
-            },
-        });
+        await db.update(requests).set({
+            problemDetails: problemData,
+            stage1Status: 'completed',
+            stage1CompletedAt: new Date(),
+            formattedCode,
+            stage2Status: 'completed',
+            stage2CompletedAt: new Date(),
+        }).where(eq(requests.id, requestId));
 
         logger.info({ requestId }, 'Step 1 & 2 completed in parallel');
 
         // Step 3: Deep Analysis
         logger.info({ requestId }, 'Starting Step 3: Deep Analysis');
-        await prisma.request.update({
-            where: { id: requestId },
-            data: { stage3Status: 'processing' },
-        });
+        await db.update(requests).set({
+            stage3Status: 'processing',
+        }).where(eq(requests.id, requestId));
 
         const step3Input = JSON.stringify({
             problem: problemData,
@@ -176,24 +165,21 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         // Update final status
         const analysisJson = JSON.parse(analysisContent);
 
-        await prisma.request.update({
-            where: { id: requestId },
-            data: {
-                status: 'COMPLETED',
-                analysisResult: analysisJson,
-                stage3Status: 'completed',
-                stage3CompletedAt: new Date(),
-                isSuccess: true,
-                errorMessage: null,
-                // Legacy compatibility
-                gptRawResponse: {
-                    organized_problem: problemData,
-                    modified_code: analysisJson.modified_code,
-                    modification_analysis: analysisJson.modification_analysis,
-                    original_code: formattedCode,
-                },
+        await db.update(requests).set({
+            status: 'COMPLETED',
+            analysisResult: analysisJson,
+            stage3Status: 'completed',
+            stage3CompletedAt: new Date(),
+            isSuccess: true,
+            errorMessage: null,
+            // Legacy compatibility
+            gptRawResponse: {
+                organized_problem: problemData,
+                modified_code: analysisJson.modified_code,
+                modification_analysis: analysisJson.modification_analysis,
+                original_code: formattedCode,
             },
-        });
+        }).where(eq(requests.id, requestId));
 
         logger.info({ requestId }, 'Task completed successfully');
 
@@ -201,14 +187,11 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         logger.error({ err: error, requestId }, 'Task processing failed');
 
-        await prisma.request.update({
-            where: { id: requestId },
-            data: {
-                status: 'FAILED',
-                errorMessage,
-                isSuccess: false,
-            },
-        }).catch((updateError) => {
+        await db.update(requests).set({
+            status: 'FAILED',
+            errorMessage,
+            isSuccess: false,
+        }).where(eq(requests.id, requestId)).catch((updateError) => {
             logger.error({ err: updateError, requestId }, 'Failed to update request status');
         });
 

@@ -3,7 +3,7 @@ set -e
 
 # Run database migrations
 echo "Running database migrations..."
-npx prisma@5.22.0 migrate deploy
+npx drizzle-kit migrate
 
 # Start the application
 echo "Starting application..."
