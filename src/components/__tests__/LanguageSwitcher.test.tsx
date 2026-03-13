@@ -62,14 +62,14 @@ describe('LanguageSwitcher', () => {
         const button = screen.getByRole('button')
         await user.click(button)
 
-        // The current language (Chinese) should have the highlighted class
+        // The current language (Chinese) should have the highlighted class (using CSS variable)
         const zhOption = await screen.findByText('中文')
-        expect(zhOption.closest('[role="menuitem"]')).toHaveClass('bg-primary/10')
-        expect(zhOption.closest('[role="menuitem"]')).toHaveClass('text-primary')
+        expect(zhOption.closest('[role="menuitem"]')).toHaveClass('bg-[var(--primary-a10)]')
+        expect(zhOption.closest('[role="menuitem"]')).toHaveClass('text-[var(--primary)]')
 
         // Other languages should NOT have the highlighted class
         const enOption = screen.getByText('English')
-        expect(enOption.closest('[role="menuitem"]')).not.toHaveClass('bg-primary/10')
+        expect(enOption.closest('[role="menuitem"]')).not.toHaveClass('bg-[var(--primary-a10)]')
     })
 
     it('updates store and refreshes router when language is selected', async () => {

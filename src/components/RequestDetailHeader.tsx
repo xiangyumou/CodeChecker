@@ -25,7 +25,7 @@ export default function RequestDetailHeader({
     const t = useTranslations('requestDetails');
 
     return (
-        <div className="flex-none bg-surface z-10 shadow-sm border-b">
+        <div className="flex-none bg-surface z-10 border-b">
             <div className="p-6 flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                     <Button variant="ghost" size="icon" onClick={onClose} className="mr-0 md:hidden shrink-0">

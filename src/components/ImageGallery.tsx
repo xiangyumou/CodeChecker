@@ -80,16 +80,16 @@ export default function ImageGallery({
                             
                             {!readonly && onRemove && (
                                 <>
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                    <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                                     <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <motion.button
                                             type="button"
-                                            onClick={(e: React.MouseEvent) => { 
-                                                e.stopPropagation(); 
-                                                onRemove(item.id); 
+                                            onClick={(e: React.MouseEvent) => {
+                                                e.stopPropagation();
+                                                onRemove(item.id);
                                             }}
-                                            className="bg-black/50 hover:bg-destructive text-white rounded-full p-1 transition-colors backdrop-blur-sm"
+                                            className="bg-text/50 hover:bg-danger text-white rounded-full p-1 transition-colors"
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                         >

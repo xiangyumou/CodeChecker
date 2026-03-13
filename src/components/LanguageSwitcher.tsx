@@ -51,7 +51,7 @@ export default function LanguageSwitcher() {
                         onClick={() => handleChange(lang.key)}
                         className={clsx(
                             "rounded-xl cursor-pointer font-medium px-4 py-2",
-                            locale === lang.key && "bg-primary/10 text-primary"
+                            locale === lang.key && "bg-[var(--primary-a10)] text-[var(--primary)]"
                         )}
                     >
                         {lang.label}

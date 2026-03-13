@@ -188,6 +188,18 @@
     @apply bg-background text-foreground font-sans;
   }
 
+  /* Reduced Motion Support (Section 8.3) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   /* Typography Scale (Section 4.2) */
   h1 {
     @apply text-[24px] font-bold;

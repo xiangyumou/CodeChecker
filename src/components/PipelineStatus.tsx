@@ -37,20 +37,20 @@ export default function PipelineStatus({ stages, className }: PipelineStatusProp
     const getStageColor = (status: StageStatus) => {
         switch (status) {
             case 'completed':
-                return 'bg-green-500/10 text-green-500 border-green-500/20';
+                return 'bg-[var(--primary-a20)] text-[var(--primary)] border-[var(--primary-a20)]';
             case 'processing':
-                return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+                return 'bg-[var(--info-a20)] text-[var(--info)] border-[var(--info-a20)]';
             case 'failed':
-                return 'bg-destructive/10 text-destructive border-destructive/20';
+                return 'bg-[var(--danger-a20)] text-[var(--danger)] border-[var(--danger-a20)]';
             default:
-                return 'bg-muted text-muted-foreground border-border';
+                return 'bg-surface2 text-muted border-border';
         }
     };
 
     const getConnectionColor = (prevStatus: StageStatus, currentStatus: StageStatus) => {
         if (prevStatus === 'completed') {
             if (currentStatus === 'completed' || currentStatus === 'processing') {
-                return 'bg-green-500/30';
+                return 'bg-[var(--primary)] opacity-30';
             }
         }
         return 'bg-border';

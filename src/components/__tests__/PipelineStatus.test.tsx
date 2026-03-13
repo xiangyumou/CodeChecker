@@ -60,7 +60,12 @@ describe('PipelineStatus', () => {
         expect(screen.queryByTestId('icon-loader')).not.toBeInTheDocument();
         expect(screen.queryByTestId('icon-clock')).not.toBeInTheDocument();
 
-        // Verify destructive class is applied to the status indicator
-        expect(container.querySelector('.text-destructive')).toBeInTheDocument();
+        // Verify danger color class is applied to the status indicator (using CSS variable)
+        // The class is 'text-[var(--danger)]' which needs special escaping for querySelector
+        const dangerElements = container.querySelectorAll('[class*="text-"]');
+        const hasDangerClass = Array.from(dangerElements).some(el =>
+            el.className.includes('text-[var(--danger)]')
+        );
+        expect(hasDangerClass).toBe(true);
     });
 });
