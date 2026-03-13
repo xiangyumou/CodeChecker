@@ -31,25 +31,37 @@ describe('task-recovery', () => {
     });
 
     describe('markIncompleteTasksAsFailed', () => {
-        it('should mark PROCESSING tasks as FAILED with correct status and error message', async () => {
-            mockPrisma.request.updateMany.mockResolvedValueOnce({ count: 2 });
+        it('should mark PROCESSING and QUEUED tasks as FAILED', async () => {
+            mockPrisma.request.updateMany
+                .mockResolvedValueOnce({ count: 2 })  // PROCESSING
+                .mockResolvedValueOnce({ count: 3 }); // QUEUED
 
             const result = await markIncompleteTasksAsFailed();
 
-            // Verify the update call
+            // Verify PROCESSING update call
             const firstCall = mockPrisma.request.updateMany.mock.calls[0][0];
             expect(firstCall.where.status).toBe('PROCESSING');
             expect(firstCall.data.status).toBe('FAILED');
             expect(firstCall.data.isSuccess).toBe(false);
             expect(firstCall.data.errorMessage).toContain('processing');
 
+            // Verify QUEUED update call
+            const secondCall = mockPrisma.request.updateMany.mock.calls[1][0];
+            expect(secondCall.where.status).toBe('QUEUED');
+            expect(secondCall.data.status).toBe('FAILED');
+            expect(secondCall.data.isSuccess).toBe(false);
+            expect(secondCall.data.errorMessage).toContain('queued');
+
             // Verify return value
             expect(result.processing).toBe(2);
-            expect(result.total).toBe(2);
+            expect(result.queued).toBe(3);
+            expect(result.total).toBe(5);
         });
 
         it('should log warning when tasks are marked as failed', async () => {
-            mockPrisma.request.updateMany.mockResolvedValueOnce({ count: 5 });
+            mockPrisma.request.updateMany
+                .mockResolvedValueOnce({ count: 5 })
+                .mockResolvedValueOnce({ count: 0 });
 
             await markIncompleteTasksAsFailed();
 
@@ -58,7 +70,9 @@ describe('task-recovery', () => {
         });
 
         it('should log info when no tasks are affected', async () => {
-            mockPrisma.request.updateMany.mockResolvedValueOnce({ count: 0 });
+            mockPrisma.request.updateMany
+                .mockResolvedValueOnce({ count: 0 })
+                .mockResolvedValueOnce({ count: 0 });
 
             await markIncompleteTasksAsFailed();
 
@@ -88,22 +102,28 @@ describe('task-recovery', () => {
         });
 
         it('should handle large count values correctly', async () => {
-            mockPrisma.request.updateMany.mockResolvedValueOnce({ count: 10000 });
+            mockPrisma.request.updateMany
+                .mockResolvedValueOnce({ count: 10000 })
+                .mockResolvedValueOnce({ count: 5000 });
 
             const result = await markIncompleteTasksAsFailed();
 
-            expect(result.total).toBe(10000);
+            expect(result.total).toBe(15000);
             expect(result.processing).toBe(10000);
+            expect(result.queued).toBe(5000);
         });
 
-        it('should only process PROCESSING tasks (not QUEUED)', async () => {
-            mockPrisma.request.updateMany.mockResolvedValueOnce({ count: 1 });
+        it('should process both PROCESSING and QUEUED tasks', async () => {
+            mockPrisma.request.updateMany
+                .mockResolvedValueOnce({ count: 1 })
+                .mockResolvedValueOnce({ count: 2 });
 
             await markIncompleteTasksAsFailed();
 
-            // Verify only one call for PROCESSING status
-            expect(mockPrisma.request.updateMany).toHaveBeenCalledTimes(1);
+            // Verify two calls: one for PROCESSING, one for QUEUED
+            expect(mockPrisma.request.updateMany).toHaveBeenCalledTimes(2);
             expect(mockPrisma.request.updateMany.mock.calls[0][0].where.status).toBe('PROCESSING');
+            expect(mockPrisma.request.updateMany.mock.calls[1][0].where.status).toBe('QUEUED');
         });
     });
 });

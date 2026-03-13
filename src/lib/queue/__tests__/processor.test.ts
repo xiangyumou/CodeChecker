@@ -307,7 +307,7 @@ describe('processAnalysisTask', () => {
             expect(failedCall?.[0]?.data?.isSuccess).toBe(false);
         });
 
-        it('should re-throw error to trigger BullMQ retry', async () => {
+        it('should re-throw error to trigger retry in memory queue', async () => {
             mockOpenaiCreate.mockRejectedValue(new Error('Temporary error'));
             mockPrisma.request.update.mockResolvedValue({});
 

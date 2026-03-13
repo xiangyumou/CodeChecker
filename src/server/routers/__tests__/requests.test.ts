@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vites
 import { requestsRouter } from '../requests';
 import { TRPCError } from '@trpc/server';
 
-const { mockAnalysisQueue } = vi.hoisted(() => {
+const { mockAddAnalysisTask } = vi.hoisted(() => {
     return {
-        mockAnalysisQueue: {
-            add: vi.fn(),
-        },
+        mockAddAnalysisTask: vi.fn(() => Promise.resolve()),
     };
 });
 
@@ -22,8 +20,8 @@ const mockPrisma = {
     },
 };
 
-vi.mock('@/lib/queue/analysis-queue', () => ({
-    analysisQueue: mockAnalysisQueue,
+vi.mock('@/lib/queue/memory-queue', () => ({
+    addAnalysisTask: mockAddAnalysisTask,
 }));
 
 describe('requestsRouter', () => {
@@ -82,12 +80,11 @@ describe('requestsRouter', () => {
     });
 
     describe('create', () => {
-        it('should create request and add to BullMQ queue', async () => {
+        it('should create request and add to memory queue', async () => {
             const input = { userPrompt: 'Test Prompt', imageReferences: ['ref'] };
             const mockCreated = { id: 123, ...input, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
-            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-123', data: { requestId: 123 } });
 
             const result = await caller.create(input);
 
@@ -99,13 +96,8 @@ describe('requestsRouter', () => {
                 }),
             });
 
-            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
-                'analyze',
-                { requestId: 123 },
-                {
-                    jobId: 'analyze-123',
-                }
-            );
+            // Verify memory queue was called (non-blocking)
+            expect(mockAddAnalysisTask).toHaveBeenCalledWith(123);
             expect(result).toEqual(mockCreated);
         });
 
@@ -123,7 +115,6 @@ describe('requestsRouter', () => {
             const mockCreated = { id: 124, imageReferences: ['ref1', 'ref2'], userPrompt: null, status: 'QUEUED' };
 
             mockPrisma.request.create.mockResolvedValue(mockCreated);
-            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-124', data: { requestId: 124 } });
 
             const result = await caller.create(input);
 
@@ -135,12 +126,8 @@ describe('requestsRouter', () => {
                 }),
             });
 
-            // Verify queue was called
-            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
-                'analyze',
-                { requestId: 124 },
-                { jobId: 'analyze-124' }
-            );
+            // Verify memory queue was called
+            expect(mockAddAnalysisTask).toHaveBeenCalledWith(124);
 
             // Verify return value
             expect(result.id).toBe(124);
@@ -193,7 +180,7 @@ describe('requestsRouter', () => {
     });
 
     describe('retry', () => {
-        it('should reset request fields and add to BullMQ queue', async () => {
+        it('should reset request fields and add to memory queue', async () => {
             const mockRequest = { id: 1, status: 'FAILED' };
             const mockUpdated = {
                 id: 1,
@@ -204,7 +191,6 @@ describe('requestsRouter', () => {
 
             mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
             mockPrisma.request.update.mockResolvedValue(mockUpdated);
-            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-1', data: { requestId: 1 } });
 
             const result = await caller.retry(1);
 
@@ -216,13 +202,8 @@ describe('requestsRouter', () => {
                     stage1Status: 'pending',
                 }),
             });
-            expect(mockAnalysisQueue.add).toHaveBeenCalledWith(
-                'analyze',
-                { requestId: 1 },
-                {
-                    jobId: expect.stringMatching(/^analyze-1-\d+$/),
-                }
-            );
+            // Verify memory queue was called (non-blocking)
+            expect(mockAddAnalysisTask).toHaveBeenCalledWith(1);
             expect(result).toEqual(mockUpdated);
         });
         it('should throw NOT_FOUND if request does not exist', async () => {
@@ -250,7 +231,6 @@ describe('requestsRouter', () => {
 
             mockPrisma.request.findUnique.mockResolvedValue(mockRequest);
             mockPrisma.request.update.mockResolvedValue(mockUpdated);
-            mockAnalysisQueue.add.mockResolvedValue({ id: 'job-2', data: { requestId: 2 } });
 
             const result = await publicCaller.retry(2);
 
@@ -260,6 +240,8 @@ describe('requestsRouter', () => {
                     status: 'QUEUED',
                 }),
             });
+            // Verify memory queue was called
+            expect(mockAddAnalysisTask).toHaveBeenCalledWith(2);
             expect(result).toEqual(mockUpdated);
         });
     });

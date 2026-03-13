@@ -1,7 +1,7 @@
 /**
  * 分析任务处理器
  * 从 /api/analyze-request/route.ts 提取的核心逻辑
- * 被 BullMQ Worker 调用
+ * 被内存队列调用
  */
 
 import { prisma } from '@/lib/db';
@@ -212,7 +212,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             logger.error({ err: updateError, requestId }, 'Failed to update request status');
         });
 
-        // Re-throw to trigger BullMQ retry
+        // Re-throw to trigger retry in memory queue
         throw error;
     }
 }

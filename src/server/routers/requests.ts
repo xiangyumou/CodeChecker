@@ -2,7 +2,8 @@ import { subMinutes, subHours, subDays, subMonths } from 'date-fns';
 import { z } from 'zod';
 import { router, publicProcedure, adminProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
-import { analysisQueue } from '@/lib/queue/analysis-queue';
+import { addAnalysisTask } from '@/lib/queue/memory-queue';
+import logger from '@/lib/logger';
 import { Prisma } from '@prisma/client';
 
 // Zod schemas for validation
@@ -86,14 +87,10 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add task to BullMQ queue
-            await analysisQueue.add(
-                'analyze',
-                { requestId: request.id },
-                {
-                    jobId: `analyze-${request.id}`, // 使用 requestId 作为唯一 ID，防止重复
-                }
-            );
+            // Add task to memory queue (non-blocking)
+            addAnalysisTask(request.id).catch((err) => {
+                logger.error({ err, requestId: request.id }, 'Task failed after all retries');
+            });
 
             return request;
         }),
@@ -145,14 +142,10 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add task to BullMQ queue
-            await analysisQueue.add(
-                'analyze',
-                { requestId: newRequest.id },
-                {
-                    jobId: `analyze-${newRequest.id}`,
-                }
-            );
+            // Add task to memory queue (non-blocking)
+            addAnalysisTask(newRequest.id).catch((err) => {
+                logger.error({ err, requestId: newRequest.id }, 'Task failed after all retries');
+            });
 
             return newRequest;
         }),
@@ -192,14 +185,10 @@ export const requestsRouter = router({
                 },
             });
 
-            // Add task to BullMQ queue
-            await analysisQueue.add(
-                'analyze',
-                { requestId: updatedRequest.id },
-                {
-                    jobId: `analyze-${updatedRequest.id}-${Date.now()}`,
-                }
-            );
+            // Add task to memory queue (non-blocking)
+            addAnalysisTask(updatedRequest.id).catch((err) => {
+                logger.error({ err, requestId: updatedRequest.id }, 'Task failed after all retries');
+            });
 
             return updatedRequest;
         }),
