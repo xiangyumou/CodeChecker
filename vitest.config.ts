@@ -18,5 +18,16 @@ export default defineConfig({
             include: ['src/**/*'],
             exclude: ['src/**/*.test.{ts,tsx}', 'src/**/__tests__/**'],
         },
+        env: {
+            // 测试环境变量 - 内联配置，不依赖 .env 文件
+            SETTINGS_TOKEN: 'test-settings-token',
+            OPENAI_API_KEY: 'sk-test-api-key',
+            OPENAI_MODEL: 'gpt-4o',
+            REQUEST_TIMEOUT_SECONDS: '180',
+            MODEL_SUPPORTS_VISION: 'true',
+            DATABASE_URL: ':memory:',
+            DATA_DIR: './data',
+            LOG_LEVEL: 'silent',
+        },
     },
 })
