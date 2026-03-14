@@ -13,8 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
-    "postinstall": "drizzle-kit generate"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
