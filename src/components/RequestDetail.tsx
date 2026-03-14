@@ -48,9 +48,9 @@ function getAnalysisData(request: Request | null) {
         modification_analysis?: Array<{
             section?: string;
             location?: string;
-            original?: string;
-            modified?: string;
-            reason?: string;
+            original_snippet?: string;
+            modified_snippet?: string;
+            explanation?: string;
         }>;
     } | null;
 }
@@ -95,7 +95,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
 
         const interval = setInterval(loadRequest, 5000);
         return () => clearInterval(interval);
-    }, [requestId, request, loadRequest]);
+    }, [requestId, request?.status, loadRequest]);
 
     // Generate diff HTML
     const diffHtml = useMemo(() => {
@@ -250,7 +250,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
             </div>
 
             {/* Main Content */}
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
                 <div className="p-4 space-y-4">
                     {/* Code Diff - Core Content */}
                     {hasDiff ? (
@@ -359,30 +359,30 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                                                 )}
                                             </div>
 
-                                            {(block.original || block.modified) && (
+                                            {(block.original_snippet || block.modified_snippet) && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                                                    {block.original && (
+                                                    {block.original_snippet && (
                                                         <div className="space-y-1">
                                                             <span className="text-muted-foreground text-[10px] uppercase tracking-wide">Original</span>
-                                                            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded p-2 font-mono">
-                                                                <code className="text-red-700 dark:text-red-400">{block.original}</code>
+                                                            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded p-2 font-mono overflow-x-auto">
+                                                                <pre className="text-red-700 dark:text-red-400 whitespace-pre-wrap break-all text-[11px] leading-relaxed">{block.original_snippet}</pre>
                                                             </div>
                                                         </div>
                                                     )}
-                                                    {block.modified && (
+                                                    {block.modified_snippet && (
                                                         <div className="space-y-1">
                                                             <span className="text-muted-foreground text-[10px] uppercase tracking-wide">Modified</span>
-                                                            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded p-2 font-mono">
-                                                                <code className="text-green-700 dark:text-green-400">{block.modified}</code>
+                                                            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded p-2 font-mono overflow-x-auto">
+                                                                <pre className="text-green-700 dark:text-green-400 whitespace-pre-wrap break-all text-[11px] leading-relaxed">{block.modified_snippet}</pre>
                                                             </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             )}
 
-                                            {block.reason && (
+                                            {block.explanation && (
                                                 <div className="text-sm text-muted-foreground leading-relaxed">
-                                                    {block.reason}
+                                                    {block.explanation}
                                                 </div>
                                             )}
                                         </div>

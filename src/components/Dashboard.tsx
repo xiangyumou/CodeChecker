@@ -129,7 +129,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                                 <SubmissionForm />
                             </div>
                         ) : (
-                            <div className="h-full flex flex-col overflow-hidden">
+                            <div className="h-full flex flex-col">
                                 <RequestDetail requestId={selectedRequestId} />
                             </div>
                         )}
