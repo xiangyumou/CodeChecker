@@ -1,6 +1,5 @@
 'use client';
 
-import { translate } from "@/lib/i18n";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import ShikiCodeRenderer from "./ShikiCodeRenderer";
@@ -26,7 +25,7 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
         return (
             <Alert className="rounded-lg border-border bg-surface2">
                 <Info className="h-4 w-4" />
-                <AlertDescription>{translate('requestDetails.noAnalysisDetails')}</AlertDescription>
+                <AlertDescription>分析结果中未包含详细的修改点分析</AlertDescription>
             </Alert>
         );
     }
@@ -41,7 +40,7 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{translate('requestDetails.originalSnippet')}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">原始片段</span>
                                 <div className="rounded-lg overflow-hidden border border-border">
                                     {mounted ? (
                                         <ShikiCodeRenderer
@@ -59,7 +58,7 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
                             </div>
 
                             <div className="space-y-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{translate('requestDetails.modifiedSnippet')}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">修改后片段</span>
                                 <div className="rounded-lg overflow-hidden border border-border">
                                     {mounted ? (
                                         <ShikiCodeRenderer
@@ -78,7 +77,7 @@ export default function AnalysisSection({ request, mounted }: AnalysisSectionPro
                         </div>
 
                         <div className="bg-primary-a10 rounded-lg p-4 border border-primary-a20">
-                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">{translate('requestDetails.explanation')}</div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">说明</div>
                             <MarkdownRenderer className="text-sm leading-relaxed">
                                 {mod.explanation}
                             </MarkdownRenderer>

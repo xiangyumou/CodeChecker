@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Clock, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { translate } from '@/lib/i18n';
 
 export type RequestStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
@@ -13,10 +12,10 @@ interface StatusBadgeProps {
 }
 
 const statusConfig = {
-    QUEUED: { variant: 'secondary', icon: Clock, iconClass: '', label: 'queued' },
-    PROCESSING: { variant: 'info', icon: Loader2, iconClass: 'animate-spin', label: 'processing' },
-    COMPLETED: { variant: 'success', icon: CheckCircle2, iconClass: '', label: 'completed' },
-    FAILED: { variant: 'error', icon: AlertCircle, iconClass: '', label: 'failed' },
+    QUEUED: { variant: 'secondary', icon: Clock, iconClass: '', label: '等待中' },
+    PROCESSING: { variant: 'info', icon: Loader2, iconClass: 'animate-spin', label: '处理中' },
+    COMPLETED: { variant: 'success', icon: CheckCircle2, iconClass: '', label: '已完成' },
+    FAILED: { variant: 'error', icon: AlertCircle, iconClass: '', label: '失败' },
 } as const;
 
 export default function StatusBadge({ status, className }: StatusBadgeProps) {
@@ -33,7 +32,7 @@ export default function StatusBadge({ status, className }: StatusBadgeProps) {
             data-testid="request-status-badge"
         >
             <StatusIcon className={cn("w-3 h-3 mr-1", config.iconClass)} />
-            {translate(`requestList.${config.label}`)}
+            {config.label}
         </Badge>
     );
 }

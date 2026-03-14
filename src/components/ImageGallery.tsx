@@ -3,7 +3,6 @@
 import { ZoomableImage } from './ui/ZoomableImage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ImageIcon } from 'lucide-react';
-import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export interface ImageItem {
@@ -43,7 +42,7 @@ export default function ImageGallery({
             {!readonly && (
                 <span className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                     <ImageIcon className="w-4 h-4" />
-                    {translate('requestDetails.submittedImages', { count: items.length })}
+                    提交的图片 ({items.length}张)
                 </span>
             )}
 
@@ -69,7 +68,7 @@ export default function ImageGallery({
                         >
                             <ZoomableImage
                                 src={item.preview}
-                                alt={item.alt || translate('requestDetails.submittedImageAlt', { index: idx + 1 })}
+                                alt={item.alt || `提交的图片 ${idx + 1}`}
                                 className={cn(
                                     "w-full h-full",
                                     isGrid ? "object-contain" : "object-cover cursor-pointer"

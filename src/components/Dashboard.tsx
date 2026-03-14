@@ -3,8 +3,6 @@
 import SubmissionForm from '@/components/SubmissionForm';
 import RequestList from '@/components/RequestList';
 import RequestDetail from '@/components/RequestDetail';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
-import Logo from '@/components/Logo';
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,12 +51,6 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                                 </DrawerTrigger>
                                 <DrawerContent className="w-[280px] h-full rounded-none border-r">
                                     <div className="flex flex-col h-full bg-surface">
-                                        <div className="p-4 border-b flex items-center gap-2">
-                                            <div className="bg-primary-a10 rounded-lg p-2">
-                                                <Logo />
-                                            </div>
-                                            <span className="font-bold">Code Checker</span>
-                                        </div>
                                         <RequestList
                                             selectedRequestId={selectedRequestId}
                                             onSelectRequest={handleSelectRequest}
@@ -68,21 +60,17 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             </Drawer>
                         </div>
 
-                        <div className="bg-primary-a10 rounded-lg p-2 hidden md:block">
-                            <Logo />
-                        </div>
-                        <h2 className="font-bold hidden md:block">Code Checker</h2>
-
                         {/* Desktop Sidebar Toggle */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="hidden md:flex h-9 w-9 ml-2"
+                            className="hidden md:flex h-9 w-9"
                             onClick={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
                         >
                             <PanelLeft className="h-5 w-5" />
                         </Button>
-
+                    </div>
+                    <div className="flex items-center gap-4">
                         {/* New Request Button */}
                         <Button
                             variant="ghost"
@@ -93,9 +81,6 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                         >
                             <Sparkles className="h-5 w-5" />
                         </Button>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <ThemeSwitcher />
                     </div>
                 </div>
             </header>

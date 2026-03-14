@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { translate } from '@/lib/i18n';
 import { Send, Trash2, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,11 +22,11 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
 
     // Create i18n messages for the image upload hook
     const imageMessages: ImageUploadMessages = useMemo(() => ({
-        processing: translate('submissionForm.imageProcessing'),
-        tooLarge: (name, size, maxSize) => translate('submissionForm.imageTooLarge', { name, size: String(size), maxSize: String(maxSize) }),
-        processingFailed: (name) => translate('submissionForm.imageProcessFailed', { name }),
-        onlyImages: (name) => translate('submissionForm.imageSkipped', { name }),
-        added: (count) => translate('submissionForm.imagesAdded', { count: String(count) }),
+        processing: '正在处理图片...',
+        tooLarge: (name, size, maxSize) => `图片 "${name}" 太大 (${size}MB)，请选择小于 ${maxSize}MB 的图片`,
+        processingFailed: (name) => `处理图片 "${name}" 失败，请重试`,
+        onlyImages: (name) => `仅支持图片文件，"${name}" 被跳过`,
+        added: (count) => `已添加 ${count} 张图片`,
     }), []);
 
     const { files, setFiles, processFiles, removeFile: hookRemoveFile, clearFiles } = useImageUpload(5, 2, imageMessages);
@@ -37,7 +36,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
 
     const removeFile = (id: string) => {
         hookRemoveFile(id);
-        toast.info(translate('submissionForm.imageRemoved'));
+        toast.info('图片已移除');
     };
 
     // Vision support is always enabled
@@ -53,7 +52,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         const prompt = userPrompt.trim();
 
         if (!prompt && files.length === 0) {
-            toast.error(translate('submissionForm.validation.emptySubmissionError'));
+            toast.error('请输入描述/代码或添加图片！');
             return;
         }
 
@@ -66,13 +65,13 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                 imageReferences: imageBase64List.length > 0 ? imageBase64List : undefined,
             });
 
-            toast.success(translate('submissionForm.successMessageWithId', { id: String(data.id) }));
+            toast.success(`请求 #${data.id} 提交成功！`);
             setUserPrompt('');
             setFiles([]);
             onSubmissionSuccess?.();
             router.push(`/request/${data.id}`);
         } catch (error) {
-            const friendlyMessage = getErrorMessage(error as Error, translate('submissionForm.errorMessage'));
+            const friendlyMessage = getErrorMessage(error as Error, '请求提交失败。');
             toast.error(friendlyMessage);
         } finally {
             setIsSubmitting(false);
@@ -106,7 +105,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         if (!userPrompt && files.length === 0) return;
         setUserPrompt('');
         clearFiles();
-        toast.info(translate('submissionForm.formCleared'));
+        toast.info('表单已清空');
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -137,7 +136,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     <Textarea
                         id="prompt"
                         data-testid="submission-prompt"
-                        placeholder={translate('submissionForm.unifiedInputPlaceholder')}
+                        placeholder="请在此处输入问题描述、粘贴代码..."
                         className="flex-1 resize-none rounded-lg border-border p-4 text-base bg-surface focus-visible:ring-ring"
                         value={userPrompt}
                         onChange={(e) => setUserPrompt(e.target.value)}
@@ -184,8 +183,8 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                                 <Upload className="w-4 h-4 text-primary" />
                             </div>
                             <div className="space-y-0.5 text-left">
-                                <p className="text-sm font-medium">{isDragOver ? "Drop!" : translate('submissionForm.uploadText')}</p>
-                                <p className="text-xs text-muted-foreground">{translate('submissionForm.uploadHint')}</p>
+                                <p className="text-sm font-medium">{isDragOver ? "Drop!" : "点击或拖拽图片到此区域上传"}</p>
+                                <p className="text-xs text-muted-foreground">或直接粘贴截图。支持多张 JPG/PNG 图片，单张不超过 2MB，最多 5 张。</p>
                             </div>
                         </div>
                     </div>
@@ -202,7 +201,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     disabled={isSubmitting || (!userPrompt && files.length === 0)}
                 >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {translate('submissionForm.submitButton')}
+                    提交分析
                 </Button>
                 <Button
                     type="button"
@@ -213,7 +212,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     disabled={isSubmitting}
                 >
                     <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="sr-only">{translate('submissionForm.clearButton')}</span>
+                    <span className="sr-only">清空</span>
                 </Button>
             </div>
 

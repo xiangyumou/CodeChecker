@@ -1,7 +1,6 @@
 'use client';
 
 import { getRequestById, retryRequest } from '@/app/actions/requests';
-import { translate } from '@/lib/i18n';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useMemo, useEffect, useState, useCallback } from 'react';
 import * as Diff from 'diff';
@@ -128,13 +127,13 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
         try {
             setIsRetrying(true);
             await retryRequest(requestId);
-            toast.success(translate('requestDetails.retryStarted'), {
-                description: translate('requestDetails.retryStartedDescription'),
+            toast.success('重试已启动', {
+                description: '请求已重新加入分析队列。',
             });
             await loadRequest();
         } catch (err) {
-            toast.error(translate('requestDetails.retryFailed'), {
-                description: err instanceof Error ? err.message : 'Unknown error',
+            toast.error('重试失败', {
+                description: err instanceof Error ? err.message : '未知错误',
             });
         } finally {
             setIsRetrying(false);
@@ -157,7 +156,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
             <div className="flex flex-col items-center justify-center h-full">
                 <EmptyState
                     icon={Info}
-                    title={translate('requestDetails.selectRequestToView')}
+                    title="选择一个请求查看详情"
                 />
             </div>
         );
@@ -195,12 +194,12 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                 <div className="flex flex-col items-center justify-center h-full p-6">
                     <EmptyState
                         icon={AlertCircle}
-                        title={translate('requestDetails.requestNotFound')}
+                        title="请求未找到"
                         description={`ID: ${requestId || 'unknown'}`}
                         action={
                             <Button variant="outline" onClick={handleBack}>
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                {translate('requestDetails.backToCreate')}
+                                返回
                             </Button>
                         }
                     />
@@ -220,7 +219,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         </Button>
                         <div className="flex items-center gap-2 min-w-0">
                             <h2 className="text-base font-bold tracking-tight text-text truncate">
-                                {translate('requestDetails.drawerTitleWithId', { id: String(requestId) })}
+                                分析结果 - 请求 #{requestId}
                             </h2>
                             <StatusBadge status={request.status} />
                         </div>
@@ -239,10 +238,10 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                                 ) : (
                                     <RefreshCw className="h-3.5 w-3.5" />
                                 )}
-                                <span className="hidden sm:inline text-xs">{translate('requestDetails.retry')}</span>
+                                <span className="hidden sm:inline text-xs">重试</span>
                             </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={handleBack} className="h-8 w-8" title={translate('requestDetails.closeDetails')}>
+                        <Button variant="ghost" size="icon" onClick={handleBack} className="h-8 w-8" title="关闭详情">
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
@@ -257,7 +256,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
                                 <FileDiff className="h-3.5 w-3.5" />
-                                <span>{translate('requestDetails.codeDiff')}</span>
+                                <span>代码差异</span>
                             </div>
                             <div className="rounded-lg border border-border overflow-hidden bg-white dark:bg-zinc-950">
                                 <div
@@ -270,7 +269,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         <div className="space-y-2">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
                                 <Code2 className="h-3.5 w-3.5" />
-                                <span>{translate('requestDetails.sourceCode')}</span>
+                                <span>源代码</span>
                             </div>
                             <div className="relative rounded-lg overflow-x-auto border border-border bg-surface2 p-4">
                                 {analysisData?.code?.original_code ? (
@@ -280,7 +279,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                                 ) : (
                                     <Alert className="rounded-lg border-border bg-surface2">
                                         <Info className="h-4 w-4" />
-                                        <AlertDescription>{translate('requestDetails.noOriginalCode')}</AlertDescription>
+                                        <AlertDescription>分析结果中未包含原始代码信息</AlertDescription>
                                     </Alert>
                                 )}
                             </div>
@@ -291,7 +290,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                     <div className="space-y-0 pt-2">
                         {/* Original Submission */}
                         <CollapsibleSection
-                            title={translate('requestDetails.userPrompt')}
+                            title="用户输入"
                             icon={<User className="h-4 w-4" />}
                             defaultOpen={!hasDiff}
                         >
@@ -308,7 +307,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                                 })()}
                                 <div className="bg-surface2 rounded-lg p-4 border border-border">
                                     <MarkdownRenderer className="text-sm leading-relaxed whitespace-pre-wrap">
-                                        {request.userPrompt || translate('requestDetails.noUserPrompt')}
+                                        {request.userPrompt || '无文本输入'}
                                     </MarkdownRenderer>
                                 </div>
                             </div>
@@ -317,7 +316,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         {/* Problem Details */}
                         {hasProblemData && (
                             <CollapsibleSection
-                                title={translate('requestDetails.problemDetails')}
+                                title="问题详情"
                                 icon={<FileText className="h-4 w-4" />}
                                 defaultOpen={false}
                             >
@@ -326,7 +325,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                                 ) : (
                                     <Alert className="rounded-lg border-border bg-surface2">
                                         <Info className="h-4 w-4" />
-                                        <AlertDescription>{translate('requestDetails.noProblemDetails')}</AlertDescription>
+                                        <AlertDescription>分析结果中未包含格式化的问题详情</AlertDescription>
                                     </Alert>
                                 )}
                             </CollapsibleSection>
@@ -335,7 +334,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         {/* Block Analysis */}
                         {isCompleted && modificationAnalysis.length > 0 && (
                             <CollapsibleSection
-                                title={`${translate('requestDetails.analysisDetails')} (${modificationAnalysis.length})`}
+                                title={`修改分析 (${modificationAnalysis.length})`}
                                 icon={<Lightbulb className="h-4 w-4" />}
                                 defaultOpen={false}
                             >
@@ -396,7 +395,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                     {request.status === 'PROCESSING' && (
                         <div className="flex items-center justify-center py-8 text-muted-foreground">
                             <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                            <span className="text-sm">{translate('requestDetails.processing')}</span>
+                            <span className="text-sm">处理中</span>
                         </div>
                     )}
 
@@ -405,7 +404,7 @@ export default function RequestDetail({ requestId }: RequestDetailProps) {
                         <Alert className="rounded-lg border-border bg-surface2 border-l-4 border-l-danger">
                             <AlertCircle className="h-4 w-4 text-danger" />
                             <AlertDescription className="text-danger">
-                                {request.errorMessage || translate('requestDetails.failed')}
+                                {request.errorMessage || '失败'}
                             </AlertDescription>
                         </Alert>
                     )}

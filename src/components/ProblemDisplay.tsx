@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Database, FileText, Terminal } from "lucide-react";
-import { translate } from '@/lib/i18n';
 
 export interface ProblemData {
     title: string;
@@ -23,7 +22,7 @@ interface ProblemDisplayProps {
 }
 
 const MarkdownContent = ({ content }: { content: string }) => {
-    if (!content || content === 'N/A') return <span className="text-muted-foreground italic">{translate('requestDetails.none')}</span>;
+    if (!content || content === 'N/A') return <span className="text-muted-foreground italic">无</span>;
     return (
         <MarkdownRenderer className="text-muted-foreground leading-relaxed text-sm">
             {content}
@@ -78,7 +77,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
 
             {/* Description */}
             <section>
-                <SectionHeader icon={FileText} title={translate('requestDetails.problemDescription')} />
+                <SectionHeader icon={FileText} title="问题描述" />
                 <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                     <MarkdownContent content={problem.description} />
                 </div>
@@ -87,13 +86,13 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
             {/* Input & Output Format */}
             <div className="grid md:grid-cols-2 gap-8">
                 <section>
-                    <SectionHeader icon={Terminal} title={translate('requestDetails.inputFormat')} />
+                    <SectionHeader icon={Terminal} title="输入格式" />
                     <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.input_format} />
                     </div>
                 </section>
                 <section>
-                    <SectionHeader icon={Terminal} title={translate('requestDetails.outputFormat')} />
+                    <SectionHeader icon={Terminal} title="输出格式" />
                     <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.output_format} />
                     </div>
@@ -104,18 +103,18 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
 
             {/* Samples */}
             <section className="mt-2">
-                <SectionHeader icon={Terminal} title={translate('requestDetails.samples')} />
+                <SectionHeader icon={Terminal} title="样例" />
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{translate('requestDetails.inputSample')}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">输入样例</span>
                         <div className="rounded-lg border bg-surface2 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
-                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.input_sample === 'N/A' ? translate('requestDetails.none') : problem.input_sample}</pre>
+                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.input_sample === 'N/A' ? '无' : problem.input_sample}</pre>
                         </div>
                     </div>
                     <div className="space-y-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{translate('requestDetails.outputSample')}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">输出样例</span>
                         <div className="rounded-lg border bg-surface2 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
-                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.output_sample === 'N/A' ? translate('requestDetails.none') : problem.output_sample}</pre>
+                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.output_sample === 'N/A' ? '无' : problem.output_sample}</pre>
                         </div>
                     </div>
                 </div>
@@ -126,7 +125,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
                 <>
                     <Separator />
                     <section>
-                        <SectionHeader icon={FileText} title={translate('requestDetails.notes')} />
+                        <SectionHeader icon={FileText} title="提示" />
                         <div className="bg-[var(--warning-a10)] rounded-lg p-6 border border-[var(--warning-a20)] overflow-x-auto">
                             <MarkdownContent content={problem.notes} />
                         </div>
