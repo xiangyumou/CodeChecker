@@ -11,6 +11,7 @@ export const config = {
     MODEL_SUPPORTS_VISION: process.env.MODEL_SUPPORTS_VISION !== 'false',
     REQUEST_TIMEOUT_SECONDS: parseInt(process.env.REQUEST_TIMEOUT_SECONDS || '180'),
     MAX_CONCURRENT_ANALYSIS_TASKS: parseInt(process.env.MAX_CONCURRENT_ANALYSIS_TASKS || '3'),
+    MAX_OUTPUT_TOKENS: parseInt(process.env.MAX_OUTPUT_TOKENS || '16384'),
 } as const;
 
 /**
