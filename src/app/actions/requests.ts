@@ -117,14 +117,12 @@ export async function retryRequest(id: number) {
         throw new Error(`Request with ID ${id} not found`);
     }
 
-    // Reset fields
+    // Reset fields for retry
     const result = await db.update(requests).set({
         status: 'QUEUED',
         isSuccess: false,
         errorMessage: null,
         gptRawResponse: null,
-        formattedCode: null,
-        problemDetails: null,
         analysisResult: null,
     }).where(eq(requests.id, id)).returning();
 

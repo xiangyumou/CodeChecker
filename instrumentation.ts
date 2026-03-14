@@ -7,7 +7,7 @@ export async function register() {
     // Only run in Node.js runtime (not Edge runtime)
     if (process.env.NEXT_RUNTIME === 'nodejs') {
         // Mark incomplete tasks as failed on service startup
-        const { markIncompleteTasksAsFailed } = await import('@/lib/services/task-recovery');
+        const { markIncompleteTasksAsFailed } = await import('@/lib/db');
         await markIncompleteTasksAsFailed();
     }
 }

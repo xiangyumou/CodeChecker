@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { processAnalysisTask } from '../processor';
 
 // Create mock objects before mocking modules
-const { mockDb, mockLogger, mockGetPrompt, mockOpenaiCreate } = vi.hoisted(() => {
+const { mockDb, mockLogger, mockGetPrompt, mockOpenaiCreate, mockConfig } = vi.hoisted(() => {
     return {
         mockDb: {
             select: vi.fn(),
@@ -20,6 +20,14 @@ const { mockDb, mockLogger, mockGetPrompt, mockOpenaiCreate } = vi.hoisted(() =>
         },
         mockGetPrompt: vi.fn(),
         mockOpenaiCreate: vi.fn(),
+        mockConfig: {
+            OPENAI_API_KEY: 'test-api-key',
+            OPENAI_BASE_URL: '',
+            OPENAI_MODEL: 'gpt-4o',
+            MODEL_SUPPORTS_VISION: true,
+            REQUEST_TIMEOUT_SECONDS: 180,
+            MAX_CONCURRENT_ANALYSIS_TASKS: 3,
+        },
     };
 });
 
@@ -34,6 +42,10 @@ vi.mock('@/lib/logger', () => ({
 
 vi.mock('@/lib/prompts/loader', () => ({
     getPrompt: mockGetPrompt,
+}));
+
+vi.mock('@/lib/settings', () => ({
+    config: mockConfig,
 }));
 
 vi.mock('openai', () => ({
@@ -53,11 +65,11 @@ describe('processAnalysisTask', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        // Set default environment variables
-        process.env.OPENAI_API_KEY = 'test-api-key';
-        process.env.OPENAI_MODEL = 'gpt-4o';
-        process.env.REQUEST_TIMEOUT_SECONDS = '180';
-        process.env.MODEL_SUPPORTS_VISION = 'true';
+        // Set default config values
+        mockConfig.OPENAI_API_KEY = 'test-api-key';
+        mockConfig.OPENAI_MODEL = 'gpt-4o';
+        mockConfig.REQUEST_TIMEOUT_SECONDS = 180;
+        mockConfig.MODEL_SUPPORTS_VISION = true;
 
         // Set default prompt mock
         mockGetPrompt.mockResolvedValue('test prompt');
@@ -115,7 +127,7 @@ describe('processAnalysisTask', () => {
 
     describe('Configuration loading', () => {
         it('should throw error if API key is not configured', async () => {
-            delete process.env.OPENAI_API_KEY;
+            mockConfig.OPENAI_API_KEY = '';
             mockDb.select.mockReturnValue({
                 from: () => ({
                     where: () => ({
@@ -138,7 +150,7 @@ describe('processAnalysisTask', () => {
         });
 
         it('should throw error if images provided but model does not support vision', async () => {
-            process.env.MODEL_SUPPORTS_VISION = 'false';
+            mockConfig.MODEL_SUPPORTS_VISION = false;
             mockDb.select.mockReturnValue({
                 from: () => ({
                     where: () => ({
@@ -161,7 +173,7 @@ describe('processAnalysisTask', () => {
         });
     });
 
-    describe('Three-stage pipeline', () => {
+    describe('Single-stage pipeline', () => {
         beforeEach(() => {
             mockDb.select.mockReturnValue({
                 from: () => ({
@@ -198,7 +210,7 @@ describe('processAnalysisTask', () => {
             expect(mockDb.update).toHaveBeenCalled();
         });
 
-        it('should execute step 1 and step 2 in parallel', async () => {
+        it('should execute single API call', async () => {
             mockOpenaiCreate.mockResolvedValue({
                 choices: [{ message: { content: '{"result": "test"}' } }],
             });
@@ -215,21 +227,14 @@ describe('processAnalysisTask', () => {
                 // Ignore errors
             }
 
-            // Verify create was called (step 1, 2, and 3)
-            expect(mockOpenaiCreate).toHaveBeenCalledTimes(3);
+            // Verify create was called only once (single-stage)
+            expect(mockOpenaiCreate).toHaveBeenCalledTimes(1);
         });
 
         it('should mark task as COMPLETED on success', async () => {
-            mockOpenaiCreate
-                .mockResolvedValueOnce({
-                    choices: [{ message: { content: '{"problem": "test"}' } }],
-                })
-                .mockResolvedValueOnce({
-                    choices: [{ message: { content: '{"code": "code"}' } }],
-                })
-                .mockResolvedValueOnce({
-                    choices: [{ message: { content: '{"modification_analysis": "analysis", "modified_code": "new code"}' } }],
-                });
+            mockOpenaiCreate.mockResolvedValue({
+                choices: [{ message: { content: '{"problem": {}, "code": {}, "modified_code": "test", "modification_analysis": []}' } }],
+            });
 
             mockDb.update.mockReturnValue({
                 set: () => ({

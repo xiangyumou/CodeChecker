@@ -2,7 +2,7 @@
 
 import SubmissionForm from '@/components/SubmissionForm';
 import RequestList from '@/components/RequestList';
-import RequestDetailPanel from '@/components/RequestDetailPanel';
+import RequestDetail from '@/components/RequestDetail';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import Logo from '@/components/Logo';
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -130,7 +130,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             </div>
                         ) : (
                             <div className="h-full flex flex-col overflow-hidden">
-                                <RequestDetailPanel requestId={selectedRequestId} />
+                                <RequestDetail requestId={selectedRequestId} />
                             </div>
                         )}
                     </div>

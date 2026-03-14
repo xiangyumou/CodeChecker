@@ -7,11 +7,8 @@ export const requests = sqliteTable('requests', {
     userPrompt: text('user_prompt'),
     imageReferences: text('image_references', { mode: 'json' }),
 
-    // Multi-stage pipeline fields
-    problemDetails: text('problem_details', { mode: 'json' }),
-    formattedCode: text('formatted_code'),
+    // Analysis result fields
     analysisResult: text('analysis_result', { mode: 'json' }),
-
     gptRawResponse: text('gpt_raw_response', { mode: 'json' }),
     errorMessage: text('error_message'),
     isSuccess: integer('is_success', { mode: 'boolean' }).default(false).notNull(),
