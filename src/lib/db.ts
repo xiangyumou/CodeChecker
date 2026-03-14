@@ -7,13 +7,14 @@ import path from 'path';
 import fs from 'fs';
 import { eq } from 'drizzle-orm';
 
+// Determine database path
+const sqlitePath = process.env.DATABASE_URL || './data/codechecker.db';
+
 // Ensure data directory exists
-const dataDir = process.env.DATA_DIR || './data';
+const dataDir = path.dirname(sqlitePath);
 if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
 }
-
-const sqlitePath = path.join(dataDir, 'codechecker.db');
 
 // Create database connection
 const sqlite = new Database(sqlitePath);

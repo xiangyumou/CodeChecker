@@ -8,9 +8,6 @@ services:
       - .env
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATA_DIR=/app/data
     volumes:
-      - ./data:/app/data  # Persist SQLite database
+      - ./data:/app/data
     restart: unless-stopped
