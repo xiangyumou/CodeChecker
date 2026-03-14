@@ -59,8 +59,9 @@ RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./
 RUN chmod +x ./docker-entrypoint.sh
 
-# Copy drizzle migrations
+# Copy drizzle migrations and config
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
 
 USER nextjs
 
