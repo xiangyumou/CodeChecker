@@ -3,9 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { listRequests, RequestListItem } from '@/app/actions/requests';
 import { translate } from '@/lib/i18n';
-import { formatDistanceToNow } from 'date-fns';
-import { zhCN } from 'date-fns/locale';
-import { RefreshCw, Eye, Clock, Sparkles } from 'lucide-react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -164,19 +162,6 @@ export default function RequestList({ selectedRequestId, onSelectRequest }: Requ
                                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                                         {request.userPrompt || translate('requestList.noPromptContent')}
                                     </p>
-
-                                    <div className="flex items-center justify-between pt-1">
-                                        <div className="flex items-center text-[10px] text-muted-foreground/80">
-                                            <Clock className="w-3 h-3 mr-1" />
-                                            {request.createdAt && formatDistanceToNow(new Date(request.createdAt), {
-                                                addSuffix: true,
-                                                locale: zhCN,
-                                            })}
-                                        </div>
-                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Eye className="w-3.5 h-3.5 text-primary/70" />
-                                        </div>
-                                    </div>
                                 </div>
                             </motion.div>
                         );
