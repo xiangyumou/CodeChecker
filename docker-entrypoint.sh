@@ -1,21 +1,26 @@
 #!/bin/sh
 set -e
 
-# 获取数据库路径，默认为 SQLite 文件
 DB_PATH="${DATABASE_URL:-./data/codechecker.db}"
 
-# 转换为绝对路径（移除 ./ 前缀）
-DB_PATH="/app/${DB_PATH#./}"
+# 提取目录路径
+DB_DIR=$(dirname "$DB_PATH")
 
-# 检查数据库文件是否存在，不存在则执行迁移
+# 创建数据目录（确保存在且有权限）
+if [ -n "$DB_DIR" ] && [ "$DB_DIR" != "." ]; then
+    echo "[INIT] Ensuring database directory exists: $DB_DIR"
+    mkdir -p "$DB_DIR"
+fi
+
+# 只在首次启动时执行迁移
 if [ ! -f "$DB_PATH" ]; then
-    echo "Database not found at $DB_PATH, running migrations..."
-    npx drizzle-kit migrate --config drizzle.config.ts
-    echo "Migrations completed."
+    echo "[INIT] Database not found at $DB_PATH, running migrations..."
+    npm run db:migrate
+    echo "[INIT] Migrations completed."
 else
-    echo "Database already exists at $DB_PATH, skipping migrations."
+    echo "[INIT] Database already exists at $DB_PATH, skipping migrations."
 fi
 
 # 启动应用
-echo "Starting application..."
-exec "$@"
+echo "[INIT] Starting application..."
+exec node server.js

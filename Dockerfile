@@ -66,7 +66,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
 # Copy node_modules for drizzle-kit (needed for migrations at runtime)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-USER nextjs
+# Note: Don't use USER here - entrypoint needs root to create data directory
+# The application runs as root (matches Cashier project approach)
 
 EXPOSE 3000
 
@@ -76,5 +77,4 @@ ENV HOSTNAME "0.0.0.0"
 
 # Server.js is created by next build from the standalone output
 # We wrap the start command to ensure migrations run if needed
-ENTRYPOINT ["./docker-entrypoint.sh"]
-CMD ["node", "server.js"]
+CMD ["./docker-entrypoint.sh"]
