@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, Database, FileText, Terminal } from "lucide-react";
-import { useTranslations } from 'next-intl';
+import { translate } from '@/lib/i18n';
 
 export interface ProblemData {
     title: string;
@@ -23,8 +23,7 @@ interface ProblemDisplayProps {
 }
 
 const MarkdownContent = ({ content }: { content: string }) => {
-    const t = useTranslations('requestDetails');
-    if (!content || content === 'N/A') return <span className="text-muted-foreground italic">{t('none')}</span>;
+    if (!content || content === 'N/A') return <span className="text-muted-foreground italic">{translate('requestDetails.none')}</span>;
     return (
         <MarkdownRenderer className="text-muted-foreground leading-relaxed text-sm">
             {content}
@@ -40,14 +39,9 @@ const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType, title: 
 );
 
 export default function ProblemDisplay({ data }: ProblemDisplayProps) {
-    const t = useTranslations('requestDetails');
-    // Handle case where data might be passed as string (e.g. from raw response before parsing)
-    // or if parsing failed and we just have raw text. 
-    // Ideally the parent component handles parsing, but safety check here is good.
     const problem = typeof data === 'string' ? null : data;
 
     if (!problem) {
-        // Fallback or empty state handled by parent usually, but if string passed, display as raw markdown
         if (typeof data === 'string') {
             return (
                 <Card className="border-none shadow-none bg-transparent">
@@ -84,7 +78,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
 
             {/* Description */}
             <section>
-                <SectionHeader icon={FileText} title={t('problemDescription')} />
+                <SectionHeader icon={FileText} title={translate('requestDetails.problemDescription')} />
                 <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                     <MarkdownContent content={problem.description} />
                 </div>
@@ -93,13 +87,13 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
             {/* Input & Output Format */}
             <div className="grid md:grid-cols-2 gap-8">
                 <section>
-                    <SectionHeader icon={Terminal} title={t('inputFormat')} />
+                    <SectionHeader icon={Terminal} title={translate('requestDetails.inputFormat')} />
                     <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.input_format} />
                     </div>
                 </section>
                 <section>
-                    <SectionHeader icon={Terminal} title={t('outputFormat')} />
+                    <SectionHeader icon={Terminal} title={translate('requestDetails.outputFormat')} />
                     <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                         <MarkdownContent content={problem.output_format} />
                     </div>
@@ -110,18 +104,18 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
 
             {/* Samples */}
             <section className="mt-2">
-                <SectionHeader icon={Terminal} title={t('samples')} />
+                <SectionHeader icon={Terminal} title={translate('requestDetails.samples')} />
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t('inputSample')}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{translate('requestDetails.inputSample')}</span>
                         <div className="rounded-lg border bg-surface2 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
-                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.input_sample === 'N/A' ? t('none') : problem.input_sample}</pre>
+                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.input_sample === 'N/A' ? translate('requestDetails.none') : problem.input_sample}</pre>
                         </div>
                     </div>
                     <div className="space-y-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{t('outputSample')}</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">{translate('requestDetails.outputSample')}</span>
                         <div className="rounded-lg border bg-surface2 p-4 font-mono text-sm overflow-x-auto min-h-[80px] text-foreground">
-                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.output_sample === 'N/A' ? t('none') : problem.output_sample}</pre>
+                            <pre className="whitespace-pre-wrap leading-relaxed">{problem.output_sample === 'N/A' ? translate('requestDetails.none') : problem.output_sample}</pre>
                         </div>
                     </div>
                 </div>
@@ -132,7 +126,7 @@ export default function ProblemDisplay({ data }: ProblemDisplayProps) {
                 <>
                     <Separator />
                     <section>
-                        <SectionHeader icon={FileText} title={t('notes')} />
+                        <SectionHeader icon={FileText} title={translate('requestDetails.notes')} />
                         <div className="bg-[var(--warning-a10)] rounded-lg p-6 border border-[var(--warning-a20)] overflow-x-auto">
                             <MarkdownContent content={problem.notes} />
                         </div>

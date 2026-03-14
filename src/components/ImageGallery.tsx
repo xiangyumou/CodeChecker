@@ -3,7 +3,7 @@
 import { ZoomableImage } from './ui/ZoomableImage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ImageIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { translate } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export interface ImageItem {
@@ -27,8 +27,6 @@ export default function ImageGallery({
     className,
     readonly = false
 }: ImageGalleryProps) {
-    const t = useTranslations('requestDetails');
-
     if (!images || images.length === 0) return null;
 
     const items: ImageItem[] = images.map((img, idx) => {
@@ -45,13 +43,13 @@ export default function ImageGallery({
             {!readonly && (
                 <span className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                     <ImageIcon className="w-4 h-4" />
-                    {t('submittedImages', { count: items.length })}
+                    {translate('requestDetails.submittedImages', { count: items.length })}
                 </span>
             )}
-            
+
             <div className={cn(
-                isGrid 
-                    ? "grid grid-cols-2 md:grid-cols-3 gap-4" 
+                isGrid
+                    ? "grid grid-cols-2 md:grid-cols-3 gap-4"
                     : "flex gap-2 overflow-x-auto pb-2"
             )}>
                 <AnimatePresence mode="popLayout">
@@ -60,8 +58,8 @@ export default function ImageGallery({
                             key={item.id}
                             className={cn(
                                 "group relative overflow-hidden border border-border bg-surface",
-                                isGrid 
-                                    ? "aspect-video rounded-lg" 
+                                isGrid
+                                    ? "aspect-video rounded-lg"
                                     : "w-24 h-24 flex-none rounded-lg"
                             )}
                             initial={{ opacity: 0, scale: 0.95 }}
@@ -71,13 +69,13 @@ export default function ImageGallery({
                         >
                             <ZoomableImage
                                 src={item.preview}
-                                alt={item.alt || t('submittedImageAlt', { index: idx + 1 })}
+                                alt={item.alt || translate('requestDetails.submittedImageAlt', { index: idx + 1 })}
                                 className={cn(
                                     "w-full h-full",
                                     isGrid ? "object-contain" : "object-cover cursor-pointer"
                                 )}
                             />
-                            
+
                             {!readonly && onRemove && (
                                 <>
                                     <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

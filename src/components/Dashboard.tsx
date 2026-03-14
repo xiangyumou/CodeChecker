@@ -4,15 +4,12 @@ import SubmissionForm from '@/components/SubmissionForm';
 import RequestList from '@/components/RequestList';
 import RequestDetailPanel from '@/components/RequestDetailPanel';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Logo from '@/components/Logo';
-import { useTranslations } from 'next-intl';
-import { useUIStore } from '@/store/useUIStore';
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, PanelLeft, Sparkles } from "lucide-react";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface DashboardProps {
@@ -20,27 +17,24 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ initialRequestId }: DashboardProps) {
-    const t = useTranslations('app');
-    const { rightPanelMode, createNewRequest, selectRequest } = useUIStore();
+    const parsedId = initialRequestId ? parseInt(initialRequestId, 10) : null;
+    const validId = parsedId && !isNaN(parsedId) ? parsedId : null;
+
+    const [rightPanelMode, setRightPanelMode] = useState<'create' | 'detail'>(validId ? 'detail' : 'create');
+    const [selectedRequestId, setSelectedRequestId] = useState<number | null>(validId);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
     const router = useRouter();
 
-    // Sync initialRequestId with store
-    useEffect(() => {
-        if (initialRequestId) {
-            const id = parseInt(initialRequestId, 10);
-            if (!isNaN(id)) {
-                selectRequest(id);
-            }
-        } else {
-            createNewRequest();
-        }
-    }, [initialRequestId, selectRequest, createNewRequest]);
-
     const handleCreateNew = () => {
-        createNewRequest();
+        setSelectedRequestId(null);
+        setRightPanelMode('create');
         router.push('/');
+    };
+
+    const handleSelectRequest = (id: number) => {
+        setSelectedRequestId(id);
+        setRightPanelMode('detail');
     };
 
     return (
@@ -63,9 +57,12 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                                             <div className="bg-primary-a10 rounded-lg p-2">
                                                 <Logo />
                                             </div>
-                                            <span className="font-bold">{t('title')}</span>
+                                            <span className="font-bold">Code Checker</span>
                                         </div>
-                                        <RequestList />
+                                        <RequestList
+                                            selectedRequestId={selectedRequestId}
+                                            onSelectRequest={handleSelectRequest}
+                                        />
                                     </div>
                                 </DrawerContent>
                             </Drawer>
@@ -74,7 +71,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                         <div className="bg-primary-a10 rounded-lg p-2 hidden md:block">
                             <Logo />
                         </div>
-                        <h2 className="font-bold hidden md:block">{t('title')}</h2>
+                        <h2 className="font-bold hidden md:block">Code Checker</h2>
 
                         {/* Desktop Sidebar Toggle */}
                         <Button
@@ -92,16 +89,13 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             size="icon"
                             className="hidden md:flex h-9 w-9"
                             onClick={handleCreateNew}
-                            title={t('newRequest')}
+                            title="新建请求"
                         >
                             <Sparkles className="h-5 w-5" />
                         </Button>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <LanguageSwitcher />
-                            <ThemeSwitcher />
-                        </div>
+                        <ThemeSwitcher />
                     </div>
                 </div>
             </header>
@@ -118,7 +112,10 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             className="hidden md:flex border-r bg-surface flex-col h-full overflow-hidden shrink-0 whitespace-nowrap"
                         >
                             <div className="w-[280px] h-full flex flex-col">
-                                <RequestList />
+                                <RequestList
+                                    selectedRequestId={selectedRequestId}
+                                    onSelectRequest={handleSelectRequest}
+                                />
                             </div>
                         </motion.aside>
                     )}
@@ -133,7 +130,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             </div>
                         ) : (
                             <div className="h-full flex flex-col overflow-hidden">
-                                <RequestDetailPanel />
+                                <RequestDetailPanel requestId={selectedRequestId} />
                             </div>
                         )}
                     </div>

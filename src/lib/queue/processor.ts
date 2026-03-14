@@ -1,82 +1,57 @@
 /**
- * 分析任务处理器
- * 从 /api/analyze-request/route.ts 提取的核心逻辑
- * 被内存队列调用
+ * 分析任务处理器 - 简化版
  */
 
 import { db } from '@/lib/db';
 import { requests } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { getPrompt } from '@/lib/prompts/loader';
-import logger from '@/lib/logger';
 import OpenAI from 'openai';
-import { getAllSettings, AppSettings } from '@/lib/settings';
+import { getAllSettings } from '@/lib/settings';
 
 export async function processAnalysisTask(requestId: number): Promise<void> {
     try {
-        logger.info({ requestId }, 'Starting task processing');
-
-        // Load request and configuration
+        // 加载请求
         const request = await db.select().from(requests).where(eq(requests.id, requestId)).limit(1).then(rows => rows[0]);
 
         if (!request) {
-            logger.warn({ requestId }, 'Request not found (likely deleted)');
+            console.warn(`Request ${requestId} not found`);
             return;
         }
 
-        // Idempotency check: Skip if already completed or failed
+        // 幂等性检查
         if (request.status === 'COMPLETED' || request.status === 'FAILED') {
-            logger.info(
-                { requestId, status: request.status },
-                'Task already processed'
-            );
             return;
         }
 
-        // Update status to PROCESSING
+        // 更新为处理中
         await db.update(requests).set({ status: 'PROCESSING' }).where(eq(requests.id, requestId));
 
-        // Load settings
-        const settingsMap = await getAllSettings();
+        // 加载配置
+        const settings = getAllSettings();
 
-        const apiKey = settingsMap[AppSettings.OPENAI_API_KEY] || process.env.OPENAI_API_KEY;
-        const baseURL = settingsMap[AppSettings.OPENAI_BASE_URL] || process.env.OPENAI_BASE_URL;
-        const model = settingsMap[AppSettings.OPENAI_MODEL] || process.env.OPENAI_MODEL || 'gpt-4o';
-        const supportsVision = (
-            settingsMap[AppSettings.MODEL_SUPPORTS_VISION] ||
-            process.env.MODEL_SUPPORTS_VISION ||
-            'true'
-        ).toLowerCase() === 'true';
-        const timeoutSeconds = parseInt(
-            settingsMap[AppSettings.REQUEST_TIMEOUT_SECONDS] ||
-            process.env.REQUEST_TIMEOUT_SECONDS ||
-            '180'
-        );
+        const apiKey = settings.OPENAI_API_KEY;
+        const baseURL = settings.OPENAI_BASE_URL;
+        const model = settings.OPENAI_MODEL || 'gpt-4o';
+        const timeoutSeconds = parseInt(settings.REQUEST_TIMEOUT_SECONDS || '180');
 
         if (!apiKey) {
             throw new Error('OPENAI_API_KEY is not configured');
         }
 
-        // Initialize OpenAI client
-        const openai = new OpenAI({
-            apiKey,
-            baseURL,
-        });
+        // 初始化 OpenAI 客户端
+        const openai = new OpenAI({ apiKey, baseURL });
 
         const imageReferences = (request.imageReferences as unknown as string[]) || [];
 
-        if (imageReferences.length > 0 && !supportsVision) {
-            throw new Error('Model does not support vision/image inputs');
-        }
-
-        // Load prompts
+        // 加载 prompts
         const [step1Prompt, step2Prompt, step3Prompt] = await Promise.all([
             getPrompt('step1-problem'),
             getPrompt('step2-code'),
             getPrompt('step3-analysis'),
         ]);
 
-        // Prepare content for Step 1 & 2
+        // 准备内容
         const contentParts: OpenAI.Chat.ChatCompletionContentPart[] = [];
         if (request.userPrompt) {
             contentParts.push({ type: 'text', text: request.userPrompt });
@@ -88,18 +63,8 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             contentParts.push({ type: 'text', text: 'No problem description provided.' });
         }
 
-        // Step 1 & 2: Extract Problem and Format Code (Parallel)
-        logger.info({ requestId }, 'Starting Step 1 & 2 in parallel');
-
-        // Update both stages to processing
-        await db.update(requests).set({
-            stage1Status: 'processing',
-            stage2Status: 'processing',
-        }).where(eq(requests.id, requestId));
-
-        // Execute Step 1 and Step 2 in parallel
+        // Step 1 & 2: 并行执行
         const [step1Response, step2Response] = await Promise.all([
-            // Step 1: Extract Problem
             openai.chat.completions.create({
                 model,
                 messages: [
@@ -108,7 +73,6 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
                 ],
                 response_format: { type: 'json_object' },
             }),
-            // Step 2: Format Code
             openai.chat.completions.create({
                 model,
                 messages: [
@@ -123,24 +87,7 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
         const codeData = JSON.parse(step2Response.choices[0]?.message?.content || '{}');
         const formattedCode = codeData.code || '';
 
-        // Update both stages as completed
-        await db.update(requests).set({
-            problemDetails: problemData,
-            stage1Status: 'completed',
-            stage1CompletedAt: new Date(),
-            formattedCode,
-            stage2Status: 'completed',
-            stage2CompletedAt: new Date(),
-        }).where(eq(requests.id, requestId));
-
-        logger.info({ requestId }, 'Step 1 & 2 completed in parallel');
-
-        // Step 3: Deep Analysis
-        logger.info({ requestId }, 'Starting Step 3: Deep Analysis');
-        await db.update(requests).set({
-            stage3Status: 'processing',
-        }).where(eq(requests.id, requestId));
-
+        // Step 3: 深度分析
         const step3Input = JSON.stringify({
             problem: problemData,
             user_code: formattedCode,
@@ -162,17 +109,16 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             throw new Error('Empty response from Step 3');
         }
 
-        // Update final status
         const analysisJson = JSON.parse(analysisContent);
 
+        // 保存结果
         await db.update(requests).set({
             status: 'COMPLETED',
+            problemDetails: problemData,
+            formattedCode,
             analysisResult: analysisJson,
-            stage3Status: 'completed',
-            stage3CompletedAt: new Date(),
             isSuccess: true,
             errorMessage: null,
-            // Legacy compatibility
             gptRawResponse: {
                 organized_problem: problemData,
                 modified_code: analysisJson.modified_code,
@@ -181,21 +127,16 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             },
         }).where(eq(requests.id, requestId));
 
-        logger.info({ requestId }, 'Task completed successfully');
-
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        logger.error({ err: error, requestId }, 'Task processing failed');
+        console.error(`Task ${requestId} failed:`, error);
 
         await db.update(requests).set({
             status: 'FAILED',
             errorMessage,
             isSuccess: false,
-        }).where(eq(requests.id, requestId)).catch((updateError) => {
-            logger.error({ err: updateError, requestId }, 'Failed to update request status');
-        });
+        }).where(eq(requests.id, requestId));
 
-        // Re-throw to trigger retry in memory queue
         throw error;
     }
 }

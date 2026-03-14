@@ -1,6 +1,5 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Check, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,9 +17,9 @@ interface PipelineStatusProps {
     className?: string;
 }
 
-export default function PipelineStatus({ stages, className }: PipelineStatusProps) {
-    const t = useTranslations('requestDetails.pipeline');
+const stageLabels = ['问题提取', '代码格式化', '深度分析'];
 
+export default function PipelineStatus({ stages, className }: PipelineStatusProps) {
     const getStageIcon = (status: StageStatus) => {
         switch (status) {
             case 'completed':
@@ -80,7 +79,7 @@ export default function PipelineStatus({ stages, className }: PipelineStatusProp
                                 {/* Stage label */}
                                 <div className="flex-1 min-w-0">
                                     <div className="text-sm font-semibold text-text truncate">
-                                        {t(`stage${index + 1}` as 'stage1' | 'stage2' | 'stage3')}
+                                        {stageLabels[index]}
                                     </div>
                                 </div>
                             </motion.div>
@@ -119,7 +118,7 @@ export default function PipelineStatus({ stages, className }: PipelineStatusProp
                                 {/* Stage label (abbreviated or smaller on mobile) */}
                                 <div className="whitespace-nowrap">
                                     <div className="text-[11px] font-bold text-text">
-                                        {t(`stage${index + 1}` as 'stage1' | 'stage2' | 'stage3')}
+                                        {stageLabels[index]}
                                     </div>
                                 </div>
                             </motion.div>

@@ -1,113 +1,61 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { trpc } from '@/utils/trpc';
-import { useTranslations } from 'next-intl';
+import { listRequests, RequestListItem } from '@/app/actions/requests';
+import { translate } from '@/lib/i18n';
 import { formatDistanceToNow } from 'date-fns';
-import { zhCN, enUS, de } from 'date-fns/locale';
-import { useLocale } from 'next-intl';
-import { RefreshCw, Eye, Clock, Loader2, Sparkles } from 'lucide-react';
+import { zhCN } from 'date-fns/locale';
+import { RefreshCw, Eye, Clock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useEffect } from 'react';
-import { useInView } from 'react-intersection-observer';
-import { useUIStore } from '@/store/useUIStore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import StatusBadge from './StatusBadge';
-import { useRequestListPolling } from '@/hooks/useSmartPolling';
 import { EmptyState } from '@/components/ui/empty-state';
 
-const STALE_TIME = 30 * 1000;
-const GC_TIME = 10 * 60 * 1000;
-const PAGE_SIZE = 20;
-const REFRESH_ANIMATION_DELAY = 500;
+interface RequestListProps {
+    selectedRequestId: number | null;
+    onSelectRequest: (id: number) => void;
+}
 
-const localeMap = {
-    zh: zhCN,
-    en: enUS,
-    de: de,
-};
-
-export default function RequestList() {
-    const t = useTranslations('requestList');
-    const locale = useLocale() as 'zh' | 'en' | 'de';
-    const utils = trpc.useUtils();
+export default function RequestList({ selectedRequestId, onSelectRequest }: RequestListProps) {
     const router = useRouter();
+    const [requests, setRequests] = useState<RequestListItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isRefetching, setIsRefetching] = useState(false);
-    const { ref, inView } = useInView();
-    const { selectedRequestId } = useUIStore();
-    const listPolling = useRequestListPolling();
 
-    const {
-        data: infiniteData,
-        isLoading,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage
-    } = trpc.requests.list.useInfiniteQuery(
-        { take: PAGE_SIZE },
-        {
-            getNextPageParam: (lastPage: unknown[]) => {
-                if (lastPage.length < PAGE_SIZE) return undefined;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                return (lastPage[lastPage.length - 1] as any).id;
-            },
-
-            // Smart polling: dual-speed strategy
-            refetchInterval: listPolling,
-
-            // Cache configuration to prevent skeleton flashing
-            staleTime: STALE_TIME,
-
-            // Keep cached data
-            gcTime: GC_TIME,
-
-            // Don't refetch on mount if we have cached data
-            refetchOnMount: false,
-
-            // Refetch when window regains focus
-            refetchOnWindowFocus: true,
-
-            // Refetch on network reconnection
-            refetchOnReconnect: true,
-
-            // Don't poll in background
-            refetchIntervalInBackground: false,
+    const loadRequests = useCallback(async () => {
+        try {
+            const data = await listRequests({ limit: 100 });
+            setRequests(data);
+        } catch (error) {
+            console.error('Failed to load requests:', error);
+        } finally {
+            setIsLoading(false);
         }
-    );
-
-    const requests = infiniteData?.pages.flat() || [];
+    }, []);
 
     useEffect(() => {
-        if (inView && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+        loadRequests();
 
-    // Page Visibility API: Refresh immediately when user returns to the page
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (!document.hidden) {
-                // Page is now visible, trigger immediate refresh
-                utils.requests.list.invalidate();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, [utils]);
+        // 固定 5 秒轮询
+        const interval = setInterval(loadRequests, 5000);
+        return () => clearInterval(interval);
+    }, [loadRequests]);
 
     const handleRefresh = async () => {
         setIsRefetching(true);
-        await utils.requests.list.invalidate();
-        setTimeout(() => setIsRefetching(false), REFRESH_ANIMATION_DELAY);
+        await loadRequests();
+        setTimeout(() => setIsRefetching(false), 500);
     };
 
-    if (isLoading && !infiniteData) {
+    const handleSelect = (id: number) => {
+        onSelectRequest(id);
+        router.push(`/request/${id}`);
+    };
+
+    if (isLoading) {
         return (
             <div className="flex flex-col h-full">
                 <div className="p-4 border-b bg-surface2">
@@ -132,7 +80,7 @@ export default function RequestList() {
         return (
             <div className="flex flex-col h-full">
                 <div className="flex justify-between items-center p-4 border-b bg-surface2">
-                    <h2 className="text-sm font-bold text-muted-foreground">{t('title')}</h2>
+                    <h2 className="text-sm font-bold text-muted-foreground">{translate('requestList.title')}</h2>
                     <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isRefetching} className="h-8 w-8 text-muted-foreground">
                         <RefreshCw className={cn("w-3.5 h-3.5", isRefetching && "animate-spin")} />
                     </Button>
@@ -140,8 +88,8 @@ export default function RequestList() {
                 <div className="flex-1 flex items-center justify-center">
                     <EmptyState
                         icon={Sparkles}
-                        title={t('noHistory')}
-                        description={t('submitToSeeHere')}
+                        title={translate('requestList.noHistory')}
+                        description={translate('requestList.submitToSeeHere')}
                     />
                 </div>
             </div>
@@ -152,7 +100,7 @@ export default function RequestList() {
         <div className="flex flex-col h-full bg-surface2 min-h-0">
             <div className="flex justify-between items-center px-4 py-3 bg-surface2/50 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-bold text-muted-foreground">{t('title')}</h2>
+                    <h2 className="text-sm font-bold text-muted-foreground">{translate('requestList.title')}</h2>
                 </div>
                 <Button
                     variant="ghost"
@@ -160,7 +108,7 @@ export default function RequestList() {
                     onClick={handleRefresh}
                     disabled={isRefetching}
                     className="h-8 w-8 p-0 text-muted-foreground hover:text-primary transition-colors"
-                    title={t('refreshTooltip')}
+                    title={translate('requestList.refreshTooltip')}
                 >
                     <RefreshCw className={cn("w-3.5 h-3.5", isRefetching && "animate-spin")} />
                 </Button>
@@ -179,8 +127,7 @@ export default function RequestList() {
                         },
                     }}
                 >
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {requests.map((request: any) => {
+                    {requests.map((request) => {
                         const isSelected = selectedRequestId === request.id;
 
                         return (
@@ -192,7 +139,7 @@ export default function RequestList() {
                                         ? "border-l-[3px] border-l-primary bg-surface2 border-y-border border-r-border pl-[13px]"
                                         : "border-border hover:border-primary/50"
                                 )}
-                                onClick={() => router.push(`/request/${request.id}`)}
+                                onClick={() => handleSelect(request.id)}
                                 variants={{
                                     hidden: { opacity: 0, y: 5 },
                                     visible: { opacity: 1, y: 0 },
@@ -208,27 +155,22 @@ export default function RequestList() {
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <span className="text-sm font-semibold truncate block">
-                                                {t('itemTitle', { id: request.id })}
+                                                {translate('requestList.itemTitle', { id: request.id })}
                                             </span>
                                         </div>
-                                        <StatusBadge
-                                            status={request.status}
-                                            stage1Status={request.stage1Status}
-                                            stage2Status={request.stage2Status}
-                                            stage3Status={request.stage3Status}
-                                        />
+                                        <StatusBadge status={request.status} />
                                     </div>
 
                                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                        {request.userPrompt || t('noPromptContent')}
+                                        {request.userPrompt || translate('requestList.noPromptContent')}
                                     </p>
 
                                     <div className="flex items-center justify-between pt-1">
                                         <div className="flex items-center text-[10px] text-muted-foreground/80">
                                             <Clock className="w-3 h-3 mr-1" />
-                                            {formatDistanceToNow(new Date(request.createdAt), {
+                                            {request.createdAt && formatDistanceToNow(new Date(request.createdAt), {
                                                 addSuffix: true,
-                                                locale: localeMap[locale],
+                                                locale: zhCN,
                                             })}
                                         </div>
                                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -239,22 +181,6 @@ export default function RequestList() {
                             </motion.div>
                         );
                     })}
-
-                    {/* Sentinel for infinite scrolling */}
-                    <div ref={ref} className="h-4 w-full" />
-
-                    <AnimatePresence>
-                        {isFetchingNextPage && (
-                            <motion.div
-                                className="p-4 flex justify-center"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                            >
-                                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
                 </motion.div>
             </div>
         </div>

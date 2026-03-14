@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { routing } from '@/i18n/routing';
-import { notFound } from 'next/navigation';
-import { getMessages } from 'next-intl/server';
 import { Providers } from '@/providers/Providers';
 
 const inter = Inter({
@@ -21,30 +18,18 @@ export const metadata: Metadata = {
     description: "Deep code analysis and optimization with AI-driven insights.",
 };
 
-import { cookies } from 'next/headers';
-
-export default async function RootLayout({
+export default function RootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const cookieStore = await cookies();
-    const locale = cookieStore.get('NEXT_LOCALE')?.value || 'zh';
-
-    // Ensure that the incoming `locale` is valid
-    if (!((routing.locales as unknown) as string[]).includes(locale)) {
-        notFound();
-    }
-
-    const messages = await getMessages();
-
     return (
-        <html lang={locale} suppressHydrationWarning>
+        <html lang="zh" suppressHydrationWarning>
             <body
                 className={`${inter.variable} ${jetbrainsMono.variable} antialiased font-sans`}
                 suppressHydrationWarning
             >
-                <Providers locale={locale} messages={messages}>
+                <Providers>
                     {children}
                 </Providers>
             </body>

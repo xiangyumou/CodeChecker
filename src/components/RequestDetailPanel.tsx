@@ -1,9 +1,9 @@
 'use client';
 
-import { trpc } from '@/utils/trpc';
-import { useTranslations } from 'next-intl';
+import { getRequestById, retryRequest } from '@/app/actions/requests';
+import { translate } from '@/lib/i18n';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 import * as Diff from 'diff';
 import { html } from 'diff2html';
 import 'diff2html/bundles/css/diff2html.min.css';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, ArrowLeft, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUIStore } from '@/store/useUIStore';
+import { useRouter } from 'next/navigation';
 import ShikiCodeRenderer from './ShikiCodeRenderer';
 import StatusBadge from './StatusBadge';
 import RequestDetailHeader from './RequestDetailHeader';
@@ -22,62 +22,58 @@ import RequestDetailTabs from './RequestDetailTabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import AnalysisSection from './AnalysisSection';
 import ProblemDisplay, { ProblemData } from './ProblemDisplay';
-import { useRequestPolling } from '@/hooks/useSmartPolling';
 import ImageGallery from './ImageGallery';
 
-// Props interface
-export interface RequestDetailPanelProps {
-    // Directly pass request data (optional)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    request?: any;
-    isLoading?: boolean;
+interface RequestDetailPanelProps {
+    requestId: number | null;
 }
 
-export default function RequestDetailPanel({
-    request: propRequest,
-    isLoading: propIsLoading = false,
-}: RequestDetailPanelProps = {}) {
-    const t = useTranslations('requestDetails');
-    const { selectedRequestId, createNewRequest } = useUIStore();
+export default function RequestDetailPanel({ requestId }: RequestDetailPanelProps) {
+    const router = useRouter();
+    const [request, setRequest] = useState<unknown>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<Error | null>(null);
+    const [isRetrying, setIsRetrying] = useState(false);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true); // eslint-disable-line react-hooks/set-state-in-effect
+        setMounted(true);
     }, []);
 
-    const utils = trpc.useUtils();
-    const requestPolling = useRequestPolling();
+    // Load request data
+    const loadRequest = useCallback(async () => {
+        if (!requestId) return;
 
-    // Dashboard mode: query from tRPC using UIStore
-    // Share mode: skip query, use propRequest
-    const { data: queryRequest, isLoading: queryIsLoading, error: queryError } = trpc.requests.getById.useQuery(
-        selectedRequestId!,
-        {
-            enabled: !!selectedRequestId && !propRequest,
-            retry: false, // Don't retry on failure (prevents infinite loop on 404)
-            // Smart polling: only poll for active requests
-            refetchInterval: requestPolling,
-            refetchIntervalInBackground: false,
+        try {
+            setIsLoading(true);
+            setError(null);
+            const data = await getRequestById(requestId);
+            if (data) {
+                setRequest(data);
+            } else {
+                setError(new Error('Request not found'));
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Unknown error'));
+        } finally {
+            setIsLoading(false);
         }
-    );
+    }, [requestId]);
 
-    // Track previous status to detect changes and sync sidebar
-    const prevStatusRef = useRef<string | undefined>(undefined);
-
-    // Unify data source and loading state
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const request = (propRequest || queryRequest) as any;
-    const isLoading = propRequest ? propIsLoading : queryIsLoading;
-    const requestId = propRequest ? propRequest.id : selectedRequestId;
-
-    // Sync sidebar when status changes (must be after request is defined)
     useEffect(() => {
-        if (!propRequest && request?.status && prevStatusRef.current !== undefined && prevStatusRef.current !== request.status) {
-            // Status changed - invalidate sidebar list to refresh
-            utils.requests.list.invalidate();
+        loadRequest();
+    }, [loadRequest]);
+
+    // Polling for active requests
+    useEffect(() => {
+        if (!requestId) return;
+        if (!request || (request.status !== 'QUEUED' && request.status !== 'PROCESSING')) {
+            return;
         }
-        prevStatusRef.current = request?.status;
-    }, [request?.status, utils, propRequest]);
+
+        const interval = setInterval(loadRequest, 5000);
+        return () => clearInterval(interval);
+    }, [requestId, request, loadRequest]);
 
     // Generate diff HTML
     const diffHtml = useMemo(() => {
@@ -96,65 +92,57 @@ export default function RequestDetailPanel({
             'Modified'
         );
 
-        const diffHtmlOutput = html(diffText, {
+        return html(diffText, {
             drawFileList: false,
             matching: 'lines',
             outputFormat: 'side-by-side',
         });
-
-        return diffHtmlOutput;
     }, [request]);
 
-    const retryMutation = trpc.requests.retry.useMutation({
-        onSuccess: async () => {
-            // Show user feedback immediately
-            toast.success(t('retryStarted'), {
-                description: t('retryStartedDescription'),
-            });
-            // Use refetch() instead of invalidate() for immediate UI update
-            // invalidate() only marks cache as stale; refetch() forces immediate data fetch
-            await Promise.all([
-                utils.requests.getById.refetch(requestId!),
-                utils.requests.list.refetch(),
-            ]);
-        },
-        onError: (error) => {
-            toast.error(t('retryFailed'), {
-                description: error.message,
-            });
-        },
-    });
+    const handleRetry = async () => {
+        if (!requestId) return;
 
-    const handleRetry = () => {
-        if (requestId) {
-            retryMutation.mutate(requestId);
+        try {
+            setIsRetrying(true);
+            await retryRequest(requestId);
+            toast.success(translate('requestDetails.retryStarted'), {
+                description: translate('requestDetails.retryStartedDescription'),
+            });
+            await loadRequest();
+        } catch (err) {
+            toast.error(translate('requestDetails.retryFailed'), {
+                description: err instanceof Error ? err.message : 'Unknown error',
+            });
+        } finally {
+            setIsRetrying(false);
         }
     };
 
-
+    const handleBack = () => {
+        router.push('/');
+    };
 
     if (!requestId) {
         return (
             <div className="flex flex-col items-center justify-center h-full">
                 <EmptyState
                     icon={Info}
-                    title={t('selectRequestToView')}
+                    title={translate('requestDetails.selectRequestToView')}
                 />
             </div>
         );
     }
 
     // Loading State
-    if (isLoading) {
+    if (isLoading && !request) {
         return (
             <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden" data-testid="request-detail-loading">
                 <div className="p-6 border-b flex flex-col gap-4 bg-surface">
                     <div className="flex flex-row items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <Button variant="ghost" size="icon" onClick={createNewRequest} className="mr-1 md:hidden">
+                            <Button variant="ghost" size="icon" onClick={handleBack} className="mr-1 md:hidden">
                                 <ArrowLeft className="h-5 w-5" />
                             </Button>
-                            {/* Show actual loading status */}
                             <StatusBadge status="PROCESSING" />
                         </div>
                         <Skeleton className="h-9 w-9 rounded-md" />
@@ -184,19 +172,19 @@ export default function RequestDetailPanel({
         );
     }
 
-    // Empty/Error State - static page, no polling (prevents infinite loop on deleted requests)
-    if (!request || queryError) {
+    // Error State
+    if (!request || error) {
         return (
             <div className="h-full flex flex-col bg-surface border rounded-lg overflow-hidden" data-testid="request-detail-error">
                 <div className="flex flex-col items-center justify-center h-full">
                     <EmptyState
                         icon={AlertCircle}
-                        title={t('requestNotFound')}
+                        title={translate('requestDetails.requestNotFound')}
                         description={`ID: ${requestId || 'unknown'}`}
                         action={
-                            <Button variant="outline" onClick={createNewRequest}>
+                            <Button variant="outline" onClick={handleBack}>
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                {t('backToCreate') || 'Back'}
+                                {translate('requestDetails.backToCreate')}
                             </Button>
                         }
                     />
@@ -211,13 +199,12 @@ export default function RequestDetailPanel({
                 requestId={requestId}
                 request={request}
                 onRetry={handleRetry}
-                onClose={createNewRequest}
-                isRetrying={retryMutation.status === 'pending'}
+                onClose={handleBack}
+                isRetrying={isRetrying}
             />
 
             <RequestDetailTabs request={request} />
 
-            {/* Scrollable Content */}
             <ScrollArea className="flex-1 h-0">
                 <div className="p-6 space-y-8 pb-12">
                     <TabsContent value="input" className="animate-in fade-in duration-300 space-y-6 mt-0">
@@ -230,7 +217,7 @@ export default function RequestDetailPanel({
                         )}
                         <div className="bg-primary-a10 rounded-lg p-6 border border-primary-a20 overflow-x-auto">
                             <MarkdownRenderer className="text-foreground leading-relaxed whitespace-pre-wrap text-sm">
-                                {request.userPrompt || t('noUserPrompt')}
+                                {request.userPrompt || translate('requestDetails.noUserPrompt')}
                             </MarkdownRenderer>
                         </div>
                     </TabsContent>
@@ -246,7 +233,7 @@ export default function RequestDetailPanel({
                             return (
                                 <Alert className="rounded-lg border-border bg-surface2">
                                     <Info className="h-4 w-4" />
-                                    <AlertDescription>{t('noProblemDetails')}</AlertDescription>
+                                    <AlertDescription>{translate('requestDetails.noProblemDetails')}</AlertDescription>
                                 </Alert>
                             );
                         })()}
@@ -267,7 +254,7 @@ export default function RequestDetailPanel({
                             ) : (
                                 <Alert className="rounded-lg border-border bg-surface2 m-4">
                                     <Info className="h-4 w-4" />
-                                    <AlertDescription>{t('noOriginalCode')}</AlertDescription>
+                                    <AlertDescription>{translate('requestDetails.noOriginalCode')}</AlertDescription>
                                 </Alert>
                             )}
                         </div>
@@ -284,7 +271,7 @@ export default function RequestDetailPanel({
                         ) : (
                             <Alert className="rounded-lg border-border bg-surface2">
                                 <Info className="h-4 w-4" />
-                                <AlertDescription>{t('diffMissingBoth')}</AlertDescription>
+                                <AlertDescription>{translate('requestDetails.diffMissingBoth')}</AlertDescription>
                             </Alert>
                         )}
                     </TabsContent>

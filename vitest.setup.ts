@@ -1,6 +1,4 @@
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
-import { afterEach, vi, beforeAll } from 'vitest'
+import { vi, beforeAll } from 'vitest'
 
 // Add DOCTYPE to prevent KaTeX quirks mode warning
 beforeAll(() => {
@@ -13,11 +11,6 @@ beforeAll(() => {
         document.insertBefore(doctype, document.documentElement);
     }
 });
-
-// Runs a cleanup after each test case
-afterEach(() => {
-    cleanup()
-})
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {

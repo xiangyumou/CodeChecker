@@ -1,40 +1,21 @@
-import { db } from '@/lib/db';
-import { settings } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+// 简化版配置系统 - 直接从环境变量读取
 
-/**
- * Centralized settings retrieval logic
- * Falls back to environment variables if database setting is missing
- */
-export async function getSetting(key: string, defaultValue?: string): Promise<string | undefined> {
-    try {
-        const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
-        if (result[0]?.value) {
-            return result[0].value;
-        }
-    } catch (error) {
-        // Log error but don't fail, fall back to env/default
-        // Using console.error to avoid circular dependency if logger uses settings (though it doesn't currently)
-        console.error(`Failed to fetch setting ${key}:`, error);
-    }
-
-    return process.env[key] || defaultValue;
+export function getSetting(key: string): string | undefined {
+    return process.env[key];
 }
 
-export async function getAllSettings(): Promise<Record<string, string>> {
-    try {
-        const allSettings = await db.select().from(settings);
-        return allSettings.reduce((acc, setting) => {
-            acc[setting.key] = setting.value;
-            return acc;
-        }, {} as Record<string, string>);
-    } catch (error) {
-        console.error('Failed to fetch settings:', error);
-        return {};
-    }
+export function getAllSettings(): Record<string, string> {
+    return {
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+        OPENAI_BASE_URL: process.env.OPENAI_BASE_URL || '',
+        OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o',
+        MODEL_SUPPORTS_VISION: process.env.MODEL_SUPPORTS_VISION || 'true',
+        REQUEST_TIMEOUT_SECONDS: process.env.REQUEST_TIMEOUT_SECONDS || '180',
+        MAX_CONCURRENT_ANALYSIS_TASKS: process.env.MAX_CONCURRENT_ANALYSIS_TASKS || '3',
+    };
 }
 
-// Type-safe accessor for common settings
+// 保留 AppSettings 常量用于类型提示
 export const AppSettings = {
     MAX_CONCURRENT_ANALYSIS_TASKS: 'MAX_CONCURRENT_ANALYSIS_TASKS',
     OPENAI_API_KEY: 'OPENAI_API_KEY',

@@ -2,37 +2,33 @@
 
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { trpc } from '@/utils/trpc';
-import { useTranslations } from 'next-intl';
+import { translate } from '@/lib/i18n';
 import { Send, Trash2, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ImageGallery from './ImageGallery';
+import { createRequest } from '@/app/actions/requests';
+import { useImageUpload, ImageUploadMessages } from '@/hooks/useImageUpload';
+import { getErrorMessage } from '@/utils/error-mapping';
 
 interface SubmissionFormProps {
     onSubmissionSuccess?: () => void;
 }
 
-import { useImageUpload, ImageUploadMessages } from '@/hooks/useImageUpload';
-
-import { getErrorMessage } from '@/utils/error-mapping';
-
 export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormProps) {
-    const t = useTranslations('submissionForm');
     const router = useRouter();
-    const utils = trpc.useUtils();
     const [userPrompt, setUserPrompt] = useState('');
 
     // Create i18n messages for the image upload hook
     const imageMessages: ImageUploadMessages = useMemo(() => ({
-        processing: t('imageProcessing'),
-        tooLarge: (name, size, maxSize) => t('imageTooLarge', { name, size, maxSize }),
-        processingFailed: (name) => t('imageProcessFailed', { name }),
-        onlyImages: (name) => t('imageSkipped', { name }),
-        added: (count) => t('imagesAdded', { count }),
-    }), [t]);
+        processing: translate('submissionForm.imageProcessing'),
+        tooLarge: (name, size, maxSize) => translate('submissionForm.imageTooLarge', { name, size: String(size), maxSize: String(maxSize) }),
+        processingFailed: (name) => translate('submissionForm.imageProcessFailed', { name }),
+        onlyImages: (name) => translate('submissionForm.imageSkipped', { name }),
+        added: (count) => translate('submissionForm.imagesAdded', { count: String(count) }),
+    }), []);
 
     const { files, setFiles, processFiles, removeFile: hookRemoveFile, clearFiles } = useImageUpload(5, 2, imageMessages);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,29 +37,11 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
 
     const removeFile = (id: string) => {
         hookRemoveFile(id);
-        toast.info(t('imageRemoved'));
+        toast.info(translate('submissionForm.imageRemoved'));
     };
 
-    // Fetch vision support setting
-    const { data: visionSetting } = trpc.settings.getByKey.useQuery('MODEL_SUPPORTS_VISION');
-    const supportsVision = visionSetting !== 'false'; // Default to true if not set
-
-    const createMutation = trpc.requests.create.useMutation({
-        onSuccess: (data) => {
-            toast.success(t('successMessageWithId', { id: data.id }));
-            setUserPrompt('');
-            setFiles([]);
-            utils.requests.list.invalidate();
-            onSubmissionSuccess?.();
-            router.push(`/request/${data.id}`);
-            setIsSubmitting(false);
-        },
-        onError: (error) => {
-            const friendlyMessage = getErrorMessage(error, t('errorMessage'));
-            toast.error(friendlyMessage);
-            setIsSubmitting(false);
-        },
-    });
+    // Vision support is always enabled
+    const supportsVision = true;
 
     const handleFileChange = (newFiles: FileList | null) => {
         if (!newFiles) return;
@@ -75,7 +53,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         const prompt = userPrompt.trim();
 
         if (!prompt && files.length === 0) {
-            toast.error(t('validation.emptySubmissionError'));
+            toast.error(translate('submissionForm.validation.emptySubmissionError'));
             return;
         }
 
@@ -83,17 +61,25 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         const imageBase64List = files.map(f => f.preview);
 
         try {
-            await createMutation.mutateAsync({
+            const data = await createRequest({
                 userPrompt: prompt || '',
                 imageReferences: imageBase64List.length > 0 ? imageBase64List : undefined,
             });
-        } catch { // Error handled by mutation
-            // No explicit action needed here as onError in createMutation handles it
+
+            toast.success(translate('submissionForm.successMessageWithId', { id: String(data.id) }));
+            setUserPrompt('');
+            setFiles([]);
+            onSubmissionSuccess?.();
+            router.push(`/request/${data.id}`);
+        } catch (error) {
+            const friendlyMessage = getErrorMessage(error as Error, translate('submissionForm.errorMessage'));
+            toast.error(friendlyMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handlePaste = useCallback(async (event: React.ClipboardEvent) => {
-        // Skip image processing if vision is not supported
         if (!supportsVision) return;
 
         const items = event.clipboardData?.items;
@@ -120,7 +106,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
         if (!userPrompt && files.length === 0) return;
         setUserPrompt('');
         clearFiles();
-        toast.info(t('formCleared'));
+        toast.info(translate('submissionForm.formCleared'));
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -151,7 +137,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     <Textarea
                         id="prompt"
                         data-testid="submission-prompt"
-                        placeholder={t('unifiedInputPlaceholder')}
+                        placeholder={translate('submissionForm.unifiedInputPlaceholder')}
                         className="flex-1 resize-none rounded-lg border-border p-4 text-base bg-surface focus-visible:ring-ring"
                         value={userPrompt}
                         onChange={(e) => setUserPrompt(e.target.value)}
@@ -198,8 +184,8 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                                 <Upload className="w-4 h-4 text-primary" />
                             </div>
                             <div className="space-y-0.5 text-left">
-                                <p className="text-sm font-medium">{isDragOver ? "Drop!" : t('uploadText')}</p>
-                                <p className="text-xs text-muted-foreground">{t('uploadHint')}</p>
+                                <p className="text-sm font-medium">{isDragOver ? "Drop!" : translate('submissionForm.uploadText')}</p>
+                                <p className="text-xs text-muted-foreground">{translate('submissionForm.uploadHint')}</p>
                             </div>
                         </div>
                     </div>
@@ -216,7 +202,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     disabled={isSubmitting || (!userPrompt && files.length === 0)}
                 >
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {t('submitButton')}
+                    {translate('submissionForm.submitButton')}
                 </Button>
                 <Button
                     type="button"
@@ -227,7 +213,7 @@ export default function SubmissionForm({ onSubmissionSuccess }: SubmissionFormPr
                     disabled={isSubmitting}
                 >
                     <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    <span className="sr-only">{t('clearButton')}</span>
+                    <span className="sr-only">{translate('submissionForm.clearButton')}</span>
                 </Button>
             </div>
 
