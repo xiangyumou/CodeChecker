@@ -77,7 +77,14 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
             throw new Error('Empty response from API');
         }
 
-        const result = JSON.parse(responseContent);
+        // 清理可能的 markdown 代码块标记
+        const cleanedContent = responseContent
+            .replace(/^```json\s*/i, '')
+            .replace(/^```\s*/i, '')
+            .replace(/```\s*$/i, '')
+            .trim();
+
+        const result = JSON.parse(cleanedContent);
 
         // 保存结果
         await db.update(requests).set({
