@@ -8,6 +8,13 @@
       "when": 1773412977900,
       "tag": "0000_sharp_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1773470528901,
+      "tag": "0001_lame_multiple_man",
+      "breakpoints": true
     }
   ]
 }

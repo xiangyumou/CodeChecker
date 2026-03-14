@@ -4,9 +4,6 @@ import type { Request as DrizzleRequest } from '@/lib/db/schema';
 // Re-export Drizzle type for use in components
 export type { Request as DrizzleRequest } from '@/lib/db/schema';
 
-// Stage status type
-export type StageStatusValue = 'pending' | 'processing' | 'completed' | 'failed';
-
 // Request status type
 export type RequestStatus = 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
@@ -31,14 +28,11 @@ export interface ImageReference {
 }
 
 // Extended request type for frontend use with proper typing
-export interface RequestData extends Omit<DrizzleRequest, 'gptRawResponse' | 'problemDetails' | 'analysisResult' | 'imageReferences' | 'stage1Status' | 'stage2Status' | 'stage3Status'> {
+export interface RequestData extends Omit<DrizzleRequest, 'gptRawResponse' | 'problemDetails' | 'analysisResult' | 'imageReferences'> {
     gptRawResponse: GptRawResponse | null;
     problemDetails: Record<string, unknown> | null;
     analysisResult: Record<string, unknown> | null;
     imageReferences: ImageReference[] | null;
-    stage1Status: StageStatusValue | null;
-    stage2Status: StageStatusValue | null;
-    stage3Status: StageStatusValue | null;
 }
 
 // Type for query results that may contain request data

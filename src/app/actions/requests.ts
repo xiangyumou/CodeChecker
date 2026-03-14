@@ -126,12 +126,6 @@ export async function retryRequest(id: number) {
         formattedCode: null,
         problemDetails: null,
         analysisResult: null,
-        stage1Status: 'pending',
-        stage2Status: 'pending',
-        stage3Status: 'pending',
-        stage1CompletedAt: null,
-        stage2CompletedAt: null,
-        stage3CompletedAt: null,
     }).where(eq(requests.id, id)).returning();
 
     const updatedRequest = result[0];
