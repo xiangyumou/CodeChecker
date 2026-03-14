@@ -63,6 +63,9 @@ RUN chmod +x ./docker-entrypoint.sh
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
 
+# Copy node_modules for drizzle-kit (needed for migrations at runtime)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
 USER nextjs
 
 EXPOSE 3000
