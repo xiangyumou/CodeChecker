@@ -27,24 +27,7 @@ test.describe('Homepage Smoke Tests @smoke', () => {
     });
 
 
-    test('SM-06: Language switcher is accessible', async ({ page }) => {
-        // Find language selector
-        const langButton = page.locator('[data-testid="language-switcher"]')
-            .or(page.getByRole('button', { name: /en|zh|de|english|中文|deutsch/i }))
-            .first();
-
-        if (await langButton.isVisible()) {
-            await langButton.click();
-
-            // Verify dropdown/menu appears with language options
-            const languageOptions = page.locator('[role="menuitem"], [role="option"]')
-                .or(page.locator('text=/english|中文|deutsch/i'));
-
-            await expect(languageOptions.first()).toBeVisible({ timeout: 3000 });
-        }
-    });
-
-    test('SM-07: No console errors on page load', async ({ page }) => {
+    test('SM-06: No console errors on page load', async ({ page }) => {
         const errors: string[] = [];
 
         page.on('console', msg => {

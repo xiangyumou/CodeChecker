@@ -20,7 +20,6 @@ export default defineConfig({
         },
         env: {
             // 测试环境变量 - 内联配置，不依赖 .env 文件
-            SETTINGS_TOKEN: 'test-settings-token',
             OPENAI_API_KEY: 'sk-test-api-key',
             OPENAI_MODEL: 'gpt-4o',
             REQUEST_TIMEOUT_SECONDS: '180',

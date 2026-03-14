@@ -1,6 +1,5 @@
 import { test, expect } from '../fixtures/test-base';
 import { testCode } from '../utils/test-data';
-import { waitForRequestStatus } from '../utils/api-helpers';
 
 /**
  * Full E2E test for complete code analysis flow
@@ -13,9 +12,7 @@ test.describe('Analysis Flow E2E @full', () => {
         'Skipping full E2E tests - OPENAI_API_KEY not configured'
     );
 
-    test('E2E-01: Complete code analysis flow', async ({ page, dashboardPage, request }) => {
-        const baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000';
-
+    test('E2E-01: Complete code analysis flow', async ({ page, dashboardPage }) => {
         await dashboardPage.goto();
 
         // Submit code for analysis
@@ -29,20 +26,18 @@ test.describe('Analysis Flow E2E @full', () => {
         const requestId = parseInt(url.match(/\/request\/(\d+)/)?.[1] || '0');
         expect(requestId).toBeGreaterThan(0);
 
-        // Verify initial status is QUEUED or PROCESSING (matches UI translations)
-        // EN: Waiting/Processing/Stage, ZH: 等待中/处理中/阶段, DE: Wartend/In Bearbeitung/Stufe
-        // Note: Status text is now visible in the detail panel loading state
-        const statusText = page.getByText(/等待中|处理中|阶段|Waiting|Processing|Stage|Wartend|In Bearbeitung|Stufe/i).first();
+        // Verify initial status is QUEUED or PROCESSING
+        const statusText = page.getByText(/等待中|处理中|Waiting|Processing/i).first();
         await expect(statusText).toBeVisible({ timeout: 5000 });
 
-        // Wait for analysis to complete (up to 2 minutes)
-        await waitForRequestStatus(request, baseURL, requestId, 'COMPLETED', 120000);
+        // Wait for analysis to complete by polling UI (up to 2 minutes)
+        const completedIndicator = page.locator('text=/completed|完成/i').first();
+        await expect(completedIndicator).toBeVisible({ timeout: 120000 });
 
         // Refresh to see completed status
         await page.reload();
 
         // Verify completed state shows analysis results
-        const completedIndicator = page.locator('text=/completed|完成|success/i').first();
         await expect(completedIndicator).toBeVisible({ timeout: 10000 });
 
         // Verify analysis content is displayed
@@ -70,8 +65,7 @@ test.describe('Analysis Flow E2E @full', () => {
             await retryButton.click();
 
             // Verify status changes back to QUEUED
-            // EN: Waiting, ZH: 等待中, DE: Wartend
-            const queuedStatus = page.getByText(/等待中|Waiting|Wartend|阶段|Stage|Stufe/i).first();
+            const queuedStatus = page.getByText(/等待中|Waiting/i).first();
             await expect(queuedStatus).toBeVisible({ timeout: 5000 });
         } else {
             test.skip();
@@ -83,25 +77,8 @@ test.describe('Error Handling E2E @full', () => {
     test('E2E-06: Shows 404 for non-existent request', async ({ page }) => {
         await page.goto('/request/99999999');
 
-        // Should show not found message (matches all translation variants)
-        // EN: "Request not found", ZH: "请求未找到", DE: "Anfrage nicht gefunden"
-        // Note: Using text selector as data-testid may not be in SSR HTML
-        const notFound = page.getByText(/请求未找到|Request not found|Anfrage nicht gefunden/i);
+        // Should show not found message
+        const notFound = page.getByText(/请求未找到|Request not found/i);
         await expect(notFound).toBeVisible({ timeout: 5000 });
-    });
-
-    test('E2E-06: Handles API errors gracefully', async ({ page }) => {
-        // Disable network to simulate API failure
-        await page.route('**/api/trpc/**', route => route.abort());
-
-        await page.goto('/');
-
-        // Should show some error indication or fallback UI
-        // The app shouldn't crash
-        const body = page.locator('body');
-        await expect(body).toBeVisible();
-
-        // Re-enable network
-        await page.unroute('**/api/trpc/**');
     });
 });

@@ -40,12 +40,6 @@ export class DashboardPage {
         );
     }
 
-    get languageSwitcher() {
-        return this.page.locator('[data-testid="language-switcher"]').or(
-            this.page.getByRole('button', { name: /en|zh|de|language|语言/i })
-        );
-    }
-
     // Actions
     async submitCode(code: string) {
         // Click textarea to focus it first
@@ -79,12 +73,8 @@ export class RequestDetailPanel {
 
     get status() {
         return this.page.locator('[data-testid="request-status-badge"]').or(
-            this.page.locator('text=/queued|processing|completed|failed|排队|处理|完成|失败|waiting|waiting|阶段|stage|stufe/i').first()
+            this.page.locator('text=/queued|processing|completed|failed|排队|处理|完成|失败/i').first()
         );
-    }
-
-    get pipelineStatus() {
-        return this.page.locator('[data-testid="pipeline-status"]');
     }
 
     get retryButton() {
@@ -93,10 +83,9 @@ export class RequestDetailPanel {
 
     async waitForStatus(status: 'queued' | 'processing' | 'completed' | 'failed', timeout = 60000) {
         if (status === 'processing') {
-            // Processing status might show as "Stage X/3" or localized versions
-            await expect(this.page.locator('text=/processing|处理中|in bearbeitung|stage|阶段|stufe/i').first()).toBeVisible({ timeout });
+            await expect(this.page.locator('text=/processing|处理中/i').first()).toBeVisible({ timeout });
         } else if (status === 'queued') {
-            await expect(this.page.locator('text=/queued|waiting|等待中|wartend/i').first()).toBeVisible({ timeout });
+            await expect(this.page.locator('text=/queued|等待中/i').first()).toBeVisible({ timeout });
         } else {
             await expect(this.page.locator(`text=/${status}/i`).first()).toBeVisible({ timeout });
         }

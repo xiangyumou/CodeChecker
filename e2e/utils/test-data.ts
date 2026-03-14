@@ -55,8 +55,3 @@ export const testPrompts = {
     optimization: 'Optimize this code for performance',
     refactor: 'Refactor this code to improve readability',
 };
-
-/**
- * Admin token for settings access (from environment or default for testing)
- */
-export const adminToken = process.env.SETTINGS_TOKEN || 'test-admin-token';

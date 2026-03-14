@@ -21,7 +21,7 @@ git clone https://github.com/xiangyumou/CodeChecker.git
 cd CodeChecker
 
 cp .env.example .env
-# 编辑 .env，填入 OPENAI_API_KEY 和 SETTINGS_TOKEN
+# 编辑 .env，填入 OPENAI_API_KEY
 ```
 
 ### 2. 启动
@@ -50,7 +50,6 @@ make start
 | `OPENAI_API_KEY` | OpenAI API 密钥 | 是 |
 | `OPENAI_BASE_URL` | API 端点 | 否 |
 | `OPENAI_MODEL` | 模型名称（默认：gpt-4o） | 否 |
-| `SETTINGS_TOKEN` | 管理面板访问令牌 | 是 |
 
 ---
 

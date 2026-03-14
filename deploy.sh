@@ -26,8 +26,6 @@ if [ ! -f .env ]; then
     echo ""
     echo "Required settings:"
     echo "  - OPENAI_API_KEY"
-    echo "  - DB_PASSWORD"
-    echo "  - SETTINGS_TOKEN"
     echo ""
     read -p "Press Enter to continue after editing .env, or Ctrl+C to exit..."
 fi
