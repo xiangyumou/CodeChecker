@@ -44,6 +44,12 @@ export async function processAnalysisTask(requestId: number): Promise<void> {
 
         const imageReferences = (request.imageReferences as unknown as string[]) || [];
 
+        // 检查 vision 支持
+        const supportsVision = process.env.MODEL_SUPPORTS_VISION !== 'false';
+        if (imageReferences.length > 0 && !supportsVision) {
+            throw new Error('Model does not support vision');
+        }
+
         // 加载 prompts
         const [step1Prompt, step2Prompt, step3Prompt] = await Promise.all([
             getPrompt('step1-problem'),

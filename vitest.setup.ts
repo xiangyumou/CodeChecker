@@ -1,4 +1,5 @@
 import { vi, beforeAll } from 'vitest'
+import '@testing-library/jest-dom'
 
 // Add DOCTYPE to prevent KaTeX quirks mode warning
 beforeAll(() => {
