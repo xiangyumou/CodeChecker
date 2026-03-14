@@ -330,13 +330,18 @@
   width: 100%;
 }
 
-.diff-container .d2h-file-side-diff {
-  flex: 1;
+.diff-container {
   overflow-x: auto;
 }
 
+.diff-container .d2h-file-side-diff {
+  flex: 1;
+  overflow-x: visible;
+  min-width: 0;
+}
+
 .diff-container .d2h-code-wrapper {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .diff-container .d2h-code-line {

@@ -6,7 +6,7 @@ import RequestDetail from '@/components/RequestDetail';
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, PanelLeft, Sparkles } from "lucide-react";
+import { Menu, PanelLeft, Plus } from "lucide-react";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -79,7 +79,7 @@ export default function Dashboard({ initialRequestId }: DashboardProps) {
                             onClick={handleCreateNew}
                             title="新建请求"
                         >
-                            <Sparkles className="h-5 w-5" />
+                            <Plus className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
